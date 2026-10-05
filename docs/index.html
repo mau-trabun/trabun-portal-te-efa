@@ -154,6 +154,7 @@
     .bandeja-fila + .bandeja-fila{border-top:1px solid var(--borde)}
     .punto{width:9px;height:9px;border-radius:50%;background:var(--prog);flex:none}
     .bandeja-rango{flex:none;font-family:var(--f-head);font-weight:700;font-size:12.5px;white-space:nowrap}
+    .bandeja-dato{flex:1;min-width:0;display:flex;align-items:center;gap:10px}
     .bandeja-link{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--f-mono);font-size:13px}
     .btn-copiar{flex:none;font-family:var(--f-head);font-weight:700;font-size:13px;color:var(--rojo);padding:8px 2px}
     .bandeja-pie{display:flex;justify-content:flex-end;padding-top:6px}
@@ -174,6 +175,8 @@
     .btn-borde.tinta{border-color:var(--tinta);color:var(--tinta)}
     .btn-lleno{font-family:var(--f-head);font-weight:700;font-size:14px;background:var(--rojo);color:#fff;padding:10px 18px;border-radius:999px;transition:background 120ms}
     .btn-lleno:hover{background:var(--rojo-osc)}
+    .btn-whatsapp{font-family:var(--f-head);font-weight:700;font-size:14px;background:#25d366;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none;transition:background 120ms}
+    .btn-whatsapp:hover{background:#1da851;color:#fff}
     .mensaje{background:var(--tray);border:1px solid var(--borde);border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;max-height:240px;overflow:auto;overflow-wrap:anywhere}
     .interruptor{display:flex;align-items:center;gap:8px;font-family:var(--f-head);font-weight:600;font-size:12.5px}
     .interruptor i{width:34px;height:20px;border-radius:999px;background:var(--borde-input);position:relative;transition:background 240ms}
@@ -222,8 +225,8 @@
       .cuerpo{padding:4px 16px 18px}
       .btn-actualizar{min-height:44px}
       .modal{padding:20px}
-      .bandeja-fila{flex-wrap:wrap}
-      .bandeja-link{flex-basis:100%;order:3}
+      .bandeja-fila{flex-wrap:wrap;row-gap:2px}
+      .bandeja-rango + .bandeja-dato{flex-basis:100%} /* range on its own line, link + Copiar below */
       .btn-copiar,.btn-compartir{min-height:44px}
       .fila-nivel{grid-template-columns:minmax(84px,120px) minmax(0,1fr) 74px 14px;gap:10px;min-height:44px}
       .nivel-cifra .largo{display:none}
@@ -2947,8 +2950,8 @@ window.qrcode=qrcode;
       const filas = links.map((l, i) => `<div class="bandeja-fila">
           <span class="punto"></span>
           ${l.etiqueta && links.length > 1 ? `<span class="bandeja-rango">${esc(l.etiqueta)}</span>` : ""}
-          <span class="bandeja-link" title="${esc(l.link)}">${esc(l.link.replace(/^https?:\/\//, ""))}</span>
-          <button type="button" class="btn-copiar" data-copiar="${esc(l.link)}">Copiar</button>
+          <span class="bandeja-dato"><span class="bandeja-link" title="${esc(l.link)}">${esc(l.link.replace(/^https?:\/\//, ""))}</span>
+          <button type="button" class="btn-copiar" data-copiar="${esc(l.link)}">Copiar</button></span>
         </div>`).join("");
       const etiqueta = ve && ve.fase === "pre" ? "Compartir" : "Recordar";
       return `<div class="bandeja">${filas}<div class="bandeja-pie"><button type="button" class="btn-compartir" data-compartir="${prog.programa}" data-clave="${clave}">${etiqueta}</button></div></div>`;
@@ -2979,25 +2982,42 @@ window.qrcode=qrcode;
       return `Hola:\n\n${entre ? `Entre ${entre} está disponible` : "Está disponible"} la Encuesta de Fin de Año (EFA) del programa ${pn}. Tu opinión nos ayuda a mejorar el programa. Puedes responderla ${links.length === 1 ? "aquí" : "en el link que te corresponde"}:\n${lista}\n\nGracias.`;
     }
 
-    // QR from the kept qrcode library, drawn on a canvas (crisp at any size)
-    function lienzoQR(texto, px) {
+    // QR from the kept qrcode library, drawn on a canvas (crisp at any size).
+    // leyenda: optional caption lines printed under the code (downloaded PNG: survey · program, grades).
+    function lienzoQR(texto, px, leyenda) {
       const q = qrcode(0, "M");
       q.addData(texto);
       q.make();
       const n = q.getModuleCount(), margen = 4;
       const celda = Math.max(1, Math.floor(px / (n + 2 * margen)));
       const lado = celda * (n + 2 * margen);
+      const lineas = (leyenda || []).filter(Boolean);
+      const t1 = Math.round(lado * 0.055), t2 = Math.round(lado * 0.07); // first line smaller, grades bigger
+      const alto = lado + (lineas.length ? Math.round(lado * 0.04) + (lineas.length > 1 ? t1 + t2 * 1.35 : t2) + Math.round(lado * 0.06) : 0);
       const cv = document.createElement("canvas");
-      cv.width = cv.height = lado;
+      cv.width = lado; cv.height = alto;
       const ctx = cv.getContext("2d");
-      ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, lado, lado);
+      ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, lado, alto);
       ctx.fillStyle = "#151b29";
       for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) ctx.fillRect((c + margen) * celda, (r + margen) * celda, celda, celda);
+      if (lineas.length) {
+        ctx.textAlign = "center"; ctx.textBaseline = "top";
+        let y = lado - margen * celda * 0.4;
+        if (lineas.length > 1) {
+          ctx.font = `700 ${t1}px Mulish, system-ui, sans-serif`; ctx.fillStyle = "#5b6070";
+          ctx.fillText(lineas[0], lado / 2, y, lado * 0.92);
+          y += t1 * 1.35;
+        }
+        ctx.font = `800 ${t2}px Mulish, system-ui, sans-serif`; ctx.fillStyle = "#151b29";
+        ctx.fillText(lineas[lineas.length - 1], lado / 2, y, lado * 0.92);
+      }
       return cv;
     }
 
     function abrirCompartir(programa, clave) {
-      estado.compartir = { programa, clave, incluir: true };
+      // Progress by grade is opt-in: the first share is the link itself, and per-grade numbers sent to
+      // the whole teaching team can read as comparison (supportive tool, not control).
+      estado.compartir = { programa, clave, incluir: false };
       renderCompartir();
       $("modal-compartir").hidden = false;
       document.body.style.overflow = "hidden";
@@ -3052,7 +3072,7 @@ window.qrcode=qrcode;
         </div>
         <div class="modal-botones">
           <button type="button" class="btn-lleno" data-copiar-mensaje>Copiar mensaje</button>
-          <a class="btn-borde tinta" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+          <a class="btn-whatsapp" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Enviar por WhatsApp</a>
         </div>
         ${qrs ? `<div class="qrs">${qrs}</div>` : ""}`;
     }
@@ -3080,7 +3100,8 @@ window.qrcode=qrcode;
       const l = linksVisibles(prog, sh.clave)[i];
       if (!l) return;
       const a = document.createElement("a");
-      a.href = lienzoQR(l.link, 1024).toDataURL("image/png");
+      const leyenda = [`${ENCUESTAS[sh.clave].nombre} · ${PROGRAMAS[prog.programa].corto}`, l.etiqueta];
+      a.href = lienzoQR(l.link, 1024, l.etiqueta ? leyenda : [leyenda[0]]).toDataURL("image/png");
       a.download = `QR ${ENCUESTAS[sh.clave].corto} ${PROGRAMAS[prog.programa].corto}${l.etiqueta ? " " + l.etiqueta : ""}.png`.replace(/[°\/\\:*?"<>|]/g, "");
       document.body.appendChild(a); a.click(); a.remove();
     }
