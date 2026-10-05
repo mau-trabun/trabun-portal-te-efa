@@ -109,6 +109,45 @@
     .resumen-total{font-family:var(--f-head);font-weight:700;font-size:14px}
     .resumen-alcance{font-size:12px;color:var(--muted)}
 
+    /* ── TEST DE ESTUDIANTES ─────────────────────────────── */
+    .buscar{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--borde-input);border-radius:999px;padding:7px 14px}
+    .buscar svg{flex:none}
+    .buscar input{border:none;outline:none;flex:1;min-width:0;font-family:var(--f-body);font-size:13.5px;background:transparent;color:var(--tinta)}
+    .buscar-limpiar{font-family:var(--f-head);font-weight:800;font-size:16px;color:var(--muted);padding:0 4px;line-height:1}
+    .resultados{border:1px solid var(--borde);border-radius:12px;background:#fff;padding:4px 16px}
+    .resultado{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f0f0f2}
+    .resultado:last-child{border-bottom:none}
+    .resultado b{font-family:var(--f-head);font-weight:600;font-size:14px}
+    .resultado span{font-size:12.5px;color:var(--muted);white-space:nowrap}
+    .resultados-nota{padding:12px 0;font-size:13.5px;color:var(--muted)}
+    .acordeon{border:1px solid var(--borde);border-radius:12px;overflow:hidden;background:#fff}
+    .nivel + .nivel{border-top:1px solid var(--borde)}
+    .fila-nivel{display:grid;grid-template-columns:minmax(96px,150px) minmax(0,1fr) 100px 14px;align-items:center;gap:12px;padding:11px 14px;width:100%;text-align:left;transition:background 120ms}
+    .fila-nivel:hover{background:#fafafa}
+    .nivel-nombre{font-family:var(--f-head);font-weight:700;font-size:14px;white-space:nowrap}
+    .nivel-marca{font-family:var(--f-head);font-weight:700;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .barra{height:8px;background:var(--track);border-radius:99px;overflow:hidden}
+    .barra i{display:block;height:100%;background:var(--prog);border-radius:99px}
+    .barra.tenue{opacity:.35}
+    .nivel-cifra{font-family:var(--f-head);font-weight:800;font-size:13px;text-align:right;white-space:nowrap}
+    .nivel-cifra .corto{display:none}
+    .chevron{transition:transform 240ms var(--ease)}
+    .nivel.abierto .chevron{transform:rotate(90deg)}
+    .cursos{padding:0 14px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+    .curso{background:var(--tray);border-radius:10px;padding:11px 13px;display:flex;flex-direction:column;gap:8px;min-width:0}
+    .curso-cab{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+    .curso-cab b{font-family:var(--f-head);font-weight:700;font-size:13.5px}
+    .curso-cab span{font-family:var(--f-head);font-weight:800;font-size:12.5px;white-space:nowrap}
+    .curso-aviso,.curso-vacio{font-size:12px;line-height:1.45;color:var(--muted)}
+    .chips{display:flex;flex-wrap:wrap;gap:4px}
+    .chip{font-family:var(--f-head);font-weight:600;font-size:12px;background:#fff;border:1px solid var(--borde);color:var(--tinta);padding:2px 8px;border-radius:999px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .chip.anon{color:var(--muted)}
+    .ver-mas{align-self:flex-start;font-family:var(--f-head);font-weight:700;font-size:12.5px;color:var(--rojo);padding:4px 0}
+    .numeros{display:grid;grid-template-columns:repeat(auto-fill,minmax(30px,1fr));gap:4px}
+    .num{position:relative;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;font-family:var(--f-head);font-weight:700;font-size:12px;background:#fff;border:1px solid var(--borde);color:var(--muted)}
+    .num.si{background:var(--prog);border-color:var(--prog);color:#fff}
+    .num sup{position:absolute;top:-6px;right:-4px;font-size:9.5px;font-weight:800;background:var(--tinta);color:#fff;border-radius:999px;padding:0 4px;line-height:14px}
+
     /* ── PIE ────────────────────────────────────────────── */
     .pie-ola{margin-top:56px;margin-bottom:-1px}
     footer{background:var(--tinta);color:rgba(255,255,255,.75)}
@@ -142,6 +181,10 @@
       .banda{padding:16px 18px 12px}
       .cuerpo{padding:4px 16px 18px}
       .btn-actualizar{min-height:44px}
+      .fila-nivel{grid-template-columns:minmax(84px,120px) minmax(0,1fr) 74px 14px;gap:10px;min-height:44px}
+      .nivel-cifra .largo{display:none}
+      .nivel-cifra .corto{display:inline}
+      .cursos{grid-template-columns:minmax(0,1fr)}
       .pie{padding:20px 16px 28px}
     }
     @media (max-width:400px){
@@ -2553,7 +2596,9 @@ window.qrcode=qrcode;
       calendario: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>',
     };
 
-    const estado = { datos: null, encuesta: "test" };
+    const estado = { datos: null, encuesta: "test", ui: {} }; // ui[programa] = { abiertos, mas, q }
+    const MAX_CHIPS = 24;
+    const MAX_RESULTADOS = 50;
     // Kept in memory only (never storage) so refreshes don't ask for the clave again; cleared on logout.
     const sesion = { rbd: null, clave: null, ultima: 0, timerTexto: null, timerRefresco: null, actualizando: false };
 
@@ -2565,6 +2610,20 @@ window.qrcode=qrcode;
     const fmtNum = n => Number(n).toLocaleString("es-CL");
     const plural = (n, uno, varios) => n === 1 ? `1 ${uno}` : `${fmtNum(n)} ${varios}`;
 
+    // Search key: no accents, no case, apostrophes dropped ("ohiggins" finds O'Higgins), hyphens as spaces
+    const normalizar = s => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+      .replace(/['\u2019`\u00b4]/g, "").replace(/-/g, " ").replace(/\s+/g, " ").trim();
+
+    // Display-only casing fix: ALL CAPS or all lowercase → Title Case, keeping particles (de, del, la…).
+    // Mixed case is left as typed. Accents can't be restored.
+    const PARTICULAS = new Set(["de", "del", "la", "las", "los", "y", "e", "da", "das", "do", "dos", "di", "van", "von", "der"]);
+    function formatNombre(s) {
+      const t = String(s || "").replace(/\s+/g, " ").trim();
+      if (!t || (t !== t.toUpperCase() && t !== t.toLowerCase())) return t;
+      return t.toLowerCase().split(" ").map((w, i) => i > 0 && PARTICULAS.has(w) ? w
+        : w.replace(/(^|[-'’])(\p{L})/gu, (m, sep, c) => sep + c.toUpperCase())).join(" ");
+    }
+
     // "2026-10-13" → { dia: 13, mes: 9 } (no Date objects: avoids time-zone shifts)
     function partesFecha(iso) {
       const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
@@ -2572,12 +2631,6 @@ window.qrcode=qrcode;
     }
     const fechaCorta = iso => { const p = partesFecha(iso); return p ? `${p.dia} ${MESES_CORTOS[p.mes]}` : ""; };
     const fechaLarga = iso => { const p = partesFecha(iso); return p ? `${p.dia} de ${MESES[p.mes]}` : ""; };
-    function rangoFechas(abre, cierra) {
-      const a = partesFecha(abre), c = partesFecha(cierra);
-      if (!a || !c) return "";
-      return a.mes === c.mes ? `${a.dia} – ${c.dia} ${MESES_CORTOS[c.mes]}` : `${fechaCorta(abre)} – ${fechaCorta(cierra)}`;
-    }
-
     // "1° básico … 8° básico" → "1° a 8° básico"; gaps → "4°, 6° y 8° básico"
     function textoNiveles(niveles) {
       if (!niveles.length) return "";
@@ -2598,13 +2651,14 @@ window.qrcode=qrcode;
     }
 
     // ── Fases y textos por encuesta ─────────────────────────
+    // Band line: where the survey stands, each date once. The tab already names the survey.
     function etiquetaFase(ve) {
       if (!ve || !ve.fase) return "";
-      if (ve.fase === "pre") return `Abre el ${fechaCorta(ve.abre)}`;
+      if (ve.fase === "pre") return `Abre el ${fechaCorta(ve.abre)} · disponible hasta el ${fechaCorta(ve.cierra)}`;
       if (ve.fase === "closed") return `Cerrada el ${fechaCorta(ve.cierra)}`;
       const d = ve.diasRestantes;
-      // "faltan N días" read like days until opening; say what ends
-      return d === 0 ? "Abierta · cierra hoy" : d === 1 ? "Abierta · cierra mañana" : `Abierta · cierra en ${d} días`;
+      if (d === 0) return "Abierta · cierra hoy";
+      return `Abierta hasta el ${fechaCorta(ve.cierra)} · ${d === 1 ? "cierra mañana" : `cierra en ${d} días`}`;
     }
 
     function pctTest(test) {
@@ -2685,6 +2739,7 @@ window.qrcode=qrcode;
       clearInterval(sesion.timerTexto);
       Object.assign(sesion, { rbd: null, clave: null, ultima: 0, timerTexto: null, timerRefresco: null, actualizando: false });
       estado.datos = null;
+      estado.ui = {};
       estado.encuesta = "test";
       $("programas").innerHTML = "";
       $("view-panel").hidden = true;
@@ -2704,8 +2759,9 @@ window.qrcode=qrcode;
       const aviso = $("aviso-sin-programas");
       aviso.hidden = progs.length > 0;
       aviso.innerHTML = `Tu acceso es válido, pero no encontramos programas asociados a este RBD. Escríbenos a <a href="mailto:${esc(contacto)}">${esc(contacto)}</a> para revisarlo.`;
+      if (!mantenerVista) estado.ui = {}; // new login: fresh accordion and search state
       renderProgramas();
-      if (mantenerVista) return; // refresh: keep scroll position and the active tab
+      if (mantenerVista) return; // refresh: keep scroll position, active tab, open rows and search
       $("view-login").hidden = true;
       $("view-panel").hidden = false;
       window.scrollTo(0, 0);
@@ -2770,7 +2826,7 @@ window.qrcode=qrcode;
       const meta = PROGRAMAS[prog.programa];
       const clave = estado.encuesta;
       const ve = estado.datos.encuestas[clave] || {};
-      const linea = [ENCUESTAS[clave].nombre, rangoFechas(ve.abre, ve.cierra), etiquetaFase(ve)].filter(Boolean).join(" · ");
+      const linea = etiquetaFase(ve);
       return `<article class="programa" style="--prog:${meta.color}">
         <div class="pestanas" role="group" aria-label="Encuestas">${pestana(prog, "test")}${pestana(prog, "efa")}</div>
         <div class="tarjeta">
@@ -2813,6 +2869,15 @@ window.qrcode=qrcode;
       return `<div class="nota"><div>No pudimos cargar las respuestas en este momento. Tu acceso funciona con normalidad: vuelve a ingresar en unos minutos.</div></div>`;
     }
 
+    function uiDe(prog) {
+      const u = estado.ui[prog.programa] || (estado.ui[prog.programa] = { abiertos: null, mas: new Set(), q: "" });
+      if (!u.abiertos) { // first render: the first grade starts open
+        const primero = prog.test && prog.test.niveles && prog.test.niveles[0];
+        u.abiertos = new Set(primero ? [primero.nivel] : []);
+      }
+      return u;
+    }
+
     function bloqueTest(prog) {
       const t = prog.test;
       const pre = estado.datos.encuestas.test && estado.datos.encuestas.test.fase === "pre";
@@ -2823,7 +2888,105 @@ window.qrcode=qrcode;
       const r = t.resumen;
       const total = pre ? (r.est ? `~${fmtNum(r.est)} estudiantes estimados` : "Sin estimado de estudiantes")
         : r.est ? `${plural(r.r, "respuesta", "respuestas")} de ~${fmtNum(r.est)} estudiantes estimados` : plural(r.r, "respuesta", "respuestas");
-      return notaFase("test") + `<div class="resumen"><div class="resumen-total">${esc(total)}</div><div class="resumen-alcance">${esc(alcance)}</div></div>`;
+      const u = uiDe(prog);
+      const porNumero = estado.datos.studentId === "numero";
+      const buscar = pre ? "" : `<label class="buscar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b6070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" data-buscar="${prog.programa}" value="${esc(u.q)}" placeholder="${porNumero ? "Buscar por número de lista" : "Buscar estudiante"}" ${porNumero ? 'inputmode="numeric"' : ""} aria-label="${porNumero ? "Buscar por número de lista" : "Buscar estudiante"}" />
+          ${u.q ? `<button type="button" class="buscar-limpiar" data-limpiar="${prog.programa}" aria-label="Borrar búsqueda">×</button>` : ""}
+        </label>`;
+      return notaFase("test")
+        + `<div class="resumen"><div class="resumen-total">${esc(total)}</div><div class="resumen-alcance">${esc(alcance)}</div></div>`
+        + buscar
+        + `<div id="est-${prog.programa}">${contenidoTest(prog)}</div>`;
+    }
+
+    // Search results or the grade accordion (re-rendered alone while typing, so the input keeps focus)
+    function contenidoTest(prog) {
+      const u = uiDe(prog);
+      const pre = estado.datos.encuestas.test && estado.datos.encuestas.test.fase === "pre";
+      if (!pre && u.q.trim()) return resultadosBusqueda(prog, u.q);
+      const niveles = prog.test.niveles || [];
+      if (!niveles.length) return "";
+      return `<div class="acordeon">${niveles.map(n => filaNivel(prog, n, pre)).join("")}</div>`;
+    }
+
+    function filaNivel(prog, n, pre) {
+      const u = uiDe(prog);
+      const abierto = u.abiertos.has(n.nivel);
+      const marca = !n.registrado ? "Fuera de lo registrado" : !n.est ? "Sin estimado" : (!pre && n.r > n.est) ? `${fmtNum(n.r - n.est)} sobre lo estimado` : "";
+      const ancho = n.est && !pre ? Math.min(n.r, n.est) / n.est * 100 : 0; // capped at 100%
+      const cifra = !n.est ? (pre ? "—" : `<span class="largo">${plural(n.r, "respuesta", "respuestas")}</span><span class="corto">${fmtNum(n.r)} resp.</span>`)
+        : pre ? `~${fmtNum(n.est)}` : `${fmtNum(n.r)} / ~${fmtNum(n.est)}`; // trusted: numbers and fixed words only
+      return `<div class="nivel${abierto ? " abierto" : ""}">
+        <button type="button" class="fila-nivel" data-programa="${prog.programa}" data-nivel="${esc(n.nivel)}" aria-expanded="${abierto}">
+          <div style="min-width:0"><div class="nivel-nombre">${esc(n.nivel)}</div>${marca ? `<div class="nivel-marca">${esc(marca)}</div>` : ""}</div>
+          <div class="barra${n.est ? "" : " tenue"}"><i style="width:${ancho.toFixed(1)}%"></i></div>
+          <div class="nivel-cifra">${cifra}</div>
+          <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6070" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+        ${abierto ? `<div class="cursos">${(n.cursos || []).map(c => tarjetaCurso(prog, n, c)).join("")}</div>` : ""}
+      </div>`;
+    }
+
+    const etiquetaCurso = (nivel, letra) => letra ? `${nivel} ${letra}` : `${nivel} · sin letra`;
+    const nombreCompleto = x => formatNombre([x.nombres, x.apellidos].filter(Boolean).join(" "));
+
+    function tarjetaCurso(prog, n, c) {
+      const u = uiDe(prog);
+      const clave = `${n.nivel}|${c.letra || ""}`;
+      const aviso = !c.registrado && n.registrado && c.letra
+        ? `<div class="curso-aviso">Curso no registrado. Si este curso existe, avísale a tu Jefe de Proyecto para agregarlo.</div>` : "";
+      let cuerpo;
+      if (!c.r) {
+        cuerpo = `<div class="curso-vacio">Aún sin respuestas.</div>`;
+      } else if (estado.datos.studentId === "numero") {
+        cuerpo = grillaNumeros(c);
+      } else {
+        const todos = (c.respuestas || []).map(x => { const t = nombreCompleto(x); return t ? `<span class="chip">${esc(t)}</span>` : `<span class="chip anon">Sin identificar</span>`; });
+        const abierto = u.mas.has(clave);
+        cuerpo = `<div class="chips">${(abierto ? todos : todos.slice(0, MAX_CHIPS)).join("")}</div>`
+          + (todos.length > MAX_CHIPS ? `<button type="button" class="ver-mas" data-programa="${prog.programa}" data-curso="${esc(clave)}">${abierto ? "Ver menos" : `Ver todas (${fmtNum(todos.length)})`}</button>` : "");
+      }
+      return `<div class="curso">
+        <div class="curso-cab"><b>${esc(etiquetaCurso(n.nivel, c.letra))}</b><span>${esc(plural(c.r, "respuesta", "respuestas"))}</span></div>
+        ${aviso}${cuerpo}
+      </div>`;
+    }
+
+    // List-number mode: 1…tope, answered numbers highlighted; repeats marked ×N
+    function grillaNumeros(c) {
+      const veces = {};
+      (c.numeros || []).forEach(k => { veces[k] = (veces[k] || 0) + 1; });
+      const celdas = [];
+      for (let k = 1; k <= (c.tope || 0); k++) {
+        const v = veces[k] || 0;
+        celdas.push(`<span class="num${v ? " si" : ""}" title="N° ${k}${v ? " · respondió" : " · sin respuesta"}">${k}${v > 1 ? `<sup>×${v}</sup>` : ""}</span>`);
+      }
+      const sin = c.sinNumero ? `<div class="curso-vacio">${esc(plural(c.sinNumero, "respuesta", "respuestas"))} sin número de lista.</div>` : "";
+      return (celdas.length ? `<div class="numeros">${celdas.join("")}</div>` : "") + sin;
+    }
+
+    function resultadosBusqueda(prog, q) {
+      const porNumero = estado.datos.studentId === "numero";
+      const encontrados = [];
+      (prog.test.niveles || []).forEach(n => (n.cursos || []).forEach(c => {
+        const lugar = etiquetaCurso(n.nivel, c.letra);
+        if (porNumero) {
+          const buscado = Number(q.replace(/\D/g, ""));
+          if (buscado) (c.numeros || []).filter(k => k === buscado).forEach(k => encontrados.push({ id: `N° ${k}`, lugar }));
+        } else {
+          const nq = normalizar(q);
+          (c.respuestas || []).forEach(x => {
+            const t = nombreCompleto(x);
+            if (t && normalizar(t).includes(nq)) encontrados.push({ id: t, lugar });
+          });
+        }
+      }));
+      if (!encontrados.length) return `<div class="resultados"><div class="resultados-nota">Ninguna respuesta coincide con “${esc(q.trim())}”.</div></div>`;
+      const filas = encontrados.slice(0, MAX_RESULTADOS).map(x => `<div class="resultado"><b>${esc(x.id)}</b><span>${esc(x.lugar)}</span></div>`).join("");
+      const mas = encontrados.length > MAX_RESULTADOS ? `<div class="resultados-nota">Mostrando ${MAX_RESULTADOS} de ${fmtNum(encontrados.length)}. Escribe más letras para acotar.</div>` : "";
+      return `<div class="resultados">${filas}${mas}</div>`;
     }
 
     function bloqueEfa(prog) {
@@ -2843,9 +3006,46 @@ window.qrcode=qrcode;
       // back on the tab after a while: refresh once
       if (document.visibilityState === "visible" && sesion.rbd && Date.now() - sesion.ultima > REFRESCO_MS) actualizar(false);
     });
+    const progPorClave = clave => (estado.datos.programas || []).find(p => p.programa === clave);
+    function redibujarTest(clave) {
+      const prog = progPorClave(clave), cont = $(`est-${clave}`);
+      if (prog && cont) cont.innerHTML = contenidoTest(prog);
+    }
     $("programas").addEventListener("click", ev => {
       const tab = ev.target.closest(".pestana");
-      if (tab) cambiarEncuesta(tab.dataset.encuesta);
+      if (tab) return cambiarEncuesta(tab.dataset.encuesta);
+      const fila = ev.target.closest(".fila-nivel");
+      if (fila) {
+        const u = estado.ui[fila.dataset.programa];
+        u.abiertos.has(fila.dataset.nivel) ? u.abiertos.delete(fila.dataset.nivel) : u.abiertos.add(fila.dataset.nivel);
+        return redibujarTest(fila.dataset.programa);
+      }
+      const mas = ev.target.closest(".ver-mas");
+      if (mas) {
+        const u = estado.ui[mas.dataset.programa];
+        u.mas.has(mas.dataset.curso) ? u.mas.delete(mas.dataset.curso) : u.mas.add(mas.dataset.curso);
+        return redibujarTest(mas.dataset.programa);
+      }
+      const limpiar = ev.target.closest("[data-limpiar]");
+      if (limpiar) {
+        const clave = limpiar.dataset.limpiar;
+        estado.ui[clave].q = "";
+        const input = document.querySelector(`[data-buscar="${clave}"]`);
+        if (input) { input.value = ""; input.focus(); }
+        limpiar.remove();
+        redibujarTest(clave);
+      }
+    });
+    $("programas").addEventListener("input", ev => {
+      const input = ev.target.closest("[data-buscar]");
+      if (!input) return;
+      const clave = input.dataset.buscar;
+      estado.ui[clave].q = input.value;
+      const caja = input.closest(".buscar");
+      let x = caja.querySelector(".buscar-limpiar");
+      if (input.value && !x) caja.insertAdjacentHTML("beforeend", `<button type="button" class="buscar-limpiar" data-limpiar="${clave}" aria-label="Borrar búsqueda">×</button>`);
+      if (!input.value && x) x.remove();
+      redibujarTest(clave);
     });
   </script>
 </body>
