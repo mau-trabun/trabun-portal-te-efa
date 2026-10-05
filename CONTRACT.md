@@ -67,7 +67,7 @@ Header row typed by hand. Row 2 holds the stacked `{QUERY(IMPORTRANGE(…)); …
 
 - `Marca temporal` is optional (students are not deduplicated).
 - `Nivel` is mandatory in the form.
-- `Nombres`/`Apellidos` are used in `nombre` mode; `Número de lista` in `numero` mode.
+- `Nombres`/`Apellidos` are used in `nombre` mode; `Número de lista` in `numero` mode. Both are mandatory in the forms; the blank-value handling ("Sin identificar", "sin número de lista") is only a guard in case a form question is left optional by mistake.
 
 ### `Respuestas EFA`
 Same import pattern as EFS.

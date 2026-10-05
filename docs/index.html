@@ -142,6 +142,12 @@
     .chips{display:flex;flex-wrap:wrap;gap:4px}
     .chip{font-family:var(--f-head);font-weight:600;font-size:12px;background:#fff;border:1px solid var(--borde);color:var(--tinta);padding:2px 8px;border-radius:999px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .chip.anon{color:var(--muted)}
+    .curso-acciones{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--borde);padding-top:10px;margin-top:2px}
+    /* Small outlined icon buttons for secondary actions (copy, download, WhatsApp): read as buttons, not links */
+    .btn-mini{display:inline-flex;align-items:center;gap:6px;flex:none;font-family:var(--f-head);font-weight:700;font-size:12.5px;line-height:1;color:var(--tinta);background:#fff;border:1.5px solid var(--borde-input);border-radius:999px;padding:6px 12px;min-height:32px;text-decoration:none;cursor:pointer;transition:border-color 120ms,color 120ms}
+    .btn-mini:hover{border-color:var(--tinta);color:var(--tinta)}
+    .btn-mini.wa{color:#128c7e;border-color:#a7dcc8}
+    .btn-mini.wa:hover{border-color:#128c7e;color:#075e54}
     .ver-mas{align-self:flex-start;font-family:var(--f-head);font-weight:700;font-size:12.5px;color:var(--rojo);padding:4px 0}
     .numeros{display:grid;grid-template-columns:repeat(auto-fill,minmax(30px,1fr));gap:4px}
     .num{position:relative;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;font-family:var(--f-head);font-weight:700;font-size:12px;background:#fff;border:1px solid var(--borde);color:var(--muted)}
@@ -158,9 +164,8 @@
     .link-filas{display:flex;flex-direction:column;gap:6px}
     .link-fila{display:flex;align-items:center;gap:10px;min-width:0}
     .link-rango{flex:none;font-family:var(--f-head);font-weight:700;font-size:12.5px;white-space:nowrap;min-width:0}
-    .link-dato{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--borde);border-radius:8px;padding:4px 6px 4px 10px}
+    .link-dato{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--borde);border-radius:8px;padding:4px 4px 4px 10px}
     .link-texto{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--f-mono);font-size:13px}
-    .btn-copiar{flex:none;font-family:var(--f-head);font-weight:700;font-size:13px;color:var(--rojo);padding:6px 6px}
     .mensaje-cab{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
     .mensaje-etiqueta{font-family:var(--f-head);font-weight:600;font-size:13px}
     .mensaje{background:#fff;border:1px solid var(--borde);border-radius:10px;padding:12px 14px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
@@ -176,13 +181,11 @@
     .btn-whatsapp:hover{background:#1da851;color:#fff}
     .qrs{display:flex;flex-direction:column;gap:14px;max-width:240px}
     .qr{display:flex;gap:12px;align-items:center}
+    .qr .btn-mini{margin-top:6px}
     .qr img{width:96px;height:96px;flex:none;background:#fff;border:1px solid var(--borde);border-radius:8px;image-rendering:pixelated}
     .qr b{font-family:var(--f-head);font-weight:700;font-size:13px;display:block}
     .qr p{font-size:12px;line-height:1.45;color:var(--muted-2)}
-    .qr button{font-family:var(--f-head);font-weight:700;font-size:13px;color:var(--rojo);padding:4px 0}
     /* Share section in ink, not red: the card already carries the program color and WhatsApp green (Mau, 05-10-2026) */
-    .compartir .btn-copiar,.compartir .qr button{color:var(--tinta);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
-    .compartir .btn-copiar:hover,.compartir .qr button:hover{color:#3a4050}
     .compartir .btn-lleno{background:var(--tinta)}
     .compartir .btn-lleno:hover{background:#2a3142}
     .compartir .interruptor[aria-checked="true"] i{background:var(--prog)}
@@ -225,7 +228,7 @@
       .qrs{max-width:none}
       .link-fila{flex-wrap:wrap;row-gap:4px}
       .link-rango + .link-dato{flex-basis:100%} /* range on its own line, link + Copiar below */
-      .btn-copiar{min-height:40px}
+      .btn-mini{min-height:40px}
       .btn-lleno,.btn-whatsapp{min-height:44px}
       .fila-nivel{grid-template-columns:minmax(84px,120px) minmax(0,1fr) 74px 14px;gap:10px;min-height:44px}
       .nivel-cifra .largo{display:none}
@@ -2639,6 +2642,9 @@ window.qrcode=qrcode;
     const ICONOS = {
       test: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M8 10h8"/><path d="M8 18h8"/><path d="M8 22v-6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>',
       efa: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+      copiar: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>',
+      descargar: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>',
+      chat: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>',
       calendario: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>',
     };
 
@@ -2971,13 +2977,13 @@ window.qrcode=qrcode;
           <span class="punto"></span>
           ${l.etiqueta && links.length > 1 ? `<span class="link-rango">${esc(l.etiqueta)}</span>` : ""}
           <span class="link-dato"><span class="link-texto" title="${esc(l.link)}">${esc(l.link.replace(/^https?:\/\//, ""))}</span>
-          <button type="button" class="btn-copiar" data-copiar="${esc(l.link)}">Copiar</button></span>
+          <button type="button" class="btn-mini" data-copiar="${esc(l.link)}">${ICONOS.copiar}<span class="lbl">Copiar</span></button></span>
         </div>`).join("");
       const qrs = links.map((l, i) => {
         const src = qrChico(l.link);
         return src ? `<div class="qr"><img src="${src}" alt="Código QR del link${l.etiqueta ? " para " + esc(l.etiqueta) : ""}" />
           <div>${links.length > 1 && l.etiqueta ? `<b>${esc(l.etiqueta)}</b>` : ""}<p>Para proyectar en la sala o imprimir.</p>
-          <button type="button" data-descargar-qr="${id}|${i}">Descargar QR</button></div></div>` : "";
+          <button type="button" class="btn-mini" data-descargar-qr="${id}|${i}">${ICONOS.descargar}<span class="lbl">Descargar QR</span></button></div></div>` : "";
       }).join("");
       return `<section class="compartir" aria-label="Compartir el link">
         <div>
@@ -3075,11 +3081,12 @@ window.qrcode=qrcode;
         ta.remove();
       }
       if (!boton) return;
-      const original = boton.dataset.original || boton.textContent;
+      const lbl = boton.querySelector(".lbl") || boton; // icon buttons: change only the label
+      const original = boton.dataset.original || lbl.textContent;
       boton.dataset.original = original;
-      boton.textContent = ok ? etiquetaOk : "No se pudo copiar";
+      lbl.textContent = ok ? etiquetaOk : "No se pudo copiar";
       clearTimeout(boton._t);
-      boton._t = setTimeout(() => { boton.textContent = original; }, 1600);
+      boton._t = setTimeout(() => { lbl.textContent = original; }, 1600);
     }
 
     function descargarQR(id) {
@@ -3176,8 +3183,47 @@ window.qrcode=qrcode;
       }
       return `<div class="curso">
         <div class="curso-cab"><b>${esc(etiquetaCurso(n.nivel, c.letra))}</b><span>${esc(plural(c.r, "respuesta", "respuestas"))}</span></div>
-        ${aviso}${cuerpo}
+        ${aviso}${cuerpo}${c.r ? accionesCurso(prog, n, c) : ""}
       </div>`;
+    }
+
+    // Per-class list for that class's teacher: copy or WhatsApp
+    function accionesCurso(prog, n, c) {
+      const msg = mensajeCurso(prog, n, c);
+      return `<div class="curso-acciones">
+        <button type="button" class="btn-mini" data-copiar="${esc(msg)}">${ICONOS.copiar}<span class="lbl">Copiar lista</span></button>
+        <a class="btn-mini wa" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">${ICONOS.chat}<span class="lbl">WhatsApp</span></a>
+      </div>`;
+    }
+
+    function linkDelNivel(prog, nivel) {
+      const links = linksVisibles(prog, "test");
+      const l = links.find(x => x.rango.indexOf(nivel) >= 0) || (links.length === 1 && !links[0].rango.length ? links[0] : null);
+      return l ? l.link : "";
+    }
+
+    function mensajeCurso(prog, n, c) {
+      const fecha = fechaLarga((estado.datos.generado || "").slice(0, 10));
+      const lineas = [`${ENCUESTAS.test.nombre} · ${PROGRAMAS[prog.programa].corto} · ${etiquetaCurso(n.nivel, c.letra)}`,
+        `${fecha ? `Avance al ${fecha}` : "Avance"}: ${plural(c.r, "respuesta", "respuestas")}`];
+      if (estado.datos.studentId === "numero") {
+        const veces = {};
+        (c.numeros || []).forEach(k => { veces[k] = (veces[k] || 0) + 1; });
+        const si = Object.keys(veces).map(Number).sort((a, b) => a - b).map(k => veces[k] > 1 ? `${k} (×${veces[k]})` : String(k));
+        const faltan = [];
+        for (let k = 1; k <= (c.tope || 0); k++) if (!veces[k]) faltan.push(k);
+        if (si.length) lineas.push(`Respondieron los números: ${si.join(", ")}`);
+        if (faltan.length) lineas.push(`Aún no aparecen (hasta el ${c.tope}): ${faltan.join(", ")}`); // tope is partly an estimate
+        if (c.sinNumero) lineas.push(`${plural(c.sinNumero, "respuesta", "respuestas")} sin número de lista`);
+      } else {
+        const nombres = (c.respuestas || []).map(nombreCompleto);
+        nombres.filter(Boolean).forEach(t => lineas.push(`• ${t}`));
+        const sin = nombres.filter(t => !t).length;
+        if (sin) lineas.push(`• ${plural(sin, "respuesta", "respuestas")} sin nombre`);
+      }
+      const link = linkDelNivel(prog, n.nivel);
+      if (link) lineas.push(`Link del test: ${link}`);
+      return lineas.join("\n");
     }
 
     // List-number mode: 1…tope, answered numbers highlighted; repeats marked ×N
