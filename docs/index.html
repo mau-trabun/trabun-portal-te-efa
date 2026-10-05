@@ -3021,7 +3021,7 @@ window.qrcode=qrcode;
       if (!ve || !ve.fase) return "";
       const nombre = ENCUESTAS[clave].nombre;
       const texto = ve.fase === "pre" ? `${nombre} abre el ${fechaLarga(ve.abre)}. Ya puedes compartir el link: se activará ese día.`
-        : ve.fase === "closed" ? `${nombre} cerró el ${fechaLarga(ve.cierra)}. Esta es la participación final.` : "";
+        : ve.fase === "closed" ? `${nombre} cerró el ${fechaLarga(ve.cierra)}. Estos son los datos finales.` : "";
       return texto ? `<div class="nota">${ICONOS.calendario}<div>${esc(texto)}</div></div>` : "";
     }
 
@@ -3089,7 +3089,7 @@ window.qrcode=qrcode;
       return `<section class="compartir" aria-label="Compartir el link">
         <div>
           <div class="compartir-titulo"><span class="punto"></span>${links.length > 1 ? "Comparte los links" : "Comparte el link"}</div>
-          <div class="compartir-sub">${clave === "test" ? "Para los docentes que aplicarán el test en clases." : "Para el equipo directivo, líderes educativos y docentes."}</div>
+          <div class="compartir-sub">${clave === "test" ? "Para los docentes que aplicarán el test en clases." : "Para el equipo educativo del colegio."}</div>
         </div>
         <div class="compartir-grid">
           <div class="compartir-main">
@@ -3133,11 +3133,11 @@ window.qrcode=qrcode;
       const entre = entreFechas(ve);
       const lista = links.length === 1 ? links[0].link : links.map(l => `• ${l.etiqueta || "Link"}: ${l.link}`).join("\n");
       if (clave === "test") {
-        const intro = `Hola, equipo docente:\n\n${entre ? `Entre ${entre} aplicaremos` : "Aplicaremos"} el Test de Estudiantes del programa ${pn}. Les pedimos destinar unos minutos de una clase para que sus estudiantes lo respondan en ${links.length === 1 ? "este link" : "el link que corresponde a su curso"}:\n${lista}`;
+        const intro = `Hola, equipo docente:\n\n${entre ? `Entre ${entre} aplicaremos` : "Aplicaremos"} el Test de Estudiantes del programa ${pn}. Les pedimos dedicar unos minutos de clase para que sus estudiantes lo respondan en ${links.length === 1 ? "este link" : "el link que corresponde a su curso"}:\n${lista}`;
         const avance = incluirAvance ? avancePorNivel(prog) : "";
-        return intro + (avance ? `\n\nAvance por nivel (respuestas de las estimadas):\n${avance}` : "") + "\n\nGracias por su apoyo.";
+        return intro + (avance ? `\n\nAvance por nivel:\n${avance}` : "") + "\n\nMuchas gracias.";
       }
-      return `Hola:\n\n${entre ? `Entre ${entre} está disponible` : "Está disponible"} la Encuesta de Fin de Año (EFA) del programa ${pn}. Tu opinión nos ayuda a mejorar el programa. Puedes responderla ${links.length === 1 ? "aquí" : "en el link que te corresponde"}:\n${lista}\n\nGracias.`;
+      return `Hola:\n\n${entre ? `Entre ${entre} está disponible` : "Está disponible"} la Encuesta de Fin de Año (EFA) del programa ${pn}. Puedes responder ${links.length === 1 ? "aquí" : "en el link que te corresponde"}:\n${lista}\n\nGracias.`;
     }
 
     // QR from the kept qrcode library, drawn on a canvas (crisp at any size).
@@ -3203,7 +3203,7 @@ window.qrcode=qrcode;
     }
 
     function errorCarga() {
-      return `<div class="nota"><div>No pudimos cargar las respuestas en este momento. Tu acceso funciona con normalidad: vuelve a ingresar en unos minutos.</div></div>`;
+      return `<div class="nota"><div>No pudimos cargar las respuestas, pero tu sesión está bien. Prueba actualizar en unos minutos.</div></div>`;
     }
 
     function uiDe(prog) {
@@ -3217,7 +3217,7 @@ window.qrcode=qrcode;
       if (!t.ok) return notaFase("test") + errorCarga();
       // No summary lines (Mau 05-10-2026): the band pill shows responses / estimate and the rows show the grades
       const sinNiveles = !(t.niveles || []).length && !(t.nivelesPapel || []).length
-        ? `<div class="resumen"><div class="resumen-alcance">Este programa no tiene niveles registrados con Test de Estudiantes.</div></div>` : "";
+        ? `<div class="resumen"><div class="resumen-alcance">No hay niveles con Test de Estudiantes en este programa.</div></div>` : "";
       const u = uiDe(prog);
       const porNumero = estado.datos.studentId === "numero";
       const buscar = pre ? "" : `<label class="buscar">
@@ -3389,7 +3389,7 @@ window.qrcode=qrcode;
       }));
       if (!encontrados.length) return `<div class="resultados"><div class="resultados-nota">Ninguna respuesta coincide con “${esc(q.trim())}”.</div></div>`;
       const filas = encontrados.slice(0, MAX_RESULTADOS).map(x => `<div class="resultado"><b>${esc(x.id)}</b><span>${esc(x.lugar)}</span></div>`).join("");
-      const mas = encontrados.length > MAX_RESULTADOS ? `<div class="resultados-nota">Mostrando ${MAX_RESULTADOS} de ${fmtNum(encontrados.length)}. Escribe más letras para acotar.</div>` : "";
+      const mas = encontrados.length > MAX_RESULTADOS ? `<div class="resultados-nota">Mostrando ${MAX_RESULTADOS} de ${fmtNum(encontrados.length)}. Escribe más para filtrar.</div>` : "";
       return `<div class="resultados">${filas}${mas}</div>`;
     }
 
@@ -3429,9 +3429,9 @@ window.qrcode=qrcode;
     // Course count from SF, only inside the open grade (as in EFS): context, never "1 de 3" (one teacher may cover every class)
     function notaCursos(n) {
       if (!n.cursos) return "";
-      const texto = n.cursos === 1 ? "hay 1 curso que implementa el programa en este nivel"
-        : `hay ${fmtNum(n.cursos)} cursos que implementan el programa en este nivel`;
-      return `<div class="nota-cursos">Según los datos de implementación, ${texto}.</div>`;
+      const texto = n.cursos === 1 ? "hay 1 curso con el programa"
+        : `hay ${fmtNum(n.cursos)} cursos con el programa`;
+      return `<div class="nota-cursos">En este nivel, ${texto}.</div>`;
     }
 
     // ASE docentes: implemented ∪ declared grades, all collapsed at start. A docente with several grades
