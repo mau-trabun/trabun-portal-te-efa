@@ -3295,11 +3295,7 @@ window.qrcode=qrcode;
       const alcance = (prog.nivelesImplementados || []).length ? `Niveles implementados: ${textoNiveles(prog.nivelesImplementados)}` : "";
       if (!e.ok) return notaFase("efa") + errorCarga();
       const total = pre ? "Sin respuestas todavía" : plural(e.total, "respuesta", "respuestas");
-      const secciones = e.secciones || [];
-      // Sections count responses per role, the total counts people: say why they may not add up
-      const multiRol = !pre && secciones.reduce((a, s) => a + s.r, 0) > e.total
-        ? `<div class="resumen-alcance">Quien respondió con más de un rol aparece en cada sección y cuenta una vez en el total.</div>` : "";
-      return notaFase("efa") + `<div class="resumen"><div class="resumen-total">${esc(total)}</div><div class="resumen-alcance">${esc(alcance)}</div>${multiRol}</div>`
+      return notaFase("efa") + `<div class="resumen"><div class="resumen-total">${esc(total)}</div><div class="resumen-alcance">${esc(alcance)}</div></div>`
         + (pre ? "" : `<div id="efa-${prog.programa}">${contenidoEfa(prog)}</div>`) // before opening there is no one to list
         + seccionCompartir(prog, "efa");
     }

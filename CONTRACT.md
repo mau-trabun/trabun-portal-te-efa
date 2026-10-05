@@ -120,7 +120,7 @@ Same import pattern as EFS.
 - **EFA counts:**
   - Section `r` = responses with a role in that section.
   - Grade `r` = people in that grade.
-  - Program `total` = unique emails.
+  - Program `total` = responses after dedup = Σ section `r`. A person with two roles answered twice and counts twice; a docente with several grades counts once.
 - **EFA sections:**
   - Role → Dirección / Líderes educativos / Docentes: **PENDING** list. Interim rule (EFS role texts): starts with `Director` → Dirección; starts with `Docente`/`Profesor` → Docentes; anything else → Líderes. The role shown under a name is the text before the first comma (`Mentor/a, es decir, …` → `Mentor/a`).
   - ASE Docentes are grouped by grade: implemented ∪ declared, NT1–IV. A docente with several grades is listed under each but counted once. A docente with no valid grade goes in a `nivel: null` group.

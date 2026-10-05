@@ -431,8 +431,9 @@ function bloqueEfa_(p, resps) {
     else s.personas = ordenadas(id).map(persona);
     return s;
   });
-  const total = new Set(vigentes.map(x => x.correo || '#' + x.fila)).size;
-  return { total, secciones };
+  // Each role is its own response (a docente who is also mentor answered twice): total = Σ sections.
+  // A docente with several grades is still one response (listed under each grade).
+  return { total: vigentes.length, secciones };
 }
 
 // Key = email + role: any combination of roles is legitimate, a person appears once per role.
