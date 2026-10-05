@@ -92,6 +92,22 @@ const sinTiempos = o => { delete o.ms; delete o.generado; return o; };
   const svc4 = crearServicio({ src, planilla: fallo, log: silencio });
   check('Sheets API down on cold start → servidor, no crash', JSON.parse((await svc4.manejar('POST', '/', JSON.stringify(casos[0]))).cuerpo).error === 'servidor');
 
+  // "Actualizar" (fresco:true) re-reads the Sheet; auto-refresh and logins use the copy
+  const svc5 = crearServicio({ src, planilla, log: silencio, frescoMs: 0, minEntreMs: 0 });
+  const totalTest = async extra => JSON.parse((await svc5.manejar('POST', '/', JSON.stringify({ ...casos[0], refresco: true, ...extra }))).cuerpo).programas[0].test.resumen.r;
+  const antes = await totalTest({});
+  sheets['Respuestas Test'].push(test('ASE_4-5', 'Nueva', 'Respuesta', 20, '4° básico', 'A', AROMOS, 4));
+  const lecturasAntes = lecturas;
+  const sinFresco = await totalTest({});
+  const conFresco = await totalTest({ fresco: true });
+  sheets['Respuestas Test'].pop();
+  check('new response shows after Actualizar (fresco), not after auto-refresh', sinFresco === antes && conFresco === antes + 1 && lecturas === lecturasAntes + 1);
+  const svc6 = crearServicio({ src, planilla, log: silencio, frescoMs: 0 }); // default 30 s between reads
+  await svc6.manejar('POST', '/', JSON.stringify(casos[0]));
+  const l0 = lecturas;
+  for (let i = 0; i < 5; i++) await svc6.manejar('POST', '/', JSON.stringify({ ...casos[0], refresco: true, fresco: true }));
+  check('repeated Actualizar clicks: at most one Sheet read per 30 s', lecturas === l0);
+
   // HTTP layer: CORS by origin, body limit, unknown route
   const srv = crearServidor(svc, ['https://mau-trabun.github.io']).listen(0);
   await new Promise(r => srv.once('listening', r));

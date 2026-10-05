@@ -2657,7 +2657,8 @@ window.qrcode=qrcode;
     // Portal de Seguimiento 2026 · Fundación Trabün
     // Data contract: CONTRACT.md. Everything respondent-controlled goes through esc().
 
-    const API_URL = "https://script.google.com/macros/s/AKfycbyFDY66nTGtuUhG6XOrXa4w_ct1EY5zAQnSOg6Ar-Egofle4K2nDVqFrSl7ovSj1OPyRg/exec"; // staging
+    const API_URL = "https://portal-api-staging-975999694722.southamerica-west1.run.app/"; // staging (Cloud Run)
+    // Apps Script staging /exec, kept as fallback: https://script.google.com/macros/s/AKfycbyFDY66nTGtuUhG6XOrXa4w_ct1EY5zAQnSOg6Ar-Egofle4K2nDVqFrSl7ovSj1OPyRg/exec
     const REINTENTOS = 2; // Google's result URL fails intermittently (~20%): retry when the reply isn't JSON
     const TIEMPO_MAX_MS = 40000; // per attempt; Apps Script cold starts take several seconds
     const REFRESCO_MS = 5 * 60 * 1000; // auto-refresh every 5 min, only while the tab is visible (as in EFS)
@@ -2779,7 +2780,9 @@ window.qrcode=qrcode;
     }
 
     // ── Login ───────────────────────────────────────────────
-    async function llamarApi(rbd, clave, refresco) {
+    // refresco: not a new login (not logged in Métricas). fresco: the "Actualizar" button, so the
+    // Cloud Run backend re-reads the Sheet before answering (Apps Script ignores it).
+    async function llamarApi(rbd, clave, refresco, fresco) {
       for (let intento = 0; intento <= REINTENTOS; intento++) {
         const ctl = new AbortController();
         const plazo = setTimeout(() => ctl.abort(), TIEMPO_MAX_MS); // a hung request must not leave the loader up forever
@@ -2787,7 +2790,7 @@ window.qrcode=qrcode;
           const r = await fetch(API_URL, {
             method: "POST",
             headers: { "Content-Type": "text/plain;charset=utf-8" }, // simple request: Apps Script has no CORS preflight
-            body: JSON.stringify(refresco ? { rbd, clave, refresco: true } : { rbd, clave }),
+            body: JSON.stringify(refresco ? { rbd, clave, refresco: true, ...(fresco ? { fresco: true } : {}) } : { rbd, clave }),
             signal: ctl.signal,
           });
           const texto = await r.text();
@@ -2875,7 +2878,7 @@ window.qrcode=qrcode;
       btn.classList.add("girando");
       btn.disabled = true;
       try {
-        const datos = await llamarApi(sesion.rbd, sesion.clave, true);
+        const datos = await llamarApi(sesion.rbd, sesion.clave, true, manual);
         if (datos.ok && sesion.rbd) { mostrarPanel(datos, true); marcarActualizado(); }
         else if (manual) $("refresco-texto").textContent = "No se pudo actualizar. Inténtalo de nuevo en unos minutos.";
       } catch (_) {

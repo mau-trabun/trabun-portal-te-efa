@@ -4,7 +4,6 @@
 // Never log request bodies, claves, emails or names.
 const vm = require('vm');
 
-const MIN_ENTRE_REFRESCOS_MS = 30 * 1000; // /refrescar can't hammer the Sheets API
 
 // Apps Script's Utilities.formatDate for the patterns Code.js uses (yyyy MM dd HH mm ss XXX, 'literals')
 function formatDate(d, tz, patron) {
@@ -70,8 +69,16 @@ function cargarCodigo(src, { tabla, agregarFila, log }) {
   return ctx;
 }
 
+// Only the manual "Actualizar" sends fresco:true (the 5-min auto-refresh and logins use the in-memory copy)
+function pideFresco(cuerpo) {
+  try { const b = JSON.parse(cuerpo); return !!b && b.fresco === true; } catch (_) { return false; }
+}
+
 // planilla: { leer(tabs, sinFechas) → { titulos, seriales: {tab: rows}, formateados: {tab: rows} }, agregar(tab, fila) }
-function crearServicio({ src, planilla, ttlMs = 3 * 60 * 1000, maxEdadMs = 10 * 60 * 1000, log = console }) {
+// ttlMs: older → refresh behind the reply. maxEdadMs: older → wait for fresh data.
+// frescoMs: the "Actualizar" button (body fresco:true) waits for a re-read when the copy is older than this.
+// minEntreMs: at most one Sheet read started per this interval from requests (protects the Sheets API).
+function crearServicio({ src, planilla, ttlMs = 3 * 60 * 1000, maxEdadMs = 10 * 60 * 1000, frescoMs = 15 * 1000, minEntreMs = 30 * 1000, log = console }) {
   let snap = null;      // { titulos: Set, tablas: {tab: values}, leido }
   let datos = null;     // cargarDatos_() result for the current snapshot (or its error)
   let cargando = null;
@@ -107,11 +114,14 @@ function crearServicio({ src, planilla, ttlMs = 3 * 60 * 1000, maxEdadMs = 10 * 
     return cargando;
   }
 
-  async function asegurarFresco() {
+  async function asegurarFresco(fresco) {
     const edad = snap ? Date.now() - snap.leido : Infinity;
     try {
       if (edad > maxEdadMs) await refrescar(); // cold start or the scheduler stopped: wait for fresh data
-      else if (edad > ttlMs) refrescar().catch(e => log.error('refresco: ' + e.message)); // serve now, refresh behind
+      else if (fresco && edad > frescoMs) { // "Actualizar": the school wants what is in the Sheet now
+        if (cargando) await cargando;
+        else if (Date.now() - ultimoIntento >= minEntreMs) await refrescar();
+      } else if (edad > ttlMs) refrescar().catch(e => log.error('refresco: ' + e.message)); // serve now, refresh behind
     } catch (e) {
       log.error('refresco: ' + e.message); // keep serving the old snapshot if there is one
     }
@@ -137,13 +147,13 @@ function crearServicio({ src, planilla, ttlMs = 3 * 60 * 1000, maxEdadMs = 10 * 
     async manejar(metodo, ruta, cuerpo) {
       if (metodo === 'GET' && ruta === '/') return { status: 200, cuerpo: ctx.doGet().getContent() };
       if (metodo === 'POST' && ruta === '/') {
-        await asegurarFresco();
+        await asegurarFresco(pideFresco(cuerpo));
         const out = ctx.doPost({ postData: { contents: cuerpo } }).getContent();
         setImmediate(() => { vaciarMetricas(); }); // after the reply: the login never waits for the write
         return { status: 200, cuerpo: out };
       }
       if (metodo === 'POST' && ruta === '/refrescar') { // Cloud Scheduler, every 2 min: keeps data fresh and the instance warm
-        if (Date.now() - ultimoIntento >= MIN_ENTRE_REFRESCOS_MS) await refrescar().catch(e => log.error('refresco: ' + e.message));
+        if (Date.now() - ultimoIntento >= minEntreMs) await refrescar().catch(e => log.error('refresco: ' + e.message));
         await vaciarMetricas();
         return { status: 204, cuerpo: '' };
       }

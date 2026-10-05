@@ -138,7 +138,7 @@ Same import pattern as EFS.
   - Have `Precalculo` running (a trigger every ~10 min) before volume peaks (end of October).
 
 ## 4. API
-**Request:** `POST /exec`, header `Content-Type: text/plain`, body `{"rbd":"12345","clave":"abc123"}`. Refreshes (the "Actualizar" button and the 5-min auto-refresh) add `"refresco":true`: same response, but not logged in `Métricas`.
+**Request:** `POST /exec`, header `Content-Type: text/plain`, body `{"rbd":"12345","clave":"abc123"}`. Refreshes (the "Actualizar" button and the 5-min auto-refresh) add `"refresco":true`: same response, but not logged in `Métricas`. The "Actualizar" button also adds `"fresco":true`: the Cloud Run backend then re-reads the Sheet before answering if its copy is older than 15 s (at most one read every 30 s); Apps Script ignores it.
 
 **Health check:** `GET /exec` → `{"ok":true,"v":1}`. It never returns data.
 
