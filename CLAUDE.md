@@ -41,6 +41,7 @@ Static portal where Chilean schools log in (RBD + 6-char clave) and see **who in
 .clasp.json   scriptId + rootDir "gas" (clasp 3 writes it at repo root; no secrets, safe to commit)
 CLAUDE.md
 CONTRACT.md   data contract: sheet tabs, normalization, derivation rules, JSON API
+/test         local harness for gas/Code.js (mocks, fictional data only)
 ```
 - Run all `clasp` commands from the repo root. Auth lives in `~/.clasprc.json`, never in the repo.
 - clasp 3 stores `.gs` files locally as `.js`. Remote file was cloned as `Código.js` (Spanish editor default); rename to `Code.js` when writing the backend. `clasp push` replaces all remote files with local ones, so the old `Código` is removed, not duplicated.
@@ -88,6 +89,19 @@ New for 2026:
 - `Métricas`: on **successful login only**, append `timestamp, rbd, programas, testOk, efaOk`. Never clave, IP or names.
 - `formatNombre()` for display (all-caps → title case, keeps particles de/del/la…, hyphens/apostrophes; cannot restore accents).
 - Aggregation written as a pure function `rbd → payload`, so a time-driven precompute can wrap it. Plan: launch computing at login; load-test staging with ~70k fictional student rows; `Precalculo` tab (trigger ~10 min) live before end of October.
+
+## Testing (no real claves needed)
+- `node test/run.js`: backend checks on `gas/Code.js` with mocked Apps Script services and fictional data (44 checks). `node test/gen.js`: `generarDatosPrueba()` (11). Run both after any backend change.
+- Frontend preview: `.claude/launch.json` serves `docs/` on `localhost:8765`. Render any state by calling `mostrarPanel(payload)` in the console with a fictional payload shaped like CONTRACT.md §4 (examples in `test/run.js`). Real logins on staging need a real clave: Mau types it, never Claude.
+- Manual functions in the Apps Script editor: `configurarHojas()`, `generarDatosPrueba()`, `revisarFormularios()`, `probarPanel()` (counts only, no names).
+
+## Pending on Mau's side (as of 05-10-2026)
+- **New claves for all schools**: the old (deleted) repo was public with the Sheet export, so the 292 claves must be treated as exposed. Offered: `generarClavesNuevas()` writing to a new tab (secure random, no 0/o/1/l), Mau swaps into `Contraseñas`, JDPs distribute. Not built yet: waiting for Mau's go.
+- EFS deployment still accepts the same claves: consider archiving it (Mau's call; never touch that repo).
+- `Formularios`: real Test links; EFA rows (suggested block: one per programa × modelo with `EDI = NO` for ASE, plus `EFA_EDI` with `EDI = SÍ`); then run `revisarFormularios()`. Open: Cuadernillos ASE and Piloto gratuito EFA forms.
+- `Config`: dates were moved earlier for staging tests; restore before launch (also in the launch checklist). `student_id` still blank (defaults to `nombre`).
+- Type `ms` in `Métricas!F1` (header for the temporary timing column).
+- Re-measure Apps Script latency in daytime (browser console shows total vs server ms after each login).
 
 ## Status
 - [x] Data contract (sheet tabs + JSON shape) → `CONTRACT.md`
