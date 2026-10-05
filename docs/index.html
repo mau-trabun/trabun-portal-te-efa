@@ -133,7 +133,7 @@
     .nivel-cifra .corto{display:none}
     .chevron{transition:transform 240ms var(--ease)}
     .nivel.abierto .chevron{transform:rotate(90deg)}
-    .cursos{padding:0 14px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+    .cursos{padding:10px 14px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
     .curso{background:var(--tray);border-radius:10px;padding:11px 13px;display:flex;flex-direction:column;gap:8px;min-width:0}
     .curso-cab{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
     .curso-cab b{font-family:var(--f-head);font-weight:700;font-size:13.5px}
@@ -3090,12 +3090,8 @@ window.qrcode=qrcode;
     }
 
     function uiDe(prog) {
-      const u = estado.ui[prog.programa] || (estado.ui[prog.programa] = { abiertos: null, mas: new Set(), q: "" });
-      if (!u.abiertos) { // first render: the first grade starts open
-        const primero = prog.test && prog.test.niveles && prog.test.niveles[0];
-        u.abiertos = new Set(primero ? [primero.nivel] : []);
-      }
-      return u;
+      // Every grade starts collapsed (Mau's choice; the design opened the first one)
+      return estado.ui[prog.programa] || (estado.ui[prog.programa] = { abiertos: new Set(), mas: new Set(), q: "" });
     }
 
     function bloqueTest(prog) {
