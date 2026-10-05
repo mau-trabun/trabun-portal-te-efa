@@ -79,7 +79,7 @@ Same import pattern as EFS.
 - `Rol` values: fixed list, **PENDING**.
 
 ### `Métricas` (append-only, successful logins only)
-`timestamp | rbd | programas | testOk | efaOk`. It never stores the clave, IP or names.
+`timestamp | rbd | programas | testOk | efaOk | ms`. `ms` = server time for that login. It never stores the clave, IP or names.
 
 ### `Precalculo` (not built yet; see §3 Volume)
 `rbd | json | actualizado`.
@@ -145,7 +145,7 @@ Same import pattern as EFS.
 **Success:**
 ```json
 {
-  "ok": true, "v": 1,
+  "ok": true, "v": 1, "ms": 2840,
   "generado": "2026-10-20T14:03:00-03:00",
   "colegio": { "rbd": "12345", "nombre": "Colegio Ficticio", "comuna": "Comuna Ficticia" },
   "contacto": "evaluacion@fundaciontrabun.cl",
@@ -195,5 +195,6 @@ Notes:
 - **REL `docentes`** carries `personas` (a flat list) instead of `niveles`.
 - **`ok: false`** on a survey omits `resumen`/`niveles`/`secciones`, but keeps `links` and `nivelesTest`.
 - **A school in `Contraseñas` but not in `SF`** gets `"programas": []`.
+- **`ms`:** server time for the login (clave check + reading the Sheet + building the panel). The browser's total wait also includes Apps Script startup and Google's redirect, so total − `ms` ≈ Google's overhead.
 - **Not sent:** emails, claves, Jefe de Proyecto, coordinador, modelo.
 - **Share UI:** one tray row per link, labeled with its grade range. The share message lists each link with its range.

@@ -158,7 +158,7 @@
         </div>
         <div class="campos">
           <label class="campo"><span>RBD</span><input id="input-rbd" type="text" inputmode="numeric" autocomplete="username" placeholder="Ej.: 12345" /></label>
-          <label class="campo"><span>Clave</span><input id="input-clave" type="password" autocomplete="current-password" placeholder="••••••" /></label>
+          <label class="campo"><span>Clave</span><input id="input-clave" type="password" autocomplete="current-password" placeholder="Tu clave" /></label>
         </div>
         <button class="btn-ingresar" id="btn-ingresar" type="submit">Ingresar</button>
         <p class="login-error" id="login-error" role="alert"></p>
@@ -2641,8 +2641,10 @@ window.qrcode=qrcode;
       if (!rbd || !clave) { err.textContent = "Ingresa el RBD y la clave."; return; }
       $("btn-ingresar").disabled = true;
       $("cargando").hidden = false;
+      const t0 = performance.now();
       try {
         const datos = await llamarApi(rbd, clave);
+        if (datos.ms != null) console.info(`Ingreso: ${Math.round(performance.now() - t0)} ms en total, ${datos.ms} ms en el servidor`);
         if (!datos.ok) { err.textContent = MENSAJES_ERROR[datos.error] || MENSAJES_ERROR.servidor; return; }
         $("input-clave").value = "";
         mostrarPanel(datos);

@@ -45,6 +45,7 @@ function doPost(e) {
 }
 
 function login_(e) {
+  const t0 = Date.now();
   let body = {};
   try { body = JSON.parse((e && e.postData && e.postData.contents) || '{}'); } catch (_) { /* malformed → credenciales */ }
   const rbd = normRbd_(body.rbd);
@@ -64,7 +65,11 @@ function login_(e) {
   }
   cache.remove(kIntentos);
 
-  const res = panel_(rbd, cargarDatos_(), reloj_());
+  const datos = cargarDatos_();
+  const tDatos = Date.now() - t0;
+  const res = panel_(rbd, datos, reloj_());
+  res.ms = Date.now() - t0; // server time only; the browser also waits for Google's startup and redirect
+  console.log(`login ok · datos ${tDatos} ms · total ${res.ms} ms`); // no RBD, clave or names in logs
   registrarMetrica_(res);
   return res;
 }
@@ -474,6 +479,7 @@ function registrarMetrica_(res) {
       res.programas.map(p => p.programa.toUpperCase()).join(','),
       res.programas.every(p => p.test.ok),
       res.programas.every(p => p.efa.ok),
+      res.ms,
     ]);
   } catch (err) {
     console.error('Métricas: ' + (err && err.message));
@@ -589,6 +595,35 @@ function porNombre_(a, b) {
 }
 
 // ── Manual checks (run from the editor) ─────────────────────
+
+/**
+ * Builds the panel for every school that has rows in the response tabs and logs counts only
+ * (never names), plus how long reading the Sheet and building each panel took.
+ */
+function probarPanel() {
+  const t0 = Date.now();
+  const d = cargarDatos_();
+  const tDatos = Date.now() - t0;
+  const rbds = Array.from(new Set([].concat(d.test || [], d.efa || []).map(x => x.rbd))).sort();
+  const out = [`Lectura del Sheet: ${tDatos} ms · colegios con respuestas: ${rbds.length}`,
+    `Test ok: ${!!d.test} · EFA ok: ${!!d.efa} · Formularios: ${d.formularios.length} filas`];
+  rbds.forEach(rbd => {
+    const t1 = Date.now();
+    const p = panel_(rbd, d, reloj_());
+    out.push(`RBD ${rbd} (${Date.now() - t1} ms) · Test ${p.encuestas.test.fase} · EFA ${p.encuestas.efa.fase}` +
+      (d.sf[rbd] ? '' : ' · NO está en SF'));
+    p.programas.forEach(pr => {
+      const t = pr.test, e = pr.efa;
+      const fuera = t.niveles ? t.niveles.filter(n => !n.registrado).length : 0;
+      out.push(`  ${pr.programa.toUpperCase()}: Test r=${t.resumen ? t.resumen.r : '-'} est=${t.resumen ? t.resumen.est : '-'} ` +
+        `niveles=${t.niveles ? t.niveles.length : '-'} (fuera ${fuera}) links=${t.links.length} · ` +
+        `EFA total=${e.total != null ? e.total : '-'} [${(e.secciones || []).map(s => s.id + '=' + s.r).join(' ')}] links=${e.links.length}`);
+    });
+  });
+  const texto = out.join('\n');
+  console.log(texto);
+  return texto;
+}
 
 /**
  * Applies the portal's own Formularios matching to every non-Control school in SF
@@ -851,7 +886,7 @@ const MAX_COLEGIO_COLS = 16; // one school dropdown per Chilean region
 const HEADERS = {
   [TABS.config]: ['clave', 'valor', 'nota'],
   [TABS.formularios]: ['Encuesta', 'Form', 'Programa', 'EDI', 'Año inicio', 'Modelo', 'Desde', 'Hasta', 'Link'],
-  [TABS.metricas]: ['timestamp', 'rbd', 'programas', 'testOk', 'efaOk'],
+  [TABS.metricas]: ['timestamp', 'rbd', 'programas', 'testOk', 'efaOk', 'ms'],
   [TABS.respTest]: ['Form', 'Marca temporal', 'Nombres', 'Apellidos', 'Número de lista', 'Nivel', 'Letra']
     .concat(Array(MAX_COLEGIO_COLS).fill('Colegio')),
   [TABS.respEfa]: ['Form', 'Fecha', 'Nombre', 'Apellido', 'Correo', 'Colegio', 'Rol', 'Niveles'],
