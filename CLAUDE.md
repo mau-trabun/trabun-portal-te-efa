@@ -41,7 +41,8 @@ Static portal where Chilean schools log in (RBD + 6-char clave) and see **who in
 .clasp.json   scriptId + rootDir "gas" (clasp 3 writes it at repo root; no secrets, safe to commit)
 CLAUDE.md
 CONTRACT.md   data contract: sheet tabs, normalization, derivation rules, JSON API
-/test         local harness for gas/Code.js (mocks, fictional data only)
+/test         local harness for gas/Code.js and cloudrun/ (mocks, fictional data only)
+/cloudrun     Cloud Run API: runs gas/Code.js unchanged (app.js shims, sheets.js, server.js, deploy.sh)
 ```
 - Run all `clasp` commands from the repo root. Auth lives in `~/.clasprc.json`, never in the repo.
 - clasp 3 stores `.gs` files locally as `.js`. Remote file was cloned as `Código.js` (Spanish editor default); rename to `Code.js` when writing the backend. `clasp push` replaces all remote files with local ones, so the old `Código` is removed, not duplicated.
@@ -91,7 +92,7 @@ New for 2026:
 - Aggregation written as a pure function `rbd → payload`, so a time-driven precompute can wrap it. Plan: launch computing at login; load-test staging with ~70k fictional student rows; `Precalculo` tab (trigger ~10 min) live before end of October.
 
 ## Testing (no real claves needed)
-- `node test/run.js`: backend checks on `gas/Code.js` with mocked Apps Script services and fictional data (44 checks). `node test/gen.js`: `generarDatosPrueba()` (11). Run both after any backend change.
+- `node test/run.js`: backend checks on `gas/Code.js` with mocked Apps Script services and fictional data (44 checks). `node test/gen.js`: `generarDatosPrueba()` (11). `node test/cloudrun.js`: Cloud Run service vs the Apps Script harness, same fixture (20: identical payloads, throttle, Métricas, degradation, CORS). Run all three after any backend change.
 - Frontend preview: `.claude/launch.json` serves `docs/` on `localhost:8765`. Render any state by calling `mostrarPanel(payload)` in the console with a fictional payload shaped like CONTRACT.md §4 (examples in `test/run.js`). Real logins on staging need a real clave: Mau types it, never Claude.
 - Manual functions in the Apps Script editor: `configurarHojas()`, `generarDatosPrueba()`, `revisarFormularios()`, `probarPanel()` (counts only, no names).
 
@@ -122,4 +123,9 @@ New for 2026:
 - **EDI base list for EFA:** identifier (must be email), whether schools see pending names or only "X de Y" (support vs. control framing), whether old EDI portal code is reusable. Respondents outside the list always shown, counted in total, not in denominator.
 - Possible migration of the student survey to SurveyMonkey for per-school links.
 - **Timing instrumentation is temporary** (added 05-10-2026 to diagnose slow logins). Remove it once the latency question is settled; Mau asked not to keep extra work in a backend that's already slow. Pieces: `res.ms` + the `console.log('login ok · datos …')` in `login_()`, the 6th value (`ms`) in `registrarMetrica_()` + the `ms` column in `Métricas` and in `HEADERS`, the `console.info('Ingreso: …')` in `docs/index.html`, the `ms` notes in `CONTRACT.md`. `probarPanel()` has no runtime cost (manual only) but can go too. Rule: never add per-login Sheet reads/writes for diagnostics.
-- **Plan B (not active): Google Cloud Run** if Apps Script latency stays bad. One Node service reads the Sheet via Sheets API (service account with read access + write to `Métricas`), caches ~5 min in memory, serves login with real CORS. Port the pure logic from `gas/Code.js`; frontend only changes `API_URL`. Apps Script keeps only the manual functions. Mau already has a GCP project feeding Looker Studio; pending: confirm it's in the `fundaciontrabun.cl` org, billing on, who can create service accounts. Decision trigger: daytime latency measurements before launch.
+- **Cloud Run (in progress, decided 05-10-2026)** after measuring Apps Script: **15,4 s total / 3,9 s server and 51,5 s total / 4,4 s server** (daytime) → Google overhead 11–47 s that no Apps Script-side caching can fix.
+  - `/cloudrun` runs **`gas/Code.js` unchanged** in Node (`vm` + shims for SpreadsheetApp read/appendRow, CacheService, Utilities.formatDate, ContentService), so there is one source of business logic. `deploy.sh` copies `gas/Code.js` into the build (gitignored). No npm dependencies.
+  - Data: in-memory snapshot of the Sheet via Sheets API (service account `portal-api@<project>`, auth from the metadata server, no key files). `cargarDatos_()` built once per snapshot; login = clave check + `panel_()` (~2 ms with 70.000 fictional student rows; processing the snapshot ~0,2 s + download). Stale after 3 min → refresh behind; older than 10 min → wait for fresh. Cloud Scheduler `POST /refrescar` every 2 min keeps data fresh and the instance warm (≥30 s between reads). Dates: cell is a Date when SERIAL_NUMBER gives a number and FORMATTED_STRING gives a string (not done for `Respuestas Test`, no date read there); process TZ America/Santiago.
+  - `Métricas` row appended after the reply (Sheets API append, USER_ENTERED). Throttle in memory: `max-instances 1`. CORS only for `ORIGENES` (staging github.io + portal domain). Same JSON API; frontend only changes `API_URL`.
+  - GCP project in the `fundaciontrabun.cl` org, billing linked, Mau is Owner (ID in memory, not in the repo). Region `southamerica-west1`. Sheet ID only as env var at deploy.
+  - Pending (Mau, Cloud Shell): enable APIs, create the service account, share the Sheet with it (Editor, for `Métricas`), deploy staging, create the Scheduler job. Then switch `API_URL`, measure, decide prod. Apps Script stays for the manual functions.

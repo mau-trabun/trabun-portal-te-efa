@@ -1,0 +1,8 @@
+{
+  "name": "portal-api",
+  "private": true,
+  "description": "Portal de Seguimiento 2026 · API on Cloud Run (runs gas/Code.js unchanged)",
+  "main": "server.js",
+  "engines": { "node": ">=20" },
+  "scripts": { "start": "node server.js" }
+}
