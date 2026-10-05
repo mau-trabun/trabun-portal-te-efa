@@ -24,8 +24,11 @@
     body{font-family:var(--f-body);color:var(--tinta);background:var(--papel);line-height:1.5;-webkit-font-smoothing:antialiased}
     button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
     a{color:var(--rojo)} a:hover{color:var(--rojo-osc)}
-    .wave{line-height:0}
+    .wave{line-height:0;position:relative}
     .wave svg{display:block;width:100%}
+    /* The SVG's bottom row is anti-aliased against the container background and showed as a hairline at
+       fractional positions: a 2px strip in the color below covers it (wave paths stay verbatim) */
+    .wave::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--abajo,transparent);pointer-events:none}
     [hidden]{display:none!important}
 
     /* ── LOGIN ──────────────────────────────────────────── */
@@ -58,10 +61,11 @@
     .nav-marca img{height:44px;width:auto;display:block;flex:none}
     .nav-titulo{font-family:var(--f-head);font-weight:800;font-size:15.5px;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
     .nav-tag{flex:none;font-family:var(--f-head);font-weight:700;font-size:12px;color:var(--rojo);background:rgba(181,26,42,.1);padding:3px 9px;border-radius:999px}
-    .btn-salir{flex:none;font-family:var(--f-head);font-weight:700;font-size:13px;white-space:nowrap;padding:10px 0;transition:color 120ms}
-    .btn-salir:hover{color:var(--rojo)}
+    .btn-salir{flex:none;display:inline-flex;align-items:center;gap:7px;background:#fff;border:1.5px solid var(--borde-input);color:var(--tinta);border-radius:999px;padding:8px 15px;font-family:var(--f-head);font-weight:700;font-size:13px;white-space:nowrap;min-height:40px;transition:border-color 120ms,color 120ms}
+    .btn-salir:hover{border-color:var(--rojo);color:var(--rojo)}
     #view-panel{min-height:100vh;display:flex;flex-direction:column}
-    /* 960, not README's 1160: that width was for two cards side by side; one card per row at 1160 looked too wide (Mau 05-10-2026) */
+    /* 960, not README's 1160: that width was for two cards side by side; one card per row at 1160 looked too wide (Mau 05-10-2026).
+       The footer keeps 1160 so its text sits outside the cards' edges. */
     .contenido{width:100%;max-width:960px;margin:0 auto;padding:8px 40px 0;display:flex;flex-direction:column;gap:28px;flex:1}
     .eyebrow{font-family:var(--f-head);font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
     .colegio-nombre{font-family:var(--f-head);font-weight:800;font-size:38px;line-height:1.15;letter-spacing:-0.01em;color:var(--tinta);margin-top:4px}
@@ -80,9 +84,10 @@
        and half-width cards only fit 1 class sub-card per row. Deviation from README §2.2 (side by side). */
     .programas{display:grid;gap:24px;align-items:start;grid-template-columns:minmax(0,1fr)}
     .programa{display:flex;flex-direction:column;min-width:0}
-    .pestanas{display:flex;gap:4px;flex-wrap:nowrap;position:relative;z-index:2;margin-bottom:-1px}
-    .pestana{display:flex;align-items:center;gap:9px;padding:10px 14px 11px 12px;border-radius:14px 14px 0 0;background:var(--tab-off);color:var(--muted);min-width:0;min-height:44px;transition:background 240ms var(--ease),color 240ms var(--ease)}
-    .pestana.activa{background:var(--prog);color:#fff}
+    .pestanas{display:flex;gap:4px;flex-wrap:nowrap;margin-bottom:-1px}
+    /* Inactive tabs sit behind the card (its top edge cuts them cleanly); only the active one merges into the band */
+    .pestana{position:relative;z-index:0;display:flex;align-items:center;gap:9px;padding:10px 14px 11px 12px;border-radius:14px 14px 0 0;background:var(--tab-off);color:var(--muted);min-width:0;min-height:44px;transition:background 240ms var(--ease),color 240ms var(--ease)}
+    .pestana.activa{background:var(--prog);color:#fff;z-index:2}
     .pestana-lbl{display:inline-flex;align-items:center;gap:7px;font-family:var(--f-head);font-weight:800;font-size:13px;white-space:nowrap}
     .pestana-lbl svg{flex:none}
     .pestana-estado{font-family:var(--f-head);font-weight:700;font-size:12.5px;opacity:.85;white-space:nowrap}
@@ -225,7 +230,7 @@
     /* ── PIE ────────────────────────────────────────────── */
     .pie-ola{margin-top:56px;margin-bottom:-1px}
     footer{background:var(--tinta);color:rgba(255,255,255,.75)}
-    .pie{max-width:960px;margin:0 auto;padding:26px 40px 34px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+    .pie{max-width:1160px;margin:0 auto;padding:26px 40px 34px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
     .pie-marca{display:flex;align-items:center;gap:14px}
     .pie-marca img{height:40px;width:auto;display:block}
     .pie-marca b{display:block;font-family:var(--f-head);font-weight:800;font-size:15px;color:#fff}
@@ -254,7 +259,7 @@
       .lbl-corto{display:inline}
       .banda{padding:16px 18px 12px}
       .cuerpo{padding:4px 16px 18px}
-      .btn-actualizar{min-height:44px}
+      .btn-actualizar,.btn-salir{min-height:44px}
       .compartir{padding:14px}
       .compartir-grid{grid-template-columns:minmax(0,1fr)}
       .qrs{max-width:none}
@@ -271,7 +276,7 @@
       .pie{padding:20px 16px 28px}
     }
     @media (max-width:400px){
-      .nav-tag{display:none} /* at 375px the title + tag + "Cerrar sesión" don't fit */
+      .nav-tag{display:none} /* at 375px the title + tag + the logout button don't fit */
     }
   </style>
 </head>
@@ -281,9 +286,9 @@
   <section id="view-login">
     <div class="login-bg" aria-hidden="true">
       <div style="background:#f5f5f5;flex:1 1 0"></div>
-      <div class="wave" style="background:#f5f5f5"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="height:72px"><path d="M0,56 C210,14 430,92 710,56 C1000,18 1200,82 1440,44 L1440,100 L0,100 Z" fill="#dc911b"/></svg></div>
+      <div class="wave" style="background:#f5f5f5;--abajo:#dc911b"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="height:72px"><path d="M0,56 C210,14 430,92 710,56 C1000,18 1200,82 1440,44 L1440,100 L0,100 Z" fill="#dc911b"/></svg></div>
       <div style="background:#dc911b;flex:0 0 64px"></div>
-      <div class="wave" style="background:#dc911b"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="height:70px"><path d="M0,38 C240,86 470,4 720,34 C980,66 1180,96 1440,42 L1440,100 L0,100 Z" fill="#6bacc4"/></svg></div>
+      <div class="wave" style="background:#dc911b;--abajo:#6bacc4"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="height:70px"><path d="M0,38 C240,86 470,4 720,34 C980,66 1180,96 1440,42 L1440,100 L0,100 Z" fill="#6bacc4"/></svg></div>
       <div style="background:#6bacc4;flex:0 0 150px"></div>
     </div>
     <div class="login-wrap">
@@ -313,14 +318,14 @@
         <div class="nav-titulo">Portal de Seguimiento</div>
         <span class="nav-tag">2026</span>
       </div>
-      <button class="btn-salir" id="btn-salir" type="button">Cerrar sesión</button>
+      <button class="btn-salir" id="btn-salir" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg><span class="lbl-largo">Cerrar sesión</span><span class="lbl-corto">Salir</span></button>
     </div>
     <div class="wave" aria-hidden="true">
-      <div class="wave" style="background:#fff"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="height:26px"><path d="M0,56 C210,14 430,92 710,56 C1000,18 1200,82 1440,44 L1440,100 L0,100 Z" fill="#6bacc4"/></svg></div>
+      <div class="wave" style="background:#fff;--abajo:#6bacc4"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="height:26px"><path d="M0,56 C210,14 430,92 710,56 C1000,18 1200,82 1440,44 L1440,100 L0,100 Z" fill="#6bacc4"/></svg></div>
       <div style="height:10px;background:#6bacc4"></div>
-      <div class="wave" style="background:#6bacc4"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="height:22px"><path d="M0,38 C240,86 470,4 720,34 C980,66 1180,96 1440,42 L1440,100 L0,100 Z" fill="#dc911b"/></svg></div>
+      <div class="wave" style="background:#6bacc4;--abajo:#dc911b"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="height:22px"><path d="M0,38 C240,86 470,4 720,34 C980,66 1180,96 1440,42 L1440,100 L0,100 Z" fill="#dc911b"/></svg></div>
       <div style="height:8px;background:#dc911b"></div>
-      <div class="wave" style="background:#dc911b"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="height:40px"><path d="M0,26 C150,72 290,74 430,46 C560,22 650,72 790,60 C930,49 1010,16 1170,46 C1290,68 1360,52 1440,34 L1440,100 L0,100 Z" fill="#f5f5f5"/></svg></div>
+      <div class="wave" style="background:#dc911b;--abajo:#f5f5f5"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="height:40px"><path d="M0,26 C150,72 290,74 430,46 C560,22 650,72 790,60 C930,49 1010,16 1170,46 C1290,68 1360,52 1440,34 L1440,100 L0,100 Z" fill="#f5f5f5"/></svg></div>
     </div>
     <div class="contenido">
       <div>
@@ -335,7 +340,7 @@
       <div class="aviso" id="aviso-sin-programas" hidden></div>
       <div class="programas" id="programas"></div>
     </div>
-    <div class="wave pie-ola" style="background:#f5f5f5" aria-hidden="true"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="height:60px"><path d="M0,26 C150,72 290,74 430,46 C560,22 650,72 790,60 C930,49 1010,16 1170,46 C1290,68 1360,52 1440,34 L1440,100 L0,100 Z" fill="#151b29"/></svg></div>
+    <div class="wave pie-ola" style="background:#f5f5f5;--abajo:#151b29" aria-hidden="true"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="height:60px"><path d="M0,26 C150,72 290,74 430,46 C560,22 650,72 790,60 C930,49 1010,16 1170,46 C1290,68 1360,52 1440,34 L1440,100 L0,100 Z" fill="#151b29"/></svg></div>
     <footer>
       <div class="pie">
         <div class="pie-marca">
@@ -2945,7 +2950,7 @@ window.qrcode=qrcode;
               <span class="banda-pill">${esc(cifra(prog, clave).pill)}</span>
             </div>
           </div>
-          <div class="wave" style="background:${meta.color}"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="height:56px"><path d="${WAVE_DRIP}" fill="#fff"/></svg></div>
+          <div class="wave" style="background:${meta.color};--abajo:#fff"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="height:56px"><path d="${WAVE_DRIP}" fill="#fff"/></svg></div>
           <div class="cuerpo">${clave === "test" ? bloqueTest(prog) : bloqueEfa(prog)}</div>
         </div>
       </article>`;
