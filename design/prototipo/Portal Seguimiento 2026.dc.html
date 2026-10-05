@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/trab-n-general-ee90918d-c3db-417d-8f65-455097fe922c/colors_and_type.css">
+<script src="_ds/trab-n-general-ee90918d-c3db-417d-8f65-455097fe922c/_ds_bundle.js"></script>
+<script src="datos-portal.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&amp;family=Mulish:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0;background:#e9e9eb;} a{color:#b51a2a;} a:hover{color:#9c1624;} input::placeholder{color:#8a8f9c;}</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:{{ outerPad }};font-family:Lato,sans-serif;color:#151b29;">
+  <div style="width:100%;max-width:{{ appMax }};min-height:{{ appMinH }};background:#f5f5f5;border-radius:{{ appRadius }};box-shadow:{{ appShadow }};overflow:hidden;position:relative;display:flex;flex-direction:column;">
+
+    <!-- LOGIN -->
+    <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+      <div style="position:relative;overflow:hidden;background:#f5f5f5;min-height:{{ appMinH }};flex:1;display:flex;align-items:center;justify-content:center;padding:56px 24px;">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;z-index:0;">
+          <div style="background:#f5f5f5;flex:1 1 0;"></div>
+          <div style="background:#f5f5f5;line-height:0;"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="display:block;width:100%;height:72px;"><path d="M0,56 C210,14 430,92 710,56 C1000,18 1200,82 1440,44 L1440,100 L0,100 Z" fill="#dc911b"></path></svg></div>
+          <div style="background:#dc911b;flex:0 0 64px;"></div>
+          <div style="background:#dc911b;line-height:0;"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="display:block;width:100%;height:70px;"><path d="M0,38 C240,86 470,4 720,34 C980,66 1180,96 1440,42 L1440,100 L0,100 Z" fill="#6bacc4"></path></svg></div>
+          <div style="background:#6bacc4;flex:0 0 150px;"></div>
+        </div>
+        <div style="position:relative;z-index:1;width:100%;max-width:420px;">
+          <div style="position:absolute;top:{{ mascotTop }};right:{{ mascotRight }};z-index:0;pointer-events:none;filter:drop-shadow(0 10px 16px rgba(21,27,41,.16));">
+            <img src="assets/mascota.png" alt="" style="width:{{ mascotW }};height:auto;display:block;transform:rotate(3deg);">
+          </div>
+          <div style="position:relative;z-index:1;background:#fff;border-radius:22px;box-shadow:0 18px 44px rgba(21,27,41,.16);padding:{{ loginPad }};text-align:center;display:flex;flex-direction:column;gap:18px;">
+            <img src="assets/logo-official.png" alt="Fundación Trabün" style="height:76px;width:auto;display:block;margin:0 auto;">
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <h1 style="font-family:Mulish;font-weight:800;font-size:25px;line-height:1.15;letter-spacing:-0.01em;margin:0;">Portal de Seguimiento 2026</h1>
+              <p style="margin:0;font-size:14px;line-height:1.5;color:#3a4050;">Ingresa con el RBD y la clave de tu establecimiento.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;text-align:left;">
+              <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-family:Mulish;font-weight:600;font-size:13px;">RBD</span><input placeholder="Ej.: 12345" inputmode="numeric" style="font-family:Lato;font-size:15px;padding:11px 14px;border:1px solid #d9d9dc;border-radius:8px;outline:none;color:#151b29;" style-focus="border-color:#b51a2a;"></label>
+              <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-family:Mulish;font-weight:600;font-size:13px;">Clave</span><input type="password" placeholder="••••••" style="font-family:Lato;font-size:15px;padding:11px 14px;border:1px solid #d9d9dc;border-radius:8px;outline:none;color:#151b29;" style-focus="border-color:#b51a2a;"></label>
+            </div>
+            <div onClick="{{ login }}" style="cursor:pointer;background:#b51a2a;color:#fff;font-family:Mulish;font-weight:700;font-size:15px;padding:13px 20px;border-radius:999px;transition:background 120ms;" style-hover="background:#9c1624;" style-active="transform:translateY(1px);">Ingresar</div>
+            <p style="margin:0;font-size:12.5px;line-height:1.5;color:#5b6070;">¿No tienes la clave? Pídela a tu Jefe de Proyecto Trabün.</p>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- PANEL -->
+    <sc-if value="{{ isPanel }}" hint-placeholder-val="{{ true }}">
+      <div style="background:#fff;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:{{ navPad }};">
+        <div style="display:flex;align-items:center;gap:12px;min-width:0;">
+          <img src="assets/logo-official.png" alt="Fundación Trabün" style="height:{{ logoH }};width:auto;display:block;">
+          <div style="font-family:Mulish;font-weight:800;font-size:15.5px;white-space:nowrap;">Portal de Seguimiento</div>
+          <span style="font-family:Mulish;font-weight:700;font-size:12px;color:#b51a2a;background:rgba(181,26,42,.1);padding:3px 9px;border-radius:999px;">2026</span>
+        </div>
+        <div onClick="{{ logout }}" style="cursor:pointer;font-family:Mulish;font-weight:700;font-size:13px;white-space:nowrap;" style-hover="color:#b51a2a;">Cerrar sesión</div>
+      </div>
+      <div style="line-height:0;">
+        <div style="background:#fff;line-height:0;"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="display:block;width:100%;height:26px;"><path d="M0,56 C210,14 430,92 710,56 C1000,18 1200,82 1440,44 L1440,100 L0,100 Z" fill="#6bacc4"></path></svg></div>
+        <div style="height:10px;background:#6bacc4;"></div>
+        <div style="background:#6bacc4;line-height:0;"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="display:block;width:100%;height:22px;"><path d="M0,38 C240,86 470,4 720,34 C980,66 1180,96 1440,42 L1440,100 L0,100 Z" fill="#dc911b"></path></svg></div>
+        <div style="height:8px;background:#dc911b;"></div>
+        <div style="background:#dc911b;line-height:0;"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="display:block;width:100%;height:40px;"><path d="M0,26 C150,72 290,74 430,46 C560,22 650,72 790,60 C930,49 1010,16 1170,46 C1290,68 1360,52 1440,34 L1440,100 L0,100 Z" fill="#f5f5f5"></path></svg></div>
+      </div>
+
+      <div style="width:100%;max-width:1160px;margin:0 auto;box-sizing:border-box;padding:{{ contentPad }};display:flex;flex-direction:column;gap:28px;flex:1;">
+        <div>
+          <div style="font-family:Mulish;font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#5b6070;">Establecimiento</div>
+          <div style="font-family: Mulish; font-weight: 800; font-size: {{ h1Size }}; line-height: 1.15; letter-spacing: -0.01em; color: var(--trabun-ink); margin-top: 4px">Colegio San Alberto</div>
+          <div style="font-family:Mulish;font-weight:700;font-size:12px;color:#5b6070;margin-top:4px;">RBD 12345 · {{ progLine }}</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:{{ cardCols }};gap:24px;align-items:start;">
+          <sc-if value="{{ showAse }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;min-width:0;">
+              <div style="display:flex;gap:4px;flex-wrap:nowrap;position:relative;z-index:2;margin-bottom:-1px;">
+                <div onClick="{{ setEst }}" style="cursor:pointer;display:flex;align-items:center;padding:10px 14px 11px 12px;border-radius:14px 14px 0 0;background:{{ A.estBg }};min-width:0;transition:background 240ms cubic-bezier(0.2,0.8,0.2,1);">
+                  <div style="display:flex;align-items:center;gap:9px;opacity:{{ estOp }};min-width:0;">
+                    <span style="display:inline-flex;align-items:center;gap:7px;color:{{ estFg }};font-family:Mulish;font-weight:800;font-size:13px;white-space:nowrap;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"></path><path d="M8 10h8"></path><path d="M8 18h8"></path><path d="M8 22v-6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v6"></path><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path></svg>{{ estLabel }}</span>
+                    <sc-if value="{{ tabStatus }}"><span style="font-family:Mulish;font-weight:700;font-size:12.5px;color:{{ estFg }};opacity:.85;white-space:nowrap;">{{ A.estStatus }}</span></sc-if>
+                  </div>
+                </div>
+                <div onClick="{{ setEfa }}" style="cursor:pointer;display:flex;align-items:center;padding:10px 14px 11px 12px;border-radius:14px 14px 0 0;background:{{ A.efaBg }};min-width:0;transition:background 240ms cubic-bezier(0.2,0.8,0.2,1);">
+                  <div style="display:flex;align-items:center;gap:9px;opacity:{{ efaOp }};min-width:0;">
+                    <span style="display:inline-flex;align-items:center;gap:7px;color:{{ efaFg }};font-family:Mulish;font-weight:800;font-size:13px;white-space:nowrap;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>{{ efaLabel }}</span>
+                    <sc-if value="{{ tabStatus }}"><span style="font-family:Mulish;font-weight:700;font-size:12.5px;color:{{ efaFg }};opacity:.85;white-space:nowrap;">{{ A.efaStatus }}</span></sc-if>
+                  </div>
+                </div>
+              </div>
+              <div style="background:#fff;border-radius:0 16px 16px 16px;box-shadow:0 1px 3px rgba(21,27,41,.08);border:1px solid #e7e7ea;overflow:hidden;position:relative;z-index:1;">
+                <div style="background:#dc911b;padding:{{ bandPad }};position:relative;overflow:hidden;">
+                  <svg width="320" height="170" viewBox="0 0 320 170" aria-hidden="true" style="position:absolute;top:0;right:0;pointer-events:none;"><defs><radialGradient id="hflare-ase" cx="100%" cy="0%" r="100%"><stop offset="0%" stop-color="#fff" stop-opacity="0.22"></stop><stop offset="50%" stop-color="#fff" stop-opacity="0.07"></stop><stop offset="100%" stop-color="#fff" stop-opacity="0"></stop></radialGradient></defs><rect width="320" height="170" fill="url(#hflare-ase)"></rect></svg>
+                  <div style="position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+                    <div style="min-width:0;">
+                      <div style="font-family:Mulish;font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.92);">Programa</div>
+                      <div style="font-family:Mulish;font-weight:800;font-size:23px;line-height:1.15;color:#fff;margin-top:4px;">ASE</div>
+                      <div style="font-size:13px;color:rgba(255,255,255,.92);">Aprendizaje Socioemocional</div>
+                      <div style="font-size:12.5px;color:rgba(255,255,255,.92);margin-top:2px;">{{ A.line }}</div>
+                    </div>
+                    <span style="flex:none;font-family:Mulish;font-weight:800;font-size:18px;color:#fff;background:rgba(255,255,255,.2);padding:5px 12px;border-radius:999px;">{{ A.pct }}</span>
+                  </div>
+                </div>
+                <div style="background:#dc911b;line-height:0;"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="display:block;width:100%;height:56px;"><path d="M0,26 C150,72 290,74 430,46 C560,22 650,72 790,60 C930,49 1010,16 1170,46 C1290,68 1360,52 1440,34 L1440,100 L0,100 Z" fill="#fff"></path></svg></div>
+                <div style="padding:{{ bodyPad }};"><dc-import name="Encuesta Programa" program="ase" kind="{{ tab }}" fecha="{{ fecha }}" wide="{{ wideBody }}" identificacion="{{ identificacion }}" selector="{{ selector }}" bordes="{{ bordes }}" on-share="{{ openShare }}" hint-size="100%,520px"></dc-import></div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showRel }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;min-width:0;">
+              <div style="display:flex;gap:4px;flex-wrap:nowrap;position:relative;z-index:2;margin-bottom:-1px;">
+                <div onClick="{{ setEst }}" style="cursor:pointer;display:flex;align-items:center;padding:10px 14px 11px 12px;border-radius:14px 14px 0 0;background:{{ R.estBg }};min-width:0;transition:background 240ms cubic-bezier(0.2,0.8,0.2,1);">
+                  <div style="display:flex;align-items:center;gap:9px;opacity:{{ estOp }};min-width:0;">
+                    <span style="display:inline-flex;align-items:center;gap:7px;color:{{ estFg }};font-family:Mulish;font-weight:800;font-size:13px;white-space:nowrap;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"></path><path d="M8 10h8"></path><path d="M8 18h8"></path><path d="M8 22v-6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v6"></path><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path></svg>{{ estLabel }}</span>
+                    <sc-if value="{{ tabStatus }}"><span style="font-family:Mulish;font-weight:700;font-size:12.5px;color:{{ estFg }};opacity:.85;white-space:nowrap;">{{ R.estStatus }}</span></sc-if>
+                  </div>
+                </div>
+                <div onClick="{{ setEfa }}" style="cursor:pointer;display:flex;align-items:center;padding:10px 14px 11px 12px;border-radius:14px 14px 0 0;background:{{ R.efaBg }};min-width:0;transition:background 240ms cubic-bezier(0.2,0.8,0.2,1);">
+                  <div style="display:flex;align-items:center;gap:9px;opacity:{{ efaOp }};min-width:0;">
+                    <span style="display:inline-flex;align-items:center;gap:7px;color:{{ efaFg }};font-family:Mulish;font-weight:800;font-size:13px;white-space:nowrap;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>{{ efaLabel }}</span>
+                    <sc-if value="{{ tabStatus }}"><span style="font-family:Mulish;font-weight:700;font-size:12.5px;color:{{ efaFg }};opacity:.85;white-space:nowrap;">{{ R.efaStatus }}</span></sc-if>
+                  </div>
+                </div>
+              </div>
+              <div style="background:#fff;border-radius:0 16px 16px 16px;box-shadow:0 1px 3px rgba(21,27,41,.08);border:1px solid #e7e7ea;overflow:hidden;position:relative;z-index:1;">
+                <div style="background:#6bacc4;padding:{{ bandPad }};position:relative;overflow:hidden;">
+                  <svg width="320" height="170" viewBox="0 0 320 170" aria-hidden="true" style="position:absolute;top:0;right:0;pointer-events:none;"><defs><radialGradient id="hflare-rel" cx="100%" cy="0%" r="100%"><stop offset="0%" stop-color="#fff" stop-opacity="0.22"></stop><stop offset="50%" stop-color="#fff" stop-opacity="0.07"></stop><stop offset="100%" stop-color="#fff" stop-opacity="0"></stop></radialGradient></defs><rect width="320" height="170" fill="url(#hflare-rel)"></rect></svg>
+                  <div style="position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+                    <div style="min-width:0;">
+                      <div style="font-family:Mulish;font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.92);">Programa</div>
+                      <div style="font-family:Mulish;font-weight:800;font-size:23px;line-height:1.15;color:#fff;margin-top:4px;">Religión</div>
+                      <div style="font-size:13px;color:rgba(255,255,255,.92);">Programa de Religión</div>
+                      <div style="font-size:12.5px;color:rgba(255,255,255,.92);margin-top:2px;">{{ R.line }}</div>
+                    </div>
+                    <span style="flex:none;font-family:Mulish;font-weight:800;font-size:18px;color:#fff;background:rgba(255,255,255,.2);padding:5px 12px;border-radius:999px;">{{ R.pct }}</span>
+                  </div>
+                </div>
+                <div style="background:#6bacc4;line-height:0;"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="display:block;width:100%;height:56px;"><path d="M0,26 C150,72 290,74 430,46 C560,22 650,72 790,60 C930,49 1010,16 1170,46 C1290,68 1360,52 1440,34 L1440,100 L0,100 Z" fill="#fff"></path></svg></div>
+                <div style="padding:{{ bodyPad }};"><dc-import name="Encuesta Programa" program="rel" kind="{{ tab }}" fecha="{{ fecha }}" wide="{{ wideBody }}" identificacion="{{ identificacion }}" selector="{{ selector }}" bordes="{{ bordes }}" on-share="{{ openShare }}" hint-size="100%,520px"></dc-import></div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+
+      <div style="background:#f5f5f5;line-height:0;margin-top:56px;margin-bottom:-1px;"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="display:block;width:100%;height:60px;"><path d="M0,26 C150,72 290,74 430,46 C560,22 650,72 790,60 C930,49 1010,16 1170,46 C1290,68 1360,52 1440,34 L1440,100 L0,100 Z" fill="#151b29"></path></svg></div>
+      <footer style="background:#151b29;color:rgba(255,255,255,.75);">
+        <div style="max-width:1160px;margin:0 auto;box-sizing:border-box;padding:{{ footPad }};display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <img src="assets/isotipo-white.png" alt="" style="height:40px;width:auto;display:block;">
+            <div><div style="font-family:Mulish;font-weight:800;font-size:15px;color:#fff;">Fundación Trabün</div><div style="font-size:13px;">Portal de Seguimiento 2026</div></div>
+          </div>
+          <div style="font-size:13px;line-height:1.5;">¿Dudas? Contacta a tu Jefe de Proyecto Trabün.</div>
+        </div>
+      </footer>
+    </sc-if>
+
+    <!-- COMPARTIR -->
+    <sc-if value="{{ hasShare }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeShare }}" style="position:fixed;inset:0;background:rgba(21,27,41,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50;">
+        <div onClick="{{ stop }}" style="background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(21,27,41,.28);width:100%;max-width:{{ modalMax }};max-height:90vh;overflow:auto;padding:26px;display:flex;flex-direction:column;gap:16px;box-sizing:border-box;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <div style="display:flex;align-items:center;gap:9px;"><span style="width:10px;height:10px;border-radius:50%;background:{{ sh.color }};"></span><div style="font-family:Mulish;font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#5b6070;">{{ sh.eyebrow }}</div></div>
+              <div style="font-family:Mulish;font-weight:800;font-size:21px;line-height:1.15;">{{ sh.title }}</div>
+              <div style="font-size:13px;color:#5b6070;">{{ sh.sub }}</div>
+            </div>
+            <div onClick="{{ closeShare }}" style="cursor:pointer;font-family:Mulish;font-weight:800;font-size:22px;line-height:1;color:#5b6070;padding:2px 4px;">×</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="font-family:Mulish;font-weight:600;font-size:13px;">Link</div>
+            <div style="display:flex;gap:8px;"><div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:#f6f4ef;border:1px solid #e7e7ea;border-radius:8px;padding:9px 12px;font-family:ui-monospace,monospace;font-size:13px;">{{ sh.link }}</div><div onClick="{{ copyLink }}" style="flex:none;cursor:pointer;font-family:Mulish;font-weight:700;font-size:14px;border:1.5px solid #b51a2a;color:#b51a2a;padding:8px 14px;border-radius:999px;">{{ copyLinkLabel }}</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+              <div style="font-family:Mulish;font-weight:600;font-size:13px;">Mensaje</div>
+              <sc-if value="{{ sh.canIncl }}">
+                <div onClick="{{ toggleIncl }}" style="cursor:pointer;display:flex;align-items:center;gap:8px;font-family:Mulish;font-weight:600;font-size:12.5px;">
+                  <div style="width:34px;height:20px;border-radius:999px;background:{{ inclBg }};position:relative;transition:background 240ms;"><div style="position:absolute;top:2px;left:{{ inclKnob }};width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(21,27,41,.2);transition:left 240ms cubic-bezier(0.2,0.8,0.2,1);"></div></div>
+                  {{ sh.inclLabel }}
+                </div>
+              </sc-if>
+            </div>
+            <div style="background:#f6f4ef;border:1px solid #e7e7ea;border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;max-height:240px;overflow:auto;">{{ sh.msg }}</div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <div onClick="{{ copyMsg }}" style="cursor:pointer;background:#b51a2a;color:#fff;font-family:Mulish;font-weight:700;font-size:14px;padding:10px 18px;border-radius:999px;" style-hover="background:#9c1624;">{{ copyMsgLabel }}</div>
+            <a href="{{ sh.wa }}" target="_blank" rel="noopener" style="text-decoration:none;color:#151b29;border:1.5px solid #151b29;font-family:Mulish;font-weight:700;font-size:14px;padding:8.5px 16px;border-radius:999px;">Enviar por WhatsApp</a>
+          </div>
+          <div style="display:flex;gap:14px;align-items:center;border-top:1px solid #e7e7ea;padding-top:16px;">
+            <div style="width:96px;height:96px;flex:none;border:1.5px dashed #d9d9dc;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:Mulish;font-weight:800;font-size:13px;color:#5b6070;">QR</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div style="font-size:13px;line-height:1.5;color:#3a4050;">Para proyectar en la sala o imprimir en la sala de profesores.</div>
+              <div style="font-family:Mulish;font-weight:700;font-size:13px;color:#b51a2a;cursor:pointer;">Descargar QR</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;programas&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;ambos&quot;,&quot;ase&quot;,&quot;rel&quot;],&quot;default&quot;:&quot;ambos&quot;,&quot;tsType&quot;:&quot;'ambos'|'ase'|'rel'&quot;,&quot;label&quot;:&quot;Programas del colegio&quot;},&quot;fecha&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;1 oct&quot;,&quot;20 oct&quot;,&quot;5 nov&quot;,&quot;25 nov&quot;],&quot;default&quot;:&quot;5 nov&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;label&quot;:&quot;Fecha simulada&quot;},&quot;identificacion&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;nombre&quot;,&quot;numero&quot;],&quot;default&quot;:&quot;nombre&quot;,&quot;tsType&quot;:&quot;'nombre'|'numero'&quot;,&quot;label&quot;:&quot;Identificación de estudiantes&quot;},&quot;casosBorde&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;label&quot;:&quot;Mostrar casos borde&quot;},&quot;selector&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;acordeon&quot;,&quot;barras&quot;,&quot;tabla&quot;],&quot;default&quot;:&quot;acordeon&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;label&quot;:&quot;Selector de niveles&quot;},&quot;vista&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;escritorio&quot;,&quot;movil&quot;],&quot;default&quot;:&quot;escritorio&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;label&quot;:&quot;Vista&quot;},&quot;pantalla&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;panel&quot;,&quot;login&quot;],&quot;default&quot;:&quot;panel&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;label&quot;:&quot;Pantalla inicial&quot;}}">
+class Component extends DCLogic {
+  state = { screen: null, tab: 'est', share: null, incl: true, copiedLink: false, copiedMsg: false };
+  componentDidMount() {
+    if (!window.TrabunPortal) this._t = setInterval(() => { if (window.TrabunPortal) { clearInterval(this._t); this.forceUpdate(); } }, 50);
+  }
+  componentDidUpdate(prev) {
+    if (prev.pantalla !== this.props.pantalla) this.setState({ screen: null });
+  }
+  componentWillUnmount() { clearInterval(this._t); clearTimeout(this._c1); clearTimeout(this._c2); }
+  flash(key, ref) {
+    this.setState({ [key]: true }); clearTimeout(this[ref]); this[ref] = setTimeout(() => this.setState({ [key]: false }), 1600);
+  }
+  copy(text) { try { navigator.clipboard.writeText(text); } catch (e) {} }
+  renderVals() {
+    const D = window.TrabunPortal;
+    const progs = this.props.programas ?? 'ambos';
+    const fecha = this.props.fecha ?? '5 nov';
+    const mobile = (this.props.vista ?? 'escritorio') === 'movil';
+    const screen = this.state.screen || (this.props.pantalla ?? 'panel');
+    const showAse = progs !== 'rel', showRel = progs !== 'ase', single = progs !== 'ambos';
+    const { tab, share, incl } = this.state;
+    const isEst = tab === 'est';
+    const off = '#e4e4e7';
+    const prog = (p, color) => {
+      if (!D) return { estBg: isEst ? color : off, efaBg: isEst ? off : color, estStatus: '', efaStatus: '', line: '', pct: '' };
+      const pe = D.phase(fecha, 'est'), pf = D.phase(fecha, 'efa');
+      const edge = this.props.casosBorde ?? true; const se = D.summary(p, 'est', pe, edge), sf = D.summary(p, 'efa', pf, edge);
+      const stat = (ph, s, k) => ph === 'pre' ? D.SURVEY[k].open : k === 'efa' ? `${s.r} resp.` : s.pct;
+      const ph = isEst ? pe : pf, k = isEst ? 'est' : 'efa', S = D.SURVEY[k];
+      return { estBg: isEst ? color : off, efaBg: isEst ? off : color,
+        estStatus: stat(pe, se, 'est'), efaStatus: stat(pf, sf, 'efa'),
+        line: `${S.name} · ${S.dates} · ${D.statusLabel(fecha, k)}`,
+        pct: ph === 'pre' ? '—' : (isEst ? se.pct : `${sf.r} resp.`) };
+    };
+    let sh = { color: '', eyebrow: '', title: '', sub: '', link: '', msg: '', wa: '#', canIncl: false, inclLabel: '' };
+    if (share && D) {
+      const { p, k } = share, ph = D.phase(fecha, k), S = D.SURVEY[k];
+      const pn = p === 'ase' ? 'ASE' : 'Religión';
+      const link = `https://trabun.cl/${k === 'est' ? 'test' : 'efa'}/${p}/12345`;
+      const open = ph === 'open', canIncl = open && k === 'est';
+      const pend = canIncl && incl ? D.pendingText(p, k, ph, this.props.casosBorde ?? true) : '';
+      const msg = k === 'est'
+        ? `Hola, equipo docente:\n\nEntre el 13 de octubre y el 20 de noviembre aplicaremos el Test de Estudiantes del programa ${pn}. Les pedimos destinar unos minutos de una clase para que sus estudiantes lo respondan en este link:\n${link}${pend ? `\n\nAvance por nivel (respuestas de las estimadas):\n${pend}` : ''}\n\nGracias por su apoyo.`
+        : `Hola:\n\nEntre el 2 y el 20 de noviembre está disponible la Encuesta de Fin de Año (EFA) del programa ${pn}. Tu opinión nos ayuda a mejorar el programa. Puedes responderla aquí:\n${link}\n\nGracias.`;
+      sh = { color: p === 'ase' ? '#dc911b' : '#6bacc4', eyebrow: `Programa ${pn}`,
+        title: `${open ? 'Recordar' : 'Compartir'}: ${S.name}`,
+        sub: k === 'est' ? 'Para los docentes que aplicarán el test en clases.' : 'Para el equipo directivo, líderes educativos y docentes.',
+        link, msg, wa: `https://wa.me/?text=${encodeURIComponent(msg)}`, canIncl, inclLabel: 'Incluir avance por nivel' };
+    }
+    return {
+      isLogin: screen === 'login', isPanel: screen !== 'login',
+      login: () => this.setState({ screen: 'panel' }), logout: () => this.setState({ screen: 'login', share: null }),
+      showAse, showRel, single, fecha, tab, wideBody: single && !mobile,
+      progLine: single ? (showAse ? 'ASE' : 'Religión') : 'ASE y Religión',
+      setEst: () => this.setState({ tab: 'est' }), setEfa: () => this.setState({ tab: 'efa' }),
+      estOp: 1, efaOp: 1, estFg: isEst ? '#fff' : '#5b6070', efaFg: isEst ? '#5b6070' : '#fff', identificacion: this.props.identificacion ?? 'nombre', selector: this.props.selector ?? 'acordeon', bordes: this.props.casosBorde ?? true,
+      estLabel: mobile ? 'Estudiantes' : 'Test de Estudiantes', efaLabel: mobile ? 'EFA' : 'EFA · Docentes y líderes', tabStatus: !mobile,
+      A: prog('ase', '#dc911b'), R: prog('rel', '#6bacc4'),
+      cardCols: mobile || single ? 'minmax(0,1fr)' : 'repeat(auto-fit,minmax(min(100%,540px),1fr))',
+      outerPad: mobile ? '24px 0' : '0', appMax: mobile ? '390px' : 'none', appMinH: mobile ? '844px' : '100vh',
+      appRadius: mobile ? '28px' : '0', appShadow: mobile ? '0 18px 44px rgba(21,27,41,.18)' : 'none',
+      navPad: mobile ? '10px 16px' : '12px 32px', logoH: mobile ? '36px' : '44px',
+      contentPad: mobile ? '6px 16px 0' : '8px 40px 0', h1Size: mobile ? '28px' : '38px',
+      bandPad: mobile ? '16px 18px 12px' : '18px 26px 14px', bodyPad: mobile ? '4px 16px 18px' : '6px 26px 26px',
+      footPad: mobile ? '20px 16px 28px' : '26px 40px 34px',
+      mascotW: mobile ? '112px' : '150px', mascotTop: mobile ? '-70px' : '-94px', mascotRight: mobile ? '8px' : '10px',
+      loginPad: mobile ? '32px 24px' : '40px 38px',
+      openShare: (p, k) => this.setState({ share: { p, k }, incl: true }),
+      closeShare: () => this.setState({ share: null }), stop: e => e.stopPropagation(),
+      hasShare: !!share, sh, modalMax: mobile ? '360px' : '560px',
+      toggleIncl: () => this.setState(s => ({ incl: !s.incl })),
+      inclBg: incl ? '#b51a2a' : '#d9d9dc', inclKnob: incl ? '16px' : '2px',
+      copyLink: () => { this.copy(sh.link); this.flash('copiedLink', '_c1'); },
+      copyMsg: () => { this.copy(sh.msg); this.flash('copiedMsg', '_c2'); },
+      copyLinkLabel: this.state.copiedLink ? 'Copiado' : 'Copiar',
+      copyMsgLabel: this.state.copiedMsg ? 'Mensaje copiado' : 'Copiar mensaje',
+    };
+  }
+}
+</script>
+</body>
+</html>

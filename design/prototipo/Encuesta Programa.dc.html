@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/trab-n-general-ee90918d-c3db-417d-8f65-455097fe922c/colors_and_type.css">
+<script src="_ds/trab-n-general-ee90918d-c3db-417d-8f65-455097fe922c/_ds_bundle.js"></script>
+<script src="datos-portal.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Mulish:wght@500;600;700;800&display=swap" rel="stylesheet">
+</helmet>
+<div style="display:flex;flex-direction:column;gap:14px;font-family:Lato,sans-serif;color:#151b29;">
+  <sc-if value="{{ note }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#f6f4ef;border:1px solid #e7e7ea;border-radius:12px;padding:13px 16px;font-size:13.5px;line-height:1.5;display:flex;gap:10px;align-items:flex-start;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4"></path><path d="M8 2v4"></path><path d="M3 10h18"></path></svg>
+      <div>{{ note }}</div>
+    </div>
+  </sc-if>
+  <div style="display:flex;flex-direction:column;gap:2px;">
+    <div style="font-family:Mulish;font-weight:700;font-size:14px;">{{ totalLine }}</div>
+    <div style="font-size:12px;color:#5b6070;">{{ scope }}</div>
+  </div>
+
+  <sc-if value="{{ showSearch }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #d9d9dc;border-radius:999px;padding:7px 14px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b6070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+      <input value="{{ q }}" onChange="{{ onQ }}" placeholder="{{ searchPh }}" style="border:none;outline:none;flex:1;min-width:0;font-family:Lato;font-size:13.5px;background:transparent;color:#151b29;">
+      <sc-if value="{{ hasQ }}"><div onClick="{{ clearQ }}" style="cursor:pointer;font-family:Mulish;font-weight:800;font-size:14px;color:#5b6070;padding:0 2px;">×</div></sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isEst }}" hint-placeholder-val="{{ true }}">
+    <sc-if value="{{ hasQ }}">
+      <div style="border:1px solid #e7e7ea;border-radius:12px;background:#fff;padding:4px 16px;">
+        <sc-for list="{{ results }}" as="x" hint-placeholder-count="3">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f0f0f2;">
+            <div style="font-family:Mulish;font-weight:600;font-size:14px;">{{ x.id }}</div>
+            <div style="font-size:12.5px;color:#5b6070;">{{ x.room }}</div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ noResults }}"><div style="padding:14px 0;font-size:13.5px;color:#5b6070;">Ninguna respuesta coincide con “{{ q }}”.</div></sc-if>
+      </div>
+    </sc-if>
+
+    <!-- A · Acordeón -->
+    <sc-if value="{{ mAcc }}" hint-placeholder-val="{{ true }}">
+      <div style="border:1px solid #e7e7ea;border-radius:12px;overflow:hidden;background:#fff;">
+        <sc-for list="{{ grades }}" as="g" hint-placeholder-count="5">
+          <div style="border-top:{{ g.bt }};">
+            <div onClick="{{ g.toggle }}" style="display:grid;grid-template-columns:minmax(96px,150px) minmax(0,1fr) 78px 14px;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;" style-hover="background:#fafafa;">
+              <div style="min-width:0;"><div style="font-family:Mulish;font-weight:700;font-size:14px;white-space:nowrap;">{{ g.label }}</div><sc-if value="{{ g.flag }}"><div style="font-family:Mulish;font-weight:700;font-size:11.5px;color:{{ g.flagColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ g.flag }}</div></sc-if></div>
+              <div style="height:8px;background:#eef0f2;border-radius:99px;overflow:hidden;opacity:{{ g.barOp }};"><div style="height:100%;width:{{ g.w }};background:{{ accent }};border-radius:99px;"></div></div>
+              <div style="font-family:Mulish;font-weight:800;font-size:13px;text-align:right;white-space:nowrap;">{{ g.count }}</div>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6070" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ g.chev }};transition:transform 240ms cubic-bezier(0.2,0.8,0.2,1);"><path d="m9 18 6-6-6-6"></path></svg>
+            </div>
+            <sc-if value="{{ g.open }}">
+              <div style="padding:0 14px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;">
+                <sc-for list="{{ g.rooms }}" as="c" hint-placeholder-count="2">
+                  <div style="background:#f6f4ef;border:1px {{ c.bs }} {{ c.bc }};border-radius:10px;padding:11px 13px;display:flex;flex-direction:column;gap:8px;">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;"><div style="font-family:Mulish;font-weight:700;font-size:13.5px;">{{ c.label }}</div><div style="font-family:Mulish;font-weight:800;font-size:12.5px;">{{ c.count }}</div></div>
+                    <sc-if value="{{ c.warn }}"><div style="font-size:12px;line-height:1.45;color:#5b6070;">{{ c.warn }}</div></sc-if>
+                    <div style="display:flex;flex-wrap:wrap;gap:4px;"><sc-for list="{{ c.chips }}" as="n" hint-placeholder-count="6"><span style="font-family:Mulish;font-weight:600;font-size:12px;background:#fff;border:1px solid {{ n.bd }};color:{{ n.fg }};padding:2px 8px;border-radius:999px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ n.t }}</span></sc-for></div>
+                    <sc-if value="{{ c.hasMore }}"><div onClick="{{ c.toggleMore }}" style="cursor:pointer;font-family:Mulish;font-weight:700;font-size:12.5px;color:#b51a2a;">{{ c.moreLabel }}</div></sc-if>
+                    <sc-if value="{{ c.empty }}"><div style="font-size:12.5px;color:#5b6070;">Aún sin respuestas.</div></sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- B · Mini gráfico -->
+    <sc-if value="{{ mBar }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;gap:4px;background:#f5f5f5;border:1px solid #e7e7ea;border-radius:12px;padding:6px;">
+        <sc-for list="{{ grades }}" as="g" hint-placeholder-count="5">
+          <div onClick="{{ g.pick }}" style="flex:1;min-width:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px 7px;border-radius:9px;background:{{ g.colBg }};box-shadow:{{ g.colSh }};transition:background 120ms;">
+            <div style="font-family:Mulish;font-weight:800;font-size:11.5px;">{{ g.pctLabel }}</div>
+            <div style="width:100%;max-width:30px;height:56px;background:#e4e4e7;border-radius:5px;display:flex;align-items:flex-end;overflow:hidden;"><div style="width:100%;height:{{ g.w }};background:{{ accent }};opacity:{{ g.op }};"></div></div>
+            <div style="text-align:center;line-height:1.1;"><div style="font-family:Mulish;font-weight:800;font-size:13px;">{{ g.top }}</div><div style="font-size:10.5px;color:#5b6070;">{{ g.sub }}</div></div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;">
+        <div style="font-family:Mulish;font-weight:700;font-size:15px;">{{ cur.label }}</div>
+        <div style="font-size:12.5px;color:#5b6070;">{{ cur.line }}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;">
+        <sc-for list="{{ cur.rooms }}" as="c" hint-placeholder-count="2">
+          <div style="border:1px solid #e7e7ea;border-radius:10px;padding:11px 13px;display:flex;flex-direction:column;gap:8px;background:#fff;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;"><div style="font-family:Mulish;font-weight:700;font-size:13.5px;">{{ c.label }}</div><div style="font-family:Mulish;font-weight:800;font-size:12.5px;">{{ c.count }}</div></div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;"><sc-for list="{{ c.chips }}" as="n" hint-placeholder-count="6"><span style="font-family:Mulish;font-weight:600;font-size:12px;background:#f5f5f5;border:1px solid #e7e7ea;padding:2px 8px;border-radius:999px;">{{ n.t }}</span></sc-for></div>
+            <sc-if value="{{ c.empty }}"><div style="font-size:12.5px;color:#5b6070;">Aún sin respuestas.</div></sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- C · Tabla -->
+    <sc-if value="{{ mTab }}" hint-placeholder-val="{{ false }}">
+      <div style="border:1px solid #e7e7ea;border-radius:12px;overflow:hidden;background:#fff;">
+        <div style="display:grid;grid-template-columns:minmax(78px,92px) minmax(0,1fr) 74px 64px;gap:10px;padding:9px 14px;background:#f5f5f5;border-bottom:1px solid #e7e7ea;font-family:Mulish;font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#5b6070;">
+          <div>Nivel</div><div>Por curso</div><div style="text-align:right;">Resp.</div><div style="text-align:right;">Avance</div>
+        </div>
+        <sc-for list="{{ grades }}" as="g" hint-placeholder-count="5">
+          <div style="border-top:{{ g.bt }};">
+            <div onClick="{{ g.toggle }}" style="display:grid;grid-template-columns:minmax(78px,92px) minmax(0,1fr) 74px 64px;gap:10px;align-items:center;padding:10px 14px;cursor:pointer;background:{{ g.rowBg }};" style-hover="background:#fafafa;">
+              <div style="font-family:Mulish;font-weight:700;font-size:13.5px;white-space:nowrap;">{{ g.label }}</div>
+              <div style="font-size:12.5px;color:#3a4050;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ g.roomsLine }}</div>
+              <div style="font-family:Mulish;font-weight:800;font-size:13px;text-align:right;white-space:nowrap;">{{ g.count }}</div>
+              <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;"><div style="width:28px;height:6px;background:#eef0f2;border-radius:99px;overflow:hidden;"><div style="height:100%;width:{{ g.w }};background:{{ accent }};"></div></div><div style="font-family:Mulish;font-weight:800;font-size:12px;">{{ g.pctLabel }}</div></div>
+            </div>
+            <sc-if value="{{ g.open }}">
+              <div style="padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;">
+                <sc-for list="{{ g.rooms }}" as="c" hint-placeholder-count="2">
+                  <div style="display:flex;flex-direction:column;gap:6px;">
+                    <div style="font-family:Mulish;font-weight:700;font-size:12.5px;color:#5b6070;">{{ c.label }} · {{ c.count }}</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:4px;"><sc-for list="{{ c.chips }}" as="n" hint-placeholder-count="6"><span style="font-family:Mulish;font-weight:600;font-size:12px;background:#f5f5f5;border:1px solid #e7e7ea;padding:2px 8px;border-radius:999px;">{{ n.t }}</span></sc-for></div>
+                    <sc-if value="{{ c.empty }}"><div style="font-size:12.5px;color:#5b6070;">Aún sin respuestas.</div></sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+  </sc-if>
+
+  <sc-if value="{{ isEfa }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:{{ secCols }};column-gap:36px;align-items:start;">
+      <sc-for list="{{ sections }}" as="s" hint-placeholder-count="3">
+        <div>
+          <sc-if value="{{ s.divider }}"><div style="height:1px;background:#e7e7ea;margin:16px 0;"></div></sc-if>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
+            <div style="font-family:Mulish;font-weight:700;font-size:15px;">{{ s.label }}</div>
+            <div style="font-family:Mulish;font-weight:800;font-size:13px;">{{ s.count }}</div>
+          </div>
+          <sc-if value="{{ s.tabbed }}">
+            <div style="border:1px solid #e7e7ea;border-radius:12px;overflow:hidden;background:#fff;margin-top:4px;">
+              <sc-for list="{{ s.grades }}" as="g" hint-placeholder-count="4">
+                <div style="border-top:{{ g.bt }};">
+                  <div onClick="{{ g.toggle }}" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;cursor:pointer;" style-hover="background:#fafafa;">
+                    <div style="min-width:0;"><div style="font-family:Mulish;font-weight:700;font-size:13.5px;">{{ g.label }}</div><sc-if value="{{ g.flag }}"><div style="font-family:Mulish;font-weight:700;font-size:11.5px;color:#5b6070;">{{ g.flag }}</div></sc-if></div>
+                    <div style="display:flex;align-items:center;gap:10px;"><div style="font-family:Mulish;font-weight:800;font-size:13px;">{{ g.count }}</div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6070" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ g.chev }};transition:transform 240ms cubic-bezier(0.2,0.8,0.2,1);"><path d="m9 18 6-6-6-6"></path></svg></div>
+                  </div>
+                  <sc-if value="{{ g.open }}">
+                    <div style="padding:0 14px 10px;">
+                      <sc-for list="{{ g.people }}" as="p" hint-placeholder-count="2">
+                        <div style="padding:5px 0;"><div style="font-family:Mulish;font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">{{ p.n }}<sc-if value="{{ p.dupTag }}"><span style="font-family:Mulish;font-weight:700;font-size:11px;color:#9c1624;border:1px solid #b51a2a;padding:0 6px;border-radius:999px;">{{ p.dupTag }}</span></sc-if></div><div style="font-size:12px;color:#5b6070;">{{ p.role }}</div></div>
+                      </sc-for>
+                      <sc-if value="{{ g.empty }}"><div style="font-size:12.5px;color:#5b6070;padding:4px 0;">Aún no hay respuestas.</div></sc-if>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-for list="{{ s.people }}" as="p" hint-placeholder-count="2">
+            <div style="padding:7px 0;">
+              <div style="font-family:Mulish;font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">{{ p.n }}<sc-if value="{{ p.dupTag }}"><span style="font-family:Mulish;font-weight:700;font-size:11px;color:#9c1624;border:1px solid #b51a2a;padding:0 6px;border-radius:999px;">{{ p.dupTag }}</span></sc-if></div>
+              <div style="font-size:12px;color:#5b6070;">{{ p.role }}</div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ s.empty }}"><div style="font-size:12.5px;color:#5b6070;padding:4px 0;">Aún no hay respuestas.</div></sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showTray }}" hint-placeholder-val="{{ true }}">
+    <div style="background:#f6f4ef;border:1px solid #e7e7ea;border-radius:12px;padding:11px 12px 11px 14px;display:flex;align-items:center;gap:10px;">
+      <span style="width:9px;height:9px;border-radius:50%;background:{{ accent }};flex:none;"></span>
+      <div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:ui-monospace,monospace;font-size:13px;">{{ link }}</div>
+      <div onClick="{{ copy }}" style="flex:none;font-family:Mulish;font-weight:700;font-size:13px;color:#b51a2a;cursor:pointer;">{{ copyLabel }}</div>
+      <div onClick="{{ share }}" style="flex:none;font-family:Mulish;font-weight:700;font-size:13px;background:#b51a2a;color:#fff;padding:7px 14px;border-radius:999px;cursor:pointer;" style-hover="background:#9c1624;">{{ shareLabel }}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:520,&quot;height&quot;:760},&quot;program&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;ase&quot;,&quot;rel&quot;],&quot;default&quot;:&quot;ase&quot;,&quot;tsType&quot;:&quot;'ase'|'rel'&quot;},&quot;kind&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;est&quot;,&quot;efa&quot;],&quot;default&quot;:&quot;est&quot;,&quot;tsType&quot;:&quot;'est'|'efa'&quot;},&quot;fecha&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;1 oct&quot;,&quot;20 oct&quot;,&quot;5 nov&quot;,&quot;25 nov&quot;],&quot;default&quot;:&quot;5 nov&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;identificacion&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;nombre&quot;,&quot;numero&quot;],&quot;default&quot;:&quot;nombre&quot;,&quot;tsType&quot;:&quot;'nombre'|'numero'&quot;},&quot;selector&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;acordeon&quot;,&quot;barras&quot;,&quot;tabla&quot;],&quot;default&quot;:&quot;acordeon&quot;,&quot;tsType&quot;:&quot;'acordeon'|'barras'|'tabla'&quot;},&quot;wide&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;onShare&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(program:string, kind:string)=&gt;void&quot;}}">
+class Component extends DCLogic {
+  state = { g: 0, q: '', copied: false, open: { 0: true }, openD: {}, more: {} };
+  componentDidMount() {
+    if (!window.TrabunPortal) this._t = setInterval(() => { if (window.TrabunPortal) { clearInterval(this._t); this.forceUpdate(); } }, 50);
+  }
+  componentWillUnmount() { clearInterval(this._t); clearTimeout(this._c); }
+  renderVals() {
+    const D = window.TrabunPortal;
+    const program = this.props.program ?? 'ase', kind = this.props.kind ?? 'est', fecha = this.props.fecha ?? '5 nov';
+    const wide = !!(this.props.wide ?? false);
+    const byNum = (this.props.identificacion ?? 'nombre') === 'numero';
+    const mode = this.props.selector ?? 'acordeon';
+    const edge = !!(this.props.bordes ?? true);
+    const isEst = kind === 'est';
+    const accent = program === 'ase' ? '#dc911b' : '#6bacc4';
+    const link = `trabun.cl/${isEst ? 'test' : 'efa'}/${program}/12345`;
+    const st = this.state;
+    const base = { isEst, isEfa: !isEst, accent, link, note: '', totalLine: '', scope: '', showSearch: false, q: st.q, hasQ: false,
+      mAcc: false, mBar: false, mTab: false, hasIssues: false, issues: [],
+      searchPh: byNum ? 'Buscar por número de lista' : 'Buscar estudiante', results: [], noResults: false, grades: [],
+      cur: { label: '', line: '', rooms: [] }, sections: [], showTray: true, copyLabel: st.copied ? 'Copiado' : 'Copiar', shareLabel: 'Compartir',
+      secCols: wide && !isEst ? 'repeat(3,minmax(0,1fr))' : 'minmax(0,1fr)',
+      onQ: e => this.setState({ q: e.target.value }), clearQ: () => this.setState({ q: '' }),
+      copy: () => { try { navigator.clipboard.writeText('https://' + link); } catch (e) {} this.setState({ copied: true }); clearTimeout(this._c); this._c = setTimeout(() => this.setState({ copied: false }), 1600); },
+      share: () => this.props.onShare && this.props.onShare(program, kind) };
+    if (!D) return base;
+    const ph = D.phase(fecha, kind), pre = ph === 'pre', closed = ph === 'closed';
+    const S = D.SURVEY[kind];
+    const sum = D.summary(program, kind, ph, edge);
+    const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const resp = n => n === 1 ? '1 respuesta' : `${n} respuestas`;
+    const tog = (key, i) => () => this.setState(s => ({ [key]: { ...s[key], [i]: !s[key][i] } }));
+    const out = { ...base, totalLine: pre ? (isEst ? `~${sum.t} estudiantes estimados` : 'Sin respuestas todavía') : sum.line, scope: D.scope(program, kind),
+      note: pre ? `${S.name} abre el ${S.openLong}. Ya puedes compartir el link: se activará ese día.` : closed ? `${S.name} cerró el 20 de noviembre. Esta es la participación final.` : '',
+      showTray: !closed, shareLabel: pre ? 'Compartir' : 'Recordar', showSearch: isEst && !pre };
+    if (isEst) {
+      const data = D.students(program, ph, edge);
+      const gi = Math.min(st.g, data.length - 1);
+      const idOf = x => (byNum ? (x.num ? `N° ${x.num}` : '') : x.n) || 'Sin identificar';
+      const q = norm(st.q.trim());
+      out.hasQ = !!q;
+      out.mAcc = !q && mode === 'acordeon'; out.mBar = !q && mode === 'barras'; out.mTab = !q && mode === 'tabla';
+      if (q) {
+        const all = data.flatMap(g => g.rooms.flatMap(c => c.answers.map(x => ({ ...x, room: c.label }))));
+        const match = x => byNum ? String(x.num) === q.replace(/\D/g, '') : norm(x.n).includes(q);
+        out.results = all.filter(match).slice(0, 40).map(x => ({ id: idOf(x), room: x.room }));
+        out.noResults = !out.results.length;
+      }
+      let dups = 0, blanks = 0, collecting = true;
+      const issues = [];
+      const room = (c, gUnexp) => {
+        const list = byNum ? c.answers.slice().sort((a, b) => (a.num || 999) - (b.num || 999)) : c.answers.slice().sort((a, b) => (a.n || '~').localeCompare(b.n || '~', 'es'));
+        const all = list.map(x => { const t = idOf(x); return { t, bd: '#e7e7ea', fg: t === 'Sin identificar' ? '#5b6070' : '#151b29' }; });
+        const LIM = 24, open = !!st.more[c.label];
+        if (collecting && c.unexpected && !gUnexp) issues.push(`${c.label}: ${resp(c.r)} en un curso que no está registrado.`);
+        return { label: c.label, count: resp(c.r), chips: open ? all : all.slice(0, LIM), empty: !c.r,
+          hasMore: all.length > LIM, moreLabel: open ? 'Ver menos' : `Ver todas (${all.length})`, toggleMore: () => this.setState(s => ({ more: { ...s.more, [c.label]: !s.more[c.label] } })),
+          warn: c.unexpected && !gUnexp ? 'Curso no registrado. Si este curso existe, avísale a tu Jefe de Proyecto para agregarlo.' : '', bs: 'solid', bc: '#e7e7ea' };
+      };
+      out.grades = data.map((g, i) => {
+        const hasEst = !!g.est, over = hasEst && g.r > g.est;
+        const p = hasEst ? D.pct(Math.min(g.r, g.est), g.est) : '0%', open = !!st.open[i], sel = gi === i;
+        const [top, ...rest] = g.grade.split(' ');
+        if (g.unexpected) issues.push(`${g.grade}: ${resp(g.r)} en un nivel donde el colegio no tiene registrado el programa.`);
+        const flag = g.unexpected ? 'Fuera de lo registrado' : !hasEst ? 'Sin estimado' : over ? `${g.r - g.est} sobre lo estimado` : '';
+        return { label: g.grade, top, sub: rest.join(' '), count: !hasEst ? resp(g.r) : pre ? `~${g.est}` : `${g.r} / ~${g.est}`, w: p, pctLabel: pre || !hasEst ? '—' : D.pct(g.r, g.est),
+          flag, flagColor: '#5b6070', barOp: hasEst ? 1 : 0.35,
+          open, toggle: tog('open', i), chev: open ? 'rotate(90deg)' : 'none', bt: i ? '1px solid #e7e7ea' : 'none', rowBg: open ? '#fcfbf8' : '#fff',
+          rooms: g.rooms.map(c => room(c, g.unexpected)), roomsLine: g.rooms.map(c => `${c.label.split(' ').pop()}: ${c.r}`).join('  ·  '),
+          pick: () => this.setState({ g: i }), colBg: sel ? '#fff' : 'transparent', colSh: sel ? '0 1px 3px rgba(21,27,41,.12)' : 'none', op: sel ? 1 : 0.55 };
+      });
+      if (dups) issues.push(`${dups === 1 ? '1 respuesta posiblemente duplicada' : dups + ' respuestas posiblemente duplicadas'} (marcadas con ×2).`);
+      if (blanks) issues.push(`${blanks === 1 ? '1 respuesta' : blanks + ' respuestas'} sin ${byNum ? 'número de lista' : 'nombre'}.`);
+      out.issues = issues; out.hasIssues = !!issues.length && !out.hasQ; collecting = false;
+      const G = data[gi];
+      out.cur = { label: G.grade, line: G.est ? `${resp(G.r)} de ~${G.est} estimados` : resp(G.r), rooms: G.rooms.map(c => room(c, G.unexpected)) };
+    } else {
+      const issues = [];
+      let dups = 0;
+      const dedupe = arr => arr.map(p => ({ ...p, dupTag: '' }));
+      out.sections = D.efa(program, ph, edge).map((s, i) => {
+        const list = D.efaPeople(s);
+        if (s.grades) s.grades.forEach(g => { if (g.outside) issues.push(`${g.grade}: ${resp(g.people.length)} de docentes que declararon un nivel donde el colegio no tiene registrado el programa.`); });
+        return {
+          label: s.label, count: `${list.length}`, divider: i > 0 && !wide, tabbed: !!s.grades,
+          people: s.grades ? [] : dedupe(s.people), empty: !s.grades && !s.people.length,
+          grades: s.grades ? s.grades.map((g, j) => { const open = !!st.openD[j]; return { label: g.grade, flag: g.outside ? 'Fuera de lo registrado' : '', count: `${g.people.length}`, people: dedupe(g.people), empty: !g.people.length,
+            open, toggle: tog('openD', j), chev: open ? 'rotate(90deg)' : 'none', bt: j ? '1px solid #e7e7ea' : 'none' }; }) : []
+        };
+      });
+      if (dups) issues.push(`${dups === 1 ? '1 respuesta posiblemente duplicada' : dups + ' respuestas posiblemente duplicadas'} (marcadas con ×2).`);
+      out.issues = issues; out.hasIssues = !!issues.length;
+    }
+    return out;
+  }
+}
+</script>
+</body>
+</html>
