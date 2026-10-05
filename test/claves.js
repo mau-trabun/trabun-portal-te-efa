@@ -34,6 +34,7 @@ try { ctx.generarClavesNuevas(); } catch (e) { error = e.message; }
 check('refuses to run twice', /ya tiene filas/.test(error) && sheets['Claves 2026'].length === 6);
 const muestra = Array.from({ length: 3000 }, () => ctx.claveAleatoria_()).join('');
 const cuenta = {}; for (const ch of muestra) cuenta[ch] = (cuenta[ch] || 0) + 1;
-const vals = Object.values(cuenta), media = muestra.length / 31;
-check('every character used, roughly uniform (3.000 claves)', vals.length === 31 && vals.every(v => Math.abs(v - media) < media * 0.25));
+// "≥1 letter and ≥1 digit" makes digits more frequent than letters by design, so check each group on its own
+const parejo = chars => { const v = chars.split('').map(ch => cuenta[ch] || 0), m = v.reduce((a, x) => a + x, 0) / v.length; return v.every(x => Math.abs(x - m) < m * 0.25); };
+check('every character used; letters even among letters, digits among digits (3.000 claves)', Object.keys(cuenta).length === 31 && parejo('abcdfghijkmnpqrstuvwxyz') && parejo('23456789'));
 `);
