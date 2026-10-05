@@ -92,7 +92,8 @@
     .pestana-lbl svg{flex:none}
     .pestana-estado{font-family:var(--f-head);font-weight:700;font-size:12.5px;opacity:.85;white-space:nowrap}
     .lbl-corto{display:none}
-    .tarjeta{background:#fff;border-radius:0 16px 16px 16px;box-shadow:0 1px 3px rgba(21,27,41,.08);border:1px solid var(--borde);overflow:hidden;position:relative;z-index:1}
+    /* Border drawn as a 1px ring outside the box (not border:), so the band starts at the same x as the active tab */
+    .tarjeta{background:#fff;border-radius:0 16px 16px 16px;box-shadow:0 0 0 1px var(--borde),0 1px 3px rgba(21,27,41,.08);overflow:hidden;position:relative;z-index:1}
     .banda{background:var(--prog);padding:18px 26px 14px;position:relative;overflow:hidden}
     .banda .destello{position:absolute;top:0;right:0;pointer-events:none}
     .banda-fila{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
