@@ -25,6 +25,7 @@ Static portal where Chilean schools log in (RBD + 6-char clave) and see **who in
   - Two deployments: `staging` and `prod`, each with its own `/exec` URL. Update in place with `clasp deploy -i <deploymentId> -d "<desc>"` (keeps the URL). Saving/pushing code does NOT change what `/exec` serves until a deploy.
   - **staging** (created 05-10-2026, version 1): ID `AKfycbyFDY66nTGtuUhG6XOrXa4w_ct1EY5zAQnSOg6Ar-Egofle4K2nDVqFrSl7ovSj1OPyRg`, URL `https://script.google.com/macros/s/AKfycbyFDY66nTGtuUhG6XOrXa4w_ct1EY5zAQnSOg6Ar-Egofle4K2nDVqFrSl7ovSj1OPyRg/exec`
   - **prod**: not created yet (at launch).
+  - Known platform issue (seen 05-10-2026, ~04:30): Apps Script latency 2–35 s and intermittent 404 on the `googleusercontent.com/macros/echo` hop, even for `doGet` (no Sheet access) and on the EFS backend too. Not our code. Frontend retries up to 2× when the reply isn't JSON, 40 s timeout per attempt. Re-measure in daytime and before launch.
   - Claude Code's auto-mode classifier blocks `clasp deploy` even after approval in chat: Mau runs deploys himself (`source ~/.nvm/nvm.sh && clasp deploy -i <id> -d "<desc>"`), or adds a permission rule. `clasp push` needs `--force` when `appsscript.json` changed (non-interactive shell).
   - `/exec` URLs must not contain `/u/N/`.
   - Access: "Cualquier usuario" (Workspace domain policy).
@@ -91,9 +92,10 @@ New for 2026:
 ## Status
 - [x] Data contract (sheet tabs + JSON shape) → `CONTRACT.md`
 - [x] Backend on staging deployment (login, panel, Métricas, `revisarFormularios()`, `generarDatosPrueba()`; tested locally with mocks + live health/credenciales check)
-- [ ] Run `generarDatosPrueba()` on the live Sheet and log in as the chosen schools
-- [ ] Frontend shell ← **next** from EFS `index.html` → program card with synced folder tabs
-- [ ] Estudiantes block (accordion 4a, classes, search, edge cases)
+- [x] Run `generarDatosPrueba()` on the live Sheet (6 schools, 928 test + 65 EFA rows)
+- [x] Frontend shell: login (POST, retry, timeout), panel, program cards with synced folder tabs, band, phase notes, summaries. Deviations: cards min 520px (README's 540 never fits 2 columns), "2026" tag hidden <400px. Preview: `.claude/launch.json` → `python3 -m http.server` on `docs/`
+- [ ] Estudiantes block ← **next**
+  (accordion 4a, classes, search, edge cases)
 - [ ] Phases by date + share modal + real QR
 - [ ] EFA block
 - [ ] Mobile
