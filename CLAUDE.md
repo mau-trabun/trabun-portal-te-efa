@@ -23,6 +23,9 @@ Static portal where Chilean schools log in (RBD + 6-char clave) and see **who in
   - Production: `portal.fundaciontrabun.cl` (domain moved from the old repo at launch).
 - **Backend:** Google Apps Script bound to the new 2026 Sheet, code in `/gas`, managed with `clasp`. JSON API.
   - Two deployments: `staging` and `prod`, each with its own `/exec` URL. Update in place with `clasp deploy -i <deploymentId> -d "<desc>"` (keeps the URL). Saving/pushing code does NOT change what `/exec` serves until a deploy.
+  - **staging** (created 05-10-2026, version 1): ID `AKfycbyFDY66nTGtuUhG6XOrXa4w_ct1EY5zAQnSOg6Ar-Egofle4K2nDVqFrSl7ovSj1OPyRg`, URL `https://script.google.com/macros/s/AKfycbyFDY66nTGtuUhG6XOrXa4w_ct1EY5zAQnSOg6Ar-Egofle4K2nDVqFrSl7ovSj1OPyRg/exec`
+  - **prod**: not created yet (at launch).
+  - Claude Code's auto-mode classifier blocks `clasp deploy` even after approval in chat: Mau runs deploys himself (`source ~/.nvm/nvm.sh && clasp deploy -i <id> -d "<desc>"`), or adds a permission rule. `clasp push` needs `--force` when `appsscript.json` changed (non-interactive shell).
   - `/exec` URLs must not contain `/u/N/`.
   - Access: "Cualquier usuario" (Workspace domain policy).
 - **Design spec:** `/design` (Claude Design handoff). `README.md` = screens + business rules + tokens. `datos-portal.js` = behavioral reference with edge cases. `trabun-organic.jsx` = wave paths, **copy verbatim**. The `.dc.html` prototypes run on Claude Design's runtime and are reference only, not code to reuse.
@@ -31,25 +34,29 @@ Static portal where Chilean schools log in (RBD + 6-char clave) and see **who in
 ## Repo layout (local: /Users/mauricioaburto/trabun-portal-te-efa — outside iCloud/Drive sync, keep it that way)
 ```
 /docs     site (GitHub Pages source)
-/gas      Code.gs, appsscript.json, .clasp.json
+/gas      Code.js, appsscript.json (clasp rootDir)
 /design   Claude Design handoff package (read-only reference)
 /data     local SF snapshots — GITIGNORED, never commit
+.clasp.json   scriptId + rootDir "gas" (clasp 3 writes it at repo root; no secrets, safe to commit)
 CLAUDE.md
+CONTRACT.md   data contract: sheet tabs, normalization, derivation rules, JSON API
 ```
+- Run all `clasp` commands from the repo root. Auth lives in `~/.clasprc.json`, never in the repo.
+- clasp 3 stores `.gs` files locally as `.js`. Remote file was cloned as `Código.js` (Spanish editor default); rename to `Code.js` when writing the backend. `clasp push` replaces all remote files with local ones, so the old `Código` is removed, not duplicated.
+- Node comes from nvm (`~/.nvm`, loaded in `~/.zprofile`). In a non-login shell, prefix with `source ~/.nvm/nvm.sh &&`.
 
 ## Data rules (non-negotiable)
 - **Never commit real data.** `/data` is gitignored. The repo is public. Test mocks in code must be fictional (like `datos-portal.js`).
 - **Never modify raw sheet data.** Normalization is display-layer only (e.g. `formatNombre()` at render time).
 - The `SF` tab is fed by the Salesforce connector (daily refresh) and **must stay raw**. No formula columns next to it. **Build all keys in GAS** (normalized RBD + program from record type), never from a sheet formula. (Lesson: RBD 4898 lost all responses in EFS because the key formula wasn't dragged down to new SF rows.)
-- Response tabs currently hold **fake rows using real RBDs** for testing. At launch they are cleared completely and replaced by import formulas. Do not design anything that depends on those fake rows.
+- Response tabs (`Respuestas Test`, `Respuestas EFA`) have contract headers written by `configurarHojas()` (05-10-2026) and no data yet. Fake rows for staging come from `generarDatosPrueba()` (fictional people for one real school per case, picked from SF at run time; EFA emails all `@ejemplo.invalid`; refuses to run if the tabs already have rows). At launch Mau deletes every row below the header and pastes the import formulas. Do not design anything that depends on fake rows.
 - Never write `e.parameter` or the clave to logs.
 
-## Sheet (new 2026 Sheet)
-- `SF`: connector output. One row per school × program. Columns (expected): RBD, record type, modelo, JDP, Nombre para formulario (`Comuna - Nombre - RBD`), 14 × CxN, 14 × Estudiantes x Nivel, EDI flag. **Confirm actual columns against `/data` snapshot.**
-- `Contraseñas`: rbd | clave (copied from EFS; new schools added manually).
-- `Config`: dates per survey (open/close), links per program × survey, `studentId` mode, `incluirPruebas` if needed. To be defined in the data contract.
-- Response tabs (Estudiantes, EFA): headers defined by the data contract.
-- `Métricas`: append-only login log (see below).
+## Sheet (new 2026 Sheet) — full spec in `CONTRACT.md`
+- Tabs: `SF`, `Contraseñas`, `Config`, `Formularios`, `Respuestas Test`, `Respuestas EFA`, `Métricas` (later `Precalculo`). Columns found by header, never by position.
+- `SF` is clean (helper columns `RBD+Programa` and `contraseña` removed 05-10-2026).
+- `Nuevas` is Mau's auxiliary clave generator (volatile `RANDBETWEEN`). **Nothing may read or reference it.**
+- Response tabs follow the EFS pattern: typed header row + stacked `{QUERY(IMPORTRANGE())}` with a `Form` label column. Import identification columns only, never answers.
 
 ## Business rules
 Carried from EFS (keep):
@@ -60,38 +67,42 @@ Carried from EFS (keep):
 - All respondent-controlled strings escaped via `esc()` or `.textContent`.
 
 New for 2026:
-- **EFA dedup key = email + rol** within RBD+programa, keep the most recent submission. A person can legitimately hold two roles (e.g. docente + mentor/a) and appears in both sections. **Section counts = responses in that role; program total ("N resp.") = unique people by email.**
+- **EFA dedup key = email + rol** within RBD+programa, keep the most recent submission. Any combination of roles is legitimate; a person appears once per role. **Section counts = responses in that role; program total ("N resp.") = unique people by email.**
 - **Students: no dedup** (no email). Every answer listed as submitted.
-- Student survey fields: programa, colegio, nivel, letra, nombre and/or número de lista. The form filters schools by region first; school option text is `Comuna - Nombre - RBD` (parse RBD from it).
-- Test availability: ASE 4° básico → IV° medio; REL 5° básico → IV° medio. Estudiantes view = (implemented ∩ test-available) ∪ seen in responses.
+- Student survey: 7 Google Forms (ASE_4-5, ASE_6-IV, ASE_EDI_4, ASE_EDI_I-IV, ASE_EDI_8-IV, REL_5-8, REL_I-IV), each pre-filtered to its program's schools. Fields: nombres + apellidos or número de lista, nivel (mandatory), letra, colegio (one column per region; option text `Comuna - Nombre - RBD`, parse RBD from it).
+- Test availability comes from the `Formularios` tab (program × EDI × año inicio → grade band + link), not a fixed rule. EDI grades without a form are surveyed on paper (RCT) and never shown. Estudiantes view = (implemented ∩ test grades) ∪ seen in responses; tab shown even if the intersection is empty.
+- Students sorted by apellidos (`nombre` mode). `numero` mode: per class, grid 1…tope with answered numbers highlighted, `tope = max(highest answered, round(Alumnos/CxN))`.
 - Class letters: derived from SF course count per grade (count 3 → A, B, C) ∪ letters seen in responses.
 - Estimates: `est` from SF Estudiantes x Nivel. Grade % = r / est, may exceed 100% (flag "{r−est} sobre lo estimado", bar capped). No estimate → "Sin estimado", count only. Program % = Σr / Σest over grades with an estimate.
 - **EFA has no %**, counts only (except EDI, see open decisions).
 - EFA role categories are a fixed list (new list pending), mapped to Dirección / Líderes educativos / Docentes like `ROLES_LIDER` in EFS.
 - **ASE docentes grouped by grade** (accordion). **REL docentes = flat list** (one REL teacher often covers all classrooms). Intentional.
 - Survey phases (pre / open / closed) computed from `Config` dates. **Never hardcode dates or "faltan N días" in copy.**
-- Links: one per program × survey for now, from `Config`.
+- Links: from `Formularios`, up to 2 per program × survey. Share tray and message show one row per link, labeled with its grade range (approved deviation from the design's single link).
 - Footer contact: `evaluacion@fundaciontrabun.cl`; **EDI schools: `consultas_edi@fundaciontrabun.cl`** (driven by the SF EDI flag).
 
 ## Built in from day one (EFS backlog)
 - Clave via **POST**, not GET query string. GAS has no OPTIONS/preflight handling: send `fetch` with `Content-Type: text/plain` and a JSON body, parse in `doPost`.
 - OAuth scope: `https://www.googleapis.com/auth/spreadsheets.currentonly` in `appsscript.json` (not full `spreadsheets`). Must still allow writing `Métricas` in the bound sheet.
-- `Métricas`: on **successful login only**, append `timestamp, rbd, programas, responsesOk`. Never clave, IP or names.
+- `Métricas`: on **successful login only**, append `timestamp, rbd, programas, testOk, efaOk`. Never clave, IP or names.
 - `formatNombre()` for display (all-caps → title case, keeps particles de/del/la…, hyphens/apostrophes; cannot restore accents).
-- Aggregation written as a pure function `rbd → payload`, so a time-driven precompute/cache can wrap it later if student volume makes logins slow.
+- Aggregation written as a pure function `rbd → payload`, so a time-driven precompute can wrap it. Plan: launch computing at login; load-test staging with ~70k fictional student rows; `Precalculo` tab (trigger ~10 min) live before end of October.
 
 ## Status
-- [ ] Data contract (sheet tabs + JSON shape) ← **next**
-- [ ] Backend skeleton on staging deployment
-- [ ] Frontend shell from EFS `index.html` → program card with synced folder tabs
+- [x] Data contract (sheet tabs + JSON shape) → `CONTRACT.md`
+- [x] Backend on staging deployment (login, panel, Métricas, `revisarFormularios()`, `generarDatosPrueba()`; tested locally with mocks + live health/credenciales check)
+- [ ] Run `generarDatosPrueba()` on the live Sheet and log in as the chosen schools
+- [ ] Frontend shell ← **next** from EFS `index.html` → program card with synced folder tabs
 - [ ] Estudiantes block (accordion 4a, classes, search, edge cases)
 - [ ] Phases by date + share modal + real QR
 - [ ] EFA block
 - [ ] Mobile
-- [ ] Launch (before 13-10): clear test rows, paste formulas, check column alignment, promote prod, move domain
+- [ ] Launch (before 13-10): delete all fake rows (check none with `@ejemplo.invalid` remain), paste formulas, check column alignment, run `revisarFormularios()`, promote prod, move domain
 
 ## Open decisions
 - `studentId`: "nombre" | "numero" (decision due ~06/07-10). Build both behind a config flag.
 - New EFA role category list (to map into the three sections).
+- EFA forms and links: likely one SurveyMonkey survey per programa × modelo as in EFS, plus **EFA-EDI** (modelo-independent, treated EDI schools only; one form, or two split by cohort via `Año inicio`). Regular ASE EFA rows then need `EDI = NO`. Open: Cuadernillos ASE and Piloto gratuito have no EFS-era form. Mau fills `Formularios` in the live Sheet and says "Formularios is final"; then run `revisarFormularios()` (built with the backend skeleton) to check coverage per school.
+- SF completeness: Mau is asking for missing Alumnos/CxN on non-Control schools to be filled before launch.
 - **EDI base list for EFA:** identifier (must be email), whether schools see pending names or only "X de Y" (support vs. control framing), whether old EDI portal code is reusable. Respondents outside the list always shown, counted in total, not in denominator.
 - Possible migration of the student survey to SurveyMonkey for per-school links.
