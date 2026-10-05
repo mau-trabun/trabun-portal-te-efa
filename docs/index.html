@@ -154,6 +154,29 @@
     .num.si{background:var(--prog);border-color:var(--prog);color:#fff}
     .num sup{position:absolute;top:-6px;right:-4px;font-size:9.5px;font-weight:800;background:var(--tinta);color:#fff;border-radius:999px;padding:0 4px;line-height:14px}
 
+    /* ── EFA · DOCENTES Y LÍDERES ───────────────────────── */
+    /* Cards are always full width, so the three sections sit in 3 columns (README §2.5 wide case); stacked when narrow */
+    .secciones{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:36px;align-items:start}
+    /* ASE: Docentes by grade (up to 14 rows) takes the full width under Dirección | Líderes, so no tall narrow column */
+    .secciones.por-nivel{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .secciones.por-nivel .seccion-docentes{grid-column:1/-1;border-top:1px solid var(--borde);margin-top:16px;padding-top:16px}
+    .secciones.por-nivel .docentes-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));column-gap:24px}
+    .seccion-cab{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px}
+    .seccion-cab b{font-family:var(--f-head);font-weight:700;font-size:15px}
+    .seccion-cab span{font-family:var(--f-head);font-weight:800;font-size:13px;white-space:nowrap}
+    .persona{padding:7px 0}
+    .persona b{display:block;font-family:var(--f-head);font-weight:600;font-size:14px;overflow-wrap:anywhere}
+    .persona span{display:block;font-size:12px;color:var(--muted)}
+    .seccion-vacia{font-size:12.5px;color:var(--muted);padding:4px 0}
+    .acordeon.docentes{margin-top:4px}
+    .fila-docentes{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;width:100%;text-align:left;min-height:44px;transition:background 120ms}
+    .fila-docentes:hover{background:#fafafa}
+    .fila-docentes .nivel-nombre{font-size:13.5px}
+    .fila-docentes-der{display:flex;align-items:center;gap:10px;flex:none}
+    .docentes-lista{padding:0 14px 10px}
+    .docentes-lista .persona{padding:5px 0}
+    .efa-nota{font-size:12px;color:var(--muted)}
+
     /* ── COMPARTIR (sección siempre visible + QR) ───────── */
     .compartir{background:var(--tray);border:1px solid var(--borde);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
     .compartir-titulo{display:flex;align-items:center;gap:8px;font-family:var(--f-head);font-weight:700;font-size:14px}
@@ -208,6 +231,11 @@
     .cargando p{font-family:var(--f-head);font-weight:700;font-size:13px;color:var(--muted)}
 
     /* ── MÓVIL (≤600px) ─────────────────────────────────── */
+    @media (max-width:860px){
+      .secciones{grid-template-columns:minmax(0,1fr)}
+      .secciones.por-nivel{grid-template-columns:minmax(0,1fr)}
+      .seccion + .seccion{border-top:1px solid var(--borde);margin-top:16px;padding-top:16px}
+    }
     @media (max-width:600px){
       #view-login{padding:56px 16px}
       .mascota{top:-70px;right:8px}
@@ -2943,7 +2971,7 @@ window.qrcode=qrcode;
 
     // Share section, always visible under each survey block (replaces tray + modal; EFS showed it inline too)
     function shDe(programa, clave) {
-      const u = estado.ui[programa] || (estado.ui[programa] = { abiertos: new Set(), mas: new Set(), q: "" });
+      const u = uiDe({ programa });
       u.sh = u.sh || {};
       // Progress by grade is opt-in: the first share is the link itself, and per-grade numbers sent to
       // the whole teaching team can read as comparison (supportive tool, not control).
@@ -3107,7 +3135,7 @@ window.qrcode=qrcode;
 
     function uiDe(prog) {
       // Every grade starts collapsed (Mau's choice; the design opened the first one)
-      return estado.ui[prog.programa] || (estado.ui[prog.programa] = { abiertos: new Set(), mas: new Set(), q: "" });
+      return estado.ui[prog.programa] || (estado.ui[prog.programa] = { abiertos: new Set(), mas: new Set(), q: "", efa: new Set() });
     }
 
     function bloqueTest(prog) {
@@ -3267,8 +3295,58 @@ window.qrcode=qrcode;
       const alcance = (prog.nivelesImplementados || []).length ? `Niveles implementados: ${textoNiveles(prog.nivelesImplementados)}` : "";
       if (!e.ok) return notaFase("efa") + errorCarga();
       const total = pre ? "Sin respuestas todavía" : plural(e.total, "respuesta", "respuestas");
-      return notaFase("efa") + `<div class="resumen"><div class="resumen-total">${esc(total)}</div><div class="resumen-alcance">${esc(alcance)}</div></div>`
+      const secciones = e.secciones || [];
+      // Sections count responses per role, the total counts people: say why they may not add up
+      const multiRol = !pre && secciones.reduce((a, s) => a + s.r, 0) > e.total
+        ? `<div class="resumen-alcance">Quien respondió con más de un rol aparece en cada sección y cuenta una vez en el total.</div>` : "";
+      return notaFase("efa") + `<div class="resumen"><div class="resumen-total">${esc(total)}</div><div class="resumen-alcance">${esc(alcance)}</div>${multiRol}</div>`
+        + (pre ? "" : `<div id="efa-${prog.programa}">${contenidoEfa(prog)}</div>`) // before opening there is no one to list
         + seccionCompartir(prog, "efa");
+    }
+
+    const SECCIONES_EFA = { direccion: "Dirección", lideres: "Líderes educativos", docentes: "Docentes" };
+    const vacioEfa = `<div class="seccion-vacia">Aún no hay respuestas.</div>`;
+
+    function filaPersona(x) {
+      const nombre = formatNombre(x.nombre);
+      return `<div class="persona"><b>${nombre ? esc(nombre) : "Sin nombre"}</b>${x.rol ? `<span>${esc(x.rol)}</span>` : ""}</div>`;
+    }
+
+    function contenidoEfa(prog) {
+      const cols = (prog.efa.secciones || []).map(s => {
+        let cuerpo;
+        if (s.niveles) cuerpo = acordeonDocentes(prog, s); // ASE: by grade
+        else cuerpo = (s.personas || []).length ? s.personas.map(filaPersona).join("") : vacioEfa; // REL docentes: flat list (intentional)
+        return `<div class="seccion seccion-${esc(s.id)}">
+          <div class="seccion-cab"><b>${SECCIONES_EFA[s.id] || esc(s.id)}</b><span>${fmtNum(s.r)}</span></div>
+          ${cuerpo}
+        </div>`;
+      }).join("");
+      const porNivel = (prog.efa.secciones || []).some(s => s.niveles);
+      return `<div class="secciones${porNivel ? " por-nivel" : ""}">${cols}</div>`;
+    }
+
+    // ASE docentes: implemented ∪ declared grades, all collapsed at start. A docente with several grades
+    // is listed under each one but counted once in the section.
+    function acordeonDocentes(prog, s) {
+      if (!s.niveles.length) return vacioEfa;
+      const u = uiDe(prog);
+      const filas = s.niveles.map(n => {
+        const clave = n.nivel || "";
+        const abierto = u.efa.has(clave);
+        const marca = n.nivel && !n.registrado ? "Fuera de lo registrado" : "";
+        return `<div class="nivel${abierto ? " abierto" : ""}">
+          <button type="button" class="fila-docentes" data-programa="${prog.programa}" data-nivel-efa="${esc(clave)}" aria-expanded="${abierto}">
+            <div style="min-width:0"><div class="nivel-nombre">${n.nivel ? esc(n.nivel) : "Sin nivel declarado"}</div>${marca ? `<div class="nivel-marca">${marca}</div>` : ""}</div>
+            <div class="fila-docentes-der"><span class="nivel-cifra">${fmtNum(n.r)}</span>
+            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6070" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></div>
+          </button>
+          ${abierto ? `<div class="docentes-lista">${(n.personas || []).length ? n.personas.map(filaPersona).join("") : vacioEfa}</div>` : ""}
+        </div>`;
+      }).join("");
+      const varios = s.niveles.reduce((a, n) => a + n.r, 0) > s.r
+        ? `<div class="efa-nota" style="margin-top:8px">Quien hace clases en más de un nivel aparece en cada uno.</div>` : "";
+      return `<div class="acordeon docentes">${filas}</div>${varios}`;
     }
 
     // ── Eventos ─────────────────────────────────────────────
@@ -3292,6 +3370,14 @@ window.qrcode=qrcode;
         const u = estado.ui[fila.dataset.programa];
         u.abiertos.has(fila.dataset.nivel) ? u.abiertos.delete(fila.dataset.nivel) : u.abiertos.add(fila.dataset.nivel);
         return redibujarTest(fila.dataset.programa);
+      }
+      const filaEfa = ev.target.closest(".fila-docentes");
+      if (filaEfa) {
+        const clave = filaEfa.dataset.programa, prog = progPorClave(clave), cont = $(`efa-${clave}`);
+        const u = estado.ui[clave], nivel = filaEfa.dataset.nivelEfa;
+        u.efa.has(nivel) ? u.efa.delete(nivel) : u.efa.add(nivel);
+        if (prog && cont) cont.innerHTML = contenidoEfa(prog);
+        return;
       }
       const mas = ev.target.closest(".ver-mas");
       if (mas) {
