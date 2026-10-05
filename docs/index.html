@@ -101,7 +101,8 @@
     .banda .eyebrow{color:rgba(255,255,255,.92)}
     .banda-titulo{font-family:var(--f-head);font-weight:800;font-size:23px;line-height:1.15;color:#fff;margin-top:4px}
     .banda-pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
-    .banda-pills > span{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.2);color:#fff;font-family:var(--f-head);font-size:11.5px;font-weight:700;border-radius:999px;padding:4px 12px;line-height:1.3}
+    .banda-pills{position:relative;z-index:1}
+    .banda-pills > span{display:inline-block;background:rgba(255,255,255,.2);color:#fff;font-family:var(--f-head);font-size:11.5px;font-weight:700;border-radius:999px;padding:4px 12px;line-height:1.3}
     .banda-pills .k{font-weight:500;opacity:.9}
     .banda-pills b{font-weight:800}
     .banda-pills > .modelo{background:rgba(255,255,255,.28)}
@@ -165,7 +166,7 @@
     .curso-cab span{font-family:var(--f-head);font-weight:800;font-size:12.5px;white-space:nowrap}
     .curso-aviso,.curso-vacio{font-size:12px;line-height:1.45;color:var(--muted)}
     .chips{display:flex;flex-wrap:wrap;gap:4px}
-    .chip{font-family:var(--f-head);font-weight:600;font-size:12px;background:#fff;border:1px solid var(--borde);color:var(--tinta);padding:2px 8px;border-radius:999px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .chip{font-family:var(--f-head);font-weight:600;font-size:12px;line-height:1.35;background:#fff;border:1px solid var(--borde);color:var(--tinta);padding:2px 8px;border-radius:11px;max-width:100%;overflow-wrap:anywhere} /* long names wrap, never cut */
     .chip.anon{color:var(--muted)}
     .curso-acciones{display:flex;gap:6px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--borde);padding-top:10px;margin-top:2px}
     .curso-acciones .btn-mini{padding:6px 10px} /* both buttons on one line in a 260px class card */
@@ -294,9 +295,26 @@
       .selector-cursos{display:flex}
       .selector-cursos ~ .cursos .curso:not(.sel){display:none}
       .pie{padding:20px 16px 28px}
+      /* Tap targets ≥44px */
+      .campo input{min-height:44px}
+      .buscar{min-height:44px}
+      .ver-mas{min-height:44px;display:inline-flex;align-items:center}
+      .interruptor{min-height:44px}
+      .sel-curso{min-height:44px}
     }
     @media (max-width:400px){
       .nav-tag{display:none} /* at 375px the title + tag + the logout button don't fit */
+    }
+    /* Smallest phones (320px): title row 252px wide */
+    @media (max-width:360px){
+      .nav-titulo{font-size:14px}
+      .btn-salir svg{display:none}
+      .banda-titulo{font-size:18px}
+      .banda-pill{font-size:14px}
+      .banda-pill.con-sub{padding:7px 10px}
+      .banda-pill small{font-size:9.5px}
+      .banda-pill small.partible{max-width:80px}
+      .seccion-cab b{font-size:14px}
     }
   </style>
 </head>
@@ -2847,10 +2865,8 @@ window.qrcode=qrcode;
       if (!rbd || !clave) { err.textContent = "Ingresa el RBD y la clave."; return; }
       $("btn-ingresar").disabled = true;
       $("cargando").hidden = false;
-      const t0 = performance.now();
       try {
         const datos = await llamarApi(rbd, clave);
-        if (datos.ms != null) console.info(`Ingreso: ${Math.round(performance.now() - t0)} ms en total, ${datos.ms} ms en el servidor`);
         if (!datos.ok) { err.textContent = MENSAJES_ERROR[datos.error] || MENSAJES_ERROR.servidor; return; }
         $("input-clave").value = "";
         sesion.rbd = rbd;
@@ -2968,10 +2984,10 @@ window.qrcode=qrcode;
               <div class="banda-texto">
                 <div class="eyebrow">Programa</div>
                 <div class="banda-titulo">${meta.titulo}</div>
-                ${pillsImplementacion(prog)}
               </div>
               ${(c => `<span class="banda-pill${c.sub ? " con-sub" : ""}">${esc(c.pill)}${c.sub ? `<small${c.subCorta ? ' class="partible"' : ""}>${c.sub}</small>` : ""}</span>`)(cifra(prog, clave))}
             </div>
+            ${pillsImplementacion(prog)}
             ${linea ? `<div class="banda-linea">${ICONOS.calendario}<span>${linea}</span></div>` : ""}
           </div>
           <div class="wave" style="background:${meta.color};--abajo:#fff"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="height:56px"><path d="${WAVE_DRIP}" fill="#fff"/></svg></div>

@@ -51,7 +51,6 @@ function doPost(e) {
 }
 
 function login_(e) {
-  const t0 = Date.now();
   let body = {};
   try { body = JSON.parse((e && e.postData && e.postData.contents) || '{}'); } catch (_) { /* malformed → credenciales */ }
   const rbd = normRbd_(body.rbd);
@@ -71,11 +70,7 @@ function login_(e) {
   }
   cache.remove(kIntentos);
 
-  const datos = cargarDatos_();
-  const tDatos = Date.now() - t0;
-  const res = panel_(rbd, datos, reloj_());
-  res.ms = Date.now() - t0; // server time only; the browser also waits for Google's startup and redirect
-  console.log(`login ok · datos ${tDatos} ms · total ${res.ms} ms`); // no RBD, clave or names in logs
+  const res = panel_(rbd, cargarDatos_(), reloj_());
   if (body.refresco !== true) registrarMetrica_(res); // auto/manual refreshes are not new logins
   return res;
 }
@@ -499,7 +494,6 @@ function registrarMetrica_(res) {
       res.programas.map(p => p.programa.toUpperCase()).join(','),
       res.programas.every(p => p.test.ok),
       res.programas.every(p => p.efa.ok),
-      res.ms,
     ]);
   } catch (err) {
     console.error('Métricas: ' + (err && err.message));
@@ -617,20 +611,16 @@ function porNombre_(a, b) {
 // ── Manual checks (run from the editor) ─────────────────────
 
 /**
- * Builds the panel for every school that has rows in the response tabs and logs counts only
- * (never names), plus how long reading the Sheet and building each panel took.
+ * Builds the panel for every school that has rows in the response tabs and logs counts only (never names).
  */
 function probarPanel() {
-  const t0 = Date.now();
   const d = cargarDatos_();
-  const tDatos = Date.now() - t0;
   const rbds = Array.from(new Set([].concat(d.test || [], d.efa || []).map(x => x.rbd))).sort();
-  const out = [`Lectura del Sheet: ${tDatos} ms · colegios con respuestas: ${rbds.length}`,
+  const out = [`Colegios con respuestas: ${rbds.length}`,
     `Test ok: ${!!d.test} · EFA ok: ${!!d.efa} · Formularios: ${d.formularios.length} filas`];
   rbds.forEach(rbd => {
-    const t1 = Date.now();
     const p = panel_(rbd, d, reloj_());
-    out.push(`RBD ${rbd} (${Date.now() - t1} ms) · Test ${p.encuestas.test.fase} · EFA ${p.encuestas.efa.fase}` +
+    out.push(`RBD ${rbd} · Test ${p.encuestas.test.fase} · EFA ${p.encuestas.efa.fase}` +
       (d.sf[rbd] ? '' : ' · NO está en SF'));
     p.programas.forEach(pr => {
       const t = pr.test, e = pr.efa;
@@ -727,6 +717,64 @@ const ROLES_EFS = {
   ase: 'Docente que implementa el Programa ASE-Orientación de Trabün',
   rel: 'Docente que implementa el Programa de Religión de Trabün',
 };
+
+// ── Claves nuevas (manual, run once from the editor) ───────
+
+const TAB_CLAVES_NUEVAS = 'Claves 2026'; // not in TABS: nothing reads it (Cloud Run reads every TABS entry)
+// 6 characters like today's claves. No 0/o/1/l (easily confused) and no "e" (Sheets reads "3e4567" as a number).
+const ALFABETO_CLAVES = 'abcdfghijkmnpqrstuvwxyz23456789';
+
+/**
+ * Writes a new random clave for every RBD in Contraseñas to a new tab (TAB_CLAVES_NUEVAS), as plain text.
+ * Contraseñas is NOT modified: Mau reviews the tab and copies the claves over. Refuses to run if the tab
+ * already has rows. Claves never go to the log.
+ */
+function generarClavesNuevas() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const existente = ss.getSheetByName(TAB_CLAVES_NUEVAS);
+  if (existente && existente.getLastRow() > 0) throw new Error(`${TAB_CLAVES_NUEVAS} ya tiene filas. Bórrala si quieres generar claves de nuevo.`);
+  const t = leerTabla_(TABS.claves);
+  const cRbd = colExacta_(t, 'rbd');
+  const cClave = colExacta_(t, 'clave');
+  const rbds = [];
+  const usadas = new Set();
+  t.rows.forEach(r => {
+    const rbd = normRbd_(r[cRbd]);
+    if (rbd && rbds.indexOf(rbd) < 0) rbds.push(rbd);
+    usadas.add(String(r[cClave]).trim());
+  });
+  const filas = rbds.map(rbd => {
+    let c;
+    do { c = claveAleatoria_(); } while (usadas.has(c));
+    usadas.add(c);
+    return [rbd, c];
+  });
+  const sh = existente || ss.insertSheet(TAB_CLAVES_NUEVAS, ss.getNumSheets());
+  sh.getRange(1, 1, filas.length + 1, 2).setNumberFormat('@'); // text, so a clave is never turned into a number
+  sh.getRange(1, 1, filas.length + 1, 2).setValues([['rbd', 'clave']].concat(filas));
+  const texto = `${TAB_CLAVES_NUEVAS}: ${filas.length} claves nuevas (distintas entre sí y de las actuales). ` +
+    'Contraseñas no fue modificada: revisa la pestaña y copia la columna clave a Contraseñas cuando quieras activarlas.';
+  console.log(texto); // counts only, never claves
+  return texto;
+}
+
+// Secure randomness: Utilities.getUuid() is a v4 UUID; its first 8 hex digits are random.
+// Rejection sampling keeps every character equally likely. At least one letter and one digit.
+function claveAleatoria_() {
+  const n = ALFABETO_CLAVES.length;
+  const tope = 256 - (256 % n);
+  for (;;) {
+    let c = '';
+    while (c.length < 6) {
+      const hex = Utilities.getUuid().replace(/-/g, '').slice(0, 8);
+      for (let i = 0; i < 8 && c.length < 6; i += 2) {
+        const b = parseInt(hex.slice(i, i + 2), 16);
+        if (b < tope) c += ALFABETO_CLAVES[b % n];
+      }
+    }
+    if (/[a-z]/.test(c) && /[0-9]/.test(c)) return c;
+  }
+}
 
 /**
  * Fills Respuestas Test and Respuestas EFA with fictional people for a few real schools,
@@ -906,7 +954,7 @@ const MAX_COLEGIO_COLS = 16; // one school dropdown per Chilean region
 const HEADERS = {
   [TABS.config]: ['clave', 'valor', 'nota'],
   [TABS.formularios]: ['Encuesta', 'Form', 'Programa', 'EDI', 'Año inicio', 'Modelo', 'Desde', 'Hasta', 'Link'],
-  [TABS.metricas]: ['timestamp', 'rbd', 'programas', 'testOk', 'efaOk', 'ms'],
+  [TABS.metricas]: ['timestamp', 'rbd', 'programas', 'testOk', 'efaOk'],
   [TABS.respTest]: ['Form', 'Marca temporal', 'Nombres', 'Apellidos', 'Número de lista', 'Nivel', 'Letra']
     .concat(Array(MAX_COLEGIO_COLS).fill('Colegio')),
   [TABS.respEfa]: ['Form', 'Fecha', 'Nombre', 'Apellido', 'Correo', 'Colegio', 'Rol', 'Niveles'],
