@@ -65,12 +65,19 @@
     .eyebrow{font-family:var(--f-head);font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
     .colegio-nombre{font-family:var(--f-head);font-weight:800;font-size:38px;line-height:1.15;letter-spacing:-0.01em;color:var(--tinta);margin-top:4px}
     .colegio-meta{font-family:var(--f-head);font-weight:700;font-size:12px;color:var(--muted);margin-top:4px}
+    .refresco{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:-8px 0 -6px}
+    .refresco-ts{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted)}
+    .refresco-ts i{width:8px;height:8px;border-radius:50%;background:#a2c037;flex:none}
+    .btn-actualizar{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1.5px solid var(--borde-input);color:var(--tinta);border-radius:999px;padding:8px 15px;font-family:var(--f-head);font-size:13px;font-weight:700;min-height:40px;transition:border-color 120ms,color 120ms}
+    .btn-actualizar:hover{border-color:var(--rojo);color:var(--rojo)}
+    .btn-actualizar:disabled{opacity:.6;cursor:default}
+    .btn-actualizar.girando svg{animation:girar .8s linear infinite}
     .aviso{background:var(--tray);border:1px solid var(--borde);border-radius:12px;padding:13px 16px;font-size:13.5px;line-height:1.5}
 
     /* ── TARJETAS DE PROGRAMA (pestañas de carpeta) ─────── */
+    /* One program per row, full width (as in EFS; Mau's choice 05-10-2026): schools have up to 5 classes per grade,
+       and half-width cards only fit 1 class sub-card per row. Deviation from README §2.2 (side by side). */
     .programas{display:grid;gap:24px;align-items:start;grid-template-columns:minmax(0,1fr)}
-    /* README says 540px, but the content box maxes at 1080px (1160 − 2×40), so 2×540+24 never fits: 520 lets two cards sit side by side */
-    .programas.dos{grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr))}
     .programa{display:flex;flex-direction:column;min-width:0}
     .pestanas{display:flex;gap:4px;flex-wrap:nowrap;position:relative;z-index:2;margin-bottom:-1px}
     .pestana{display:flex;align-items:center;gap:9px;padding:10px 14px 11px 12px;border-radius:14px 14px 0 0;background:var(--tab-off);color:var(--muted);min-width:0;min-height:44px;transition:background 240ms var(--ease),color 240ms var(--ease)}
@@ -85,9 +92,14 @@
     .banda-fila{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
     .banda .eyebrow{color:rgba(255,255,255,.92)}
     .banda-titulo{font-family:var(--f-head);font-weight:800;font-size:23px;line-height:1.15;color:#fff;margin-top:4px}
-    .banda-sub,.banda-linea{font-size:13px;color:rgba(255,255,255,.92)}
-    .banda-linea{font-size:12.5px;margin-top:2px}
+    .banda-pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+    .banda-pills > span{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.2);color:#fff;font-family:var(--f-head);font-size:11.5px;font-weight:700;border-radius:999px;padding:4px 12px;line-height:1.3}
+    .banda-pills .k{font-weight:500;opacity:.9}
+    .banda-pills b{font-weight:800}
+    .banda-pills > .modelo{background:rgba(255,255,255,.28)}
+    .banda-linea{font-size:12.5px;color:rgba(255,255,255,.92);margin-top:10px}
     .banda-pill{flex:none;font-family:var(--f-head);font-weight:800;font-size:18px;color:#fff;background:rgba(255,255,255,.2);padding:5px 12px;border-radius:999px;white-space:nowrap}
+    .banda + .wave{margin-top:-1px;position:relative} /* band height is fractional: overlap 1px so the white card never shows as a hairline */
     .cuerpo{padding:6px 26px 26px;display:flex;flex-direction:column;gap:14px}
 
     /* ── BLOQUE DE ENCUESTA ─────────────────────────────── */
@@ -125,11 +137,11 @@
       .nav-marca img{height:36px}
       .contenido{padding:6px 16px 0}
       .colegio-nombre{font-size:28px}
-      .programas.dos{grid-template-columns:minmax(0,1fr)}
       .lbl-largo,.pestana-estado{display:none}
       .lbl-corto{display:inline}
       .banda{padding:16px 18px 12px}
       .cuerpo{padding:4px 16px 18px}
+      .btn-actualizar{min-height:44px}
       .pie{padding:20px 16px 28px}
     }
     @media (max-width:400px){
@@ -189,6 +201,10 @@
         <div class="eyebrow">Establecimiento</div>
         <div class="colegio-nombre" id="colegio-nombre"></div>
         <div class="colegio-meta" id="colegio-meta"></div>
+      </div>
+      <div class="refresco">
+        <span class="refresco-ts"><i></i><span id="refresco-texto">Actualizado recién</span></span>
+        <button type="button" class="btn-actualizar" id="btn-actualizar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 4v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Actualizar</button>
       </div>
       <div class="aviso" id="aviso-sin-programas" hidden></div>
       <div class="programas" id="programas"></div>
@@ -2518,10 +2534,11 @@ window.qrcode=qrcode;
     const API_URL = "https://script.google.com/macros/s/AKfycbyFDY66nTGtuUhG6XOrXa4w_ct1EY5zAQnSOg6Ar-Egofle4K2nDVqFrSl7ovSj1OPyRg/exec"; // staging
     const REINTENTOS = 2; // Google's result URL fails intermittently (~20%): retry when the reply isn't JSON
     const TIEMPO_MAX_MS = 40000; // per attempt; Apps Script cold starts take several seconds
+    const REFRESCO_MS = 5 * 60 * 1000; // auto-refresh every 5 min, only while the tab is visible (as in EFS)
 
     const PROGRAMAS = {
-      ase: { titulo: "ASE", sub: "Aprendizaje Socioemocional", color: "#dc911b" },
-      rel: { titulo: "Religión", sub: "Programa de Religión", color: "#6bacc4" },
+      ase: { titulo: "Aprendizaje Socioemocional", corto: "ASE", color: "#dc911b" },
+      rel: { titulo: "Religión Católica", corto: "Religión", color: "#6bacc4" },
     };
     const ENCUESTAS = {
       test: { nombre: "Test de Estudiantes", corto: "Estudiantes" },
@@ -2537,6 +2554,8 @@ window.qrcode=qrcode;
     };
 
     const estado = { datos: null, encuesta: "test" };
+    // Kept in memory only (never storage) so refreshes don't ask for the clave again; cleared on logout.
+    const sesion = { rbd: null, clave: null, ultima: 0, timerTexto: null, timerRefresco: null, actualizando: false };
 
     // ── Utilidades ──────────────────────────────────────────
     function esc(s) {
@@ -2584,7 +2603,8 @@ window.qrcode=qrcode;
       if (ve.fase === "pre") return `Abre el ${fechaCorta(ve.abre)}`;
       if (ve.fase === "closed") return `Cerrada el ${fechaCorta(ve.cierra)}`;
       const d = ve.diasRestantes;
-      return d === 0 ? "Abierta · cierra hoy" : d === 1 ? "Abierta · falta 1 día" : `Abierta · faltan ${d} días`;
+      // "faltan N días" read like days until opening; say what ends
+      return d === 0 ? "Abierta · cierra hoy" : d === 1 ? "Abierta · cierra mañana" : `Abierta · cierra en ${d} días`;
     }
 
     function pctTest(test) {
@@ -2605,7 +2625,7 @@ window.qrcode=qrcode;
     }
 
     // ── Login ───────────────────────────────────────────────
-    async function llamarApi(rbd, clave) {
+    async function llamarApi(rbd, clave, refresco) {
       for (let intento = 0; intento <= REINTENTOS; intento++) {
         const ctl = new AbortController();
         const plazo = setTimeout(() => ctl.abort(), TIEMPO_MAX_MS); // a hung request must not leave the loader up forever
@@ -2613,7 +2633,7 @@ window.qrcode=qrcode;
           const r = await fetch(API_URL, {
             method: "POST",
             headers: { "Content-Type": "text/plain;charset=utf-8" }, // simple request: Apps Script has no CORS preflight
-            body: JSON.stringify({ rbd, clave }),
+            body: JSON.stringify(refresco ? { rbd, clave, refresco: true } : { rbd, clave }),
             signal: ctl.signal,
           });
           const texto = await r.text();
@@ -2647,7 +2667,11 @@ window.qrcode=qrcode;
         if (datos.ms != null) console.info(`Ingreso: ${Math.round(performance.now() - t0)} ms en total, ${datos.ms} ms en el servidor`);
         if (!datos.ok) { err.textContent = MENSAJES_ERROR[datos.error] || MENSAJES_ERROR.servidor; return; }
         $("input-clave").value = "";
+        sesion.rbd = rbd;
+        sesion.clave = clave;
         mostrarPanel(datos);
+        marcarActualizado();
+        sesion.timerRefresco = setInterval(() => { if (document.visibilityState === "visible") actualizar(false); }, REFRESCO_MS);
       } catch (_) {
         err.textContent = MENSAJES_ERROR.conexion;
       } finally {
@@ -2657,6 +2681,9 @@ window.qrcode=qrcode;
     }
 
     function salir() {
+      clearInterval(sesion.timerRefresco);
+      clearInterval(sesion.timerTexto);
+      Object.assign(sesion, { rbd: null, clave: null, ultima: 0, timerTexto: null, timerRefresco: null, actualizando: false });
       estado.datos = null;
       estado.encuesta = "test";
       $("programas").innerHTML = "";
@@ -2666,27 +2693,61 @@ window.qrcode=qrcode;
     }
 
     // ── Panel ───────────────────────────────────────────────
-    function mostrarPanel(datos) {
+    function mostrarPanel(datos, mantenerVista) {
       estado.datos = datos;
       const c = datos.colegio || {};
       const progs = datos.programas || [];
       $("colegio-nombre").textContent = c.nombre || `Establecimiento ${c.rbd}`;
-      $("colegio-meta").textContent = `RBD ${c.rbd}` + (progs.length ? " · " + progs.map(p => PROGRAMAS[p.programa].titulo).join(" y ") : "");
+      $("colegio-meta").textContent = `RBD ${c.rbd}` + (progs.length ? " · " + progs.map(p => PROGRAMAS[p.programa].corto).join(" y ") : "");
       const contacto = datos.contacto || "evaluacion@fundaciontrabun.cl";
       $("pie-ayuda").innerHTML = `¿Dudas? Contacta a tu Jefe de Proyecto Trabün o escríbenos a <a href="mailto:${esc(contacto)}">${esc(contacto)}</a>.`;
       const aviso = $("aviso-sin-programas");
       aviso.hidden = progs.length > 0;
       aviso.innerHTML = `Tu acceso es válido, pero no encontramos programas asociados a este RBD. Escríbenos a <a href="mailto:${esc(contacto)}">${esc(contacto)}</a> para revisarlo.`;
       renderProgramas();
+      if (mantenerVista) return; // refresh: keep scroll position and the active tab
       $("view-login").hidden = true;
       $("view-panel").hidden = false;
       window.scrollTo(0, 0);
     }
 
+    // ── Actualizar (manual + automático) ────────────────────
+    async function actualizar(manual) {
+      if (!sesion.rbd || sesion.actualizando) return;
+      sesion.actualizando = true;
+      const btn = $("btn-actualizar");
+      btn.classList.add("girando");
+      btn.disabled = true;
+      try {
+        const datos = await llamarApi(sesion.rbd, sesion.clave, true);
+        if (datos.ok && sesion.rbd) { mostrarPanel(datos, true); marcarActualizado(); }
+        else if (manual) $("refresco-texto").textContent = "No se pudo actualizar. Inténtalo de nuevo en unos minutos.";
+      } catch (_) {
+        if (manual) $("refresco-texto").textContent = "No se pudo actualizar. Inténtalo de nuevo en unos minutos.";
+      } finally {
+        sesion.actualizando = false;
+        btn.classList.remove("girando");
+        btn.disabled = false;
+      }
+    }
+
+    function marcarActualizado() {
+      sesion.ultima = Date.now();
+      textoActualizado();
+      clearInterval(sesion.timerTexto);
+      sesion.timerTexto = setInterval(textoActualizado, 30000);
+    }
+
+    function textoActualizado() {
+      const seg = Math.round((Date.now() - sesion.ultima) / 1000);
+      const min = Math.floor(seg / 60);
+      $("refresco-texto").textContent = seg < 10 ? "Actualizado recién"
+        : seg < 60 ? `Actualizado hace ${seg} s` : `Actualizado hace ${min} ${min === 1 ? "minuto" : "minutos"}`;
+    }
+
     function renderProgramas() {
       const progs = estado.datos.programas || [];
       const cont = $("programas");
-      cont.classList.toggle("dos", progs.length > 1);
       cont.innerHTML = progs.map(tarjetaPrograma).join("");
     }
 
@@ -2719,7 +2780,7 @@ window.qrcode=qrcode;
               <div style="min-width:0">
                 <div class="eyebrow">Programa</div>
                 <div class="banda-titulo">${meta.titulo}</div>
-                <div class="banda-sub">${meta.sub}</div>
+                ${pillsImplementacion(prog)}
                 <div class="banda-linea">${esc(linea)}</div>
               </div>
               <span class="banda-pill">${esc(cifra(prog, clave).pill)}</span>
@@ -2729,6 +2790,14 @@ window.qrcode=qrcode;
           <div class="cuerpo">${clave === "test" ? bloqueTest(prog) : bloqueEfa(prog)}</div>
         </div>
       </article>`;
+    }
+
+    function pillsImplementacion(prog) {
+      const pills = [];
+      if (prog.modelo) pills.push(`<span class="modelo">${esc(prog.modelo)}</span>`);
+      if (prog.jefeProyecto) pills.push(`<span><span class="k">Jefe/a de Proyecto:</span> <b>${esc(prog.jefeProyecto)}</b></span>`);
+      if (prog.coordinador) pills.push(`<span><span class="k">Coordinador/a:</span> <b>${esc(prog.coordinador)}</b></span>`);
+      return pills.length ? `<div class="banda-pills">${pills.join("")}</div>` : "";
     }
 
     function notaFase(clave) {
@@ -2769,6 +2838,11 @@ window.qrcode=qrcode;
     // ── Eventos ─────────────────────────────────────────────
     $("form-login").addEventListener("submit", ingresar);
     $("btn-salir").addEventListener("click", salir);
+    $("btn-actualizar").addEventListener("click", () => actualizar(true));
+    document.addEventListener("visibilitychange", () => {
+      // back on the tab after a while: refresh once
+      if (document.visibilityState === "visible" && sesion.rbd && Date.now() - sesion.ultima > REFRESCO_MS) actualizar(false);
+    });
     $("programas").addEventListener("click", ev => {
       const tab = ev.target.closest(".pestana");
       if (tab) cambiarEncuesta(tab.dataset.encuesta);

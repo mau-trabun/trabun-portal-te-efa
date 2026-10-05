@@ -70,7 +70,7 @@ function login_(e) {
   const res = panel_(rbd, datos, reloj_());
   res.ms = Date.now() - t0; // server time only; the browser also waits for Google's startup and redirect
   console.log(`login ok · datos ${tDatos} ms · total ${res.ms} ms`); // no RBD, clave or names in logs
-  registrarMetrica_(res);
+  if (body.refresco !== true) registrarMetrica_(res); // auto/manual refreshes are not new logins
   return res;
 }
 
@@ -159,6 +159,8 @@ function leerSF_() {
     edi: colExacta_(t, 'EDI'),
     anioAse: colExacta_(t, 'Año inicio ASE'),
     anioRel: colExacta_(t, 'Año inicio Religión'),
+    jefe: t.headers.indexOf('Jefe de Proyecto'),   // optional: pills only
+    coord: t.headers.indexOf('Coordinador'),
     alumnos: SF_SUFIJOS.map(s => colExacta_(t, 'Alumnos ' + s)),
     cxn: SF_SUFIJOS.map(s => colExacta_(t, 'CxN ' + s)),
   };
@@ -180,6 +182,8 @@ function leerSF_() {
     col.programas[programa] = {
       programa,
       modelo: String(row[c.modelo] || '').trim(),
+      jefeProyecto: c.jefe >= 0 ? limpio_(row[c.jefe]) : null,
+      coordinador: c.coord >= 0 ? limpio_(row[c.coord]) : null,
       edi: esVerdadero_(row[c.edi]),
       anioInicio: entero_(row[programa === 'ase' ? c.anioAse : c.anioRel]) || null,
       alumnos,
@@ -330,6 +334,9 @@ function panelPrograma_(rbd, p, d, studentId) {
   }
   return {
     programa: p.programa,
+    modelo: p.modelo || null,
+    jefeProyecto: p.jefeProyecto,
+    coordinador: p.coordinador,
     edi: p.edi,
     nivelesImplementados: p.implementados.map(i => NIVELES[i]),
     test,

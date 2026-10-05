@@ -23,7 +23,7 @@ Static portal where Chilean schools log in (RBD + 6-char clave) and see **who in
   - Production: `portal.fundaciontrabun.cl` (domain moved from the old repo at launch).
 - **Backend:** Google Apps Script bound to the new 2026 Sheet, code in `/gas`, managed with `clasp`. JSON API.
   - Two deployments: `staging` and `prod`, each with its own `/exec` URL. Update in place with `clasp deploy -i <deploymentId> -d "<desc>"` (keeps the URL). Saving/pushing code does NOT change what `/exec` serves until a deploy.
-  - **staging** (created 05-10-2026; version 2 = ms timing + probarPanel): ID `AKfycbyFDY66nTGtuUhG6XOrXa4w_ct1EY5zAQnSOg6Ar-Egofle4K2nDVqFrSl7ovSj1OPyRg`, URL `https://script.google.com/macros/s/AKfycbyFDY66nTGtuUhG6XOrXa4w_ct1EY5zAQnSOg6Ar-Egofle4K2nDVqFrSl7ovSj1OPyRg/exec`
+  - **staging** (created 05-10-2026; version 3 = band pills + refresh flag; v2 = ms timing + probarPanel): ID `AKfycbyFDY66nTGtuUhG6XOrXa4w_ct1EY5zAQnSOg6Ar-Egofle4K2nDVqFrSl7ovSj1OPyRg`, URL `https://script.google.com/macros/s/AKfycbyFDY66nTGtuUhG6XOrXa4w_ct1EY5zAQnSOg6Ar-Egofle4K2nDVqFrSl7ovSj1OPyRg/exec`
   - **prod**: not created yet (at launch).
   - Known platform issue (seen 05-10-2026, ~04:30): Apps Script latency 2–35 s and intermittent 404 on the `googleusercontent.com/macros/echo` hop, even for `doGet` (no Sheet access) and on the EFS backend too. Not our code. Frontend retries up to 2× when the reply isn't JSON, 40 s timeout per attempt. Re-measure in daytime and before launch.
   - Claude Code's auto-mode classifier blocks `clasp deploy` even after approval in chat: Mau runs deploys himself (`source ~/.nvm/nvm.sh && clasp deploy -i <id> -d "<desc>"`), or adds a permission rule. `clasp push` needs `--force` when `appsscript.json` changed (non-interactive shell).
@@ -78,7 +78,7 @@ New for 2026:
 - **EFA has no %**, counts only (except EDI, see open decisions).
 - EFA role categories are a fixed list (new list pending), mapped to Dirección / Líderes educativos / Docentes like `ROLES_LIDER` in EFS.
 - **ASE docentes grouped by grade** (accordion). **REL docentes = flat list** (one REL teacher often covers all classrooms). Intentional.
-- Survey phases (pre / open / closed) computed from `Config` dates. **Never hardcode dates or "faltan N días" in copy.**
+- Survey phases (pre / open / closed) computed from `Config` dates. **Never hardcode dates or day counts in copy.** Open-phase wording is "Abierta · cierra en N días" / "cierra mañana" / "cierra hoy" (not "faltan N días": it read like days until opening).
 - Links: from `Formularios`, up to 2 per program × survey. Share tray and message show one row per link, labeled with its grade range (approved deviation from the design's single link).
 - Footer contact: `evaluacion@fundaciontrabun.cl`; **EDI schools: `consultas_edi@fundaciontrabun.cl`** (driven by the SF EDI flag).
 
@@ -93,13 +93,13 @@ New for 2026:
 - [x] Data contract (sheet tabs + JSON shape) → `CONTRACT.md`
 - [x] Backend on staging deployment (login, panel, Métricas, `revisarFormularios()`, `generarDatosPrueba()`; tested locally with mocks + live health/credenciales check)
 - [x] Run `generarDatosPrueba()` on the live Sheet (6 schools, 928 test + 65 EFA rows)
-- [x] Frontend shell: login (POST, retry, timeout), panel, program cards with synced folder tabs, band, phase notes, summaries. Deviations: cards min 520px (README's 540 never fits 2 columns), "2026" tag hidden <400px. Preview: `.claude/launch.json` → `python3 -m http.server` on `docs/`
+- [x] Frontend shell: login (POST, retry, timeout), panel, program cards with synced folder tabs, band, phase notes, summaries. Deviations: program cards stacked full width, one per row (README says side by side; up to 5 classes per grade don't fit in half-width cards), "2026" tag hidden <400px. **From EFS (Mau's choice, 05-10-2026):** band title is the full program name ("Aprendizaje Socioemocional" / "Religión Católica"; tabs and meta line keep "ASE" / "Religión") + pills modelo / Jefe/a de Proyecto / Coordinador/a; "Actualizar" button + "Actualizado hace N" + auto-refresh every 5 min only while the tab is visible (clave kept in memory only; refreshes send `refresco:true` and are not logged in Métricas). No explanatory box. Preview: `.claude/launch.json` → `python3 -m http.server` on `docs/`
 - [ ] Estudiantes block ← **next**
   (accordion 4a, classes, search, edge cases)
 - [ ] Phases by date + share modal + real QR
 - [ ] EFA block
 - [ ] Mobile
-- [ ] Launch (before 13-10): delete all fake rows (check none with `@ejemplo.invalid` remain), paste formulas, check column alignment, run `revisarFormularios()`, promote prod, move domain
+- [ ] Launch (before 13-10): restore real `Config` dates (test_abre 13-10-2026, efa_abre 02-11-2026; may be moved earlier for staging tests), delete all fake rows (check none with `@ejemplo.invalid` remain), paste formulas, check column alignment, run `revisarFormularios()`, promote prod, move domain
 
 ## Open decisions
 - `studentId`: "nombre" | "numero" (decision due ~06/07-10). Build both behind a config flag.

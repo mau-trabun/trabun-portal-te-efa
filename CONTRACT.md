@@ -18,7 +18,8 @@ Agreed 05-10-2026. Items marked **PENDING** are open decisions (see CLAUDE.md). 
 | `ID RBD` | key, normalized (§2) |
 | `Nombre para formulario` | `Comuna - Nombre - RBD` → `nombre` = part 2, `comuna` = part 1 |
 | `Implementación: Record Type` | `ASE` → `ase`, `Religión` → `rel`; any other value → row ignored |
-| `Modelo` | `Formularios` matching (EFA, PENDING) |
+| `Modelo` | `Formularios` matching (EFA, PENDING); shown as a pill |
+| `Jefe de Proyecto`, `Coordinador` | optional; shown as pills in the program band (Trabün staff, not respondents) |
 | `EDI` | TRUE/FALSE. Only ever TRUE on ASE rows. |
 | `Año inicio ASE`, `Año inicio Religión` | `Formularios` matching (EDI cohort) |
 | `Alumnos NT1` … `Alumnos IV` (14) | `est` per grade |
@@ -136,7 +137,7 @@ Same import pattern as EFS.
   - Have `Precalculo` running (a trigger every ~10 min) before volume peaks (end of October).
 
 ## 4. API
-**Request:** `POST /exec`, header `Content-Type: text/plain`, body `{"rbd":"12345","clave":"abc123"}`.
+**Request:** `POST /exec`, header `Content-Type: text/plain`, body `{"rbd":"12345","clave":"abc123"}`. Refreshes (the "Actualizar" button and the 5-min auto-refresh) add `"refresco":true`: same response, but not logged in `Métricas`.
 
 **Health check:** `GET /exec` → `{"ok":true,"v":1}`. It never returns data.
 
@@ -156,6 +157,7 @@ Same import pattern as EFS.
   },
   "programas": [{
     "programa": "ase",
+    "modelo": "Semi-Intensivo", "jefeProyecto": "Nombre Ficticio", "coordinador": null,
     "edi": false,
     "nivelesImplementados": ["1° básico", "2° básico", "…", "8° básico"],
     "test": {
@@ -196,5 +198,5 @@ Notes:
 - **`ok: false`** on a survey omits `resumen`/`niveles`/`secciones`, but keeps `links` and `nivelesTest`.
 - **A school in `Contraseñas` but not in `SF`** gets `"programas": []`.
 - **`ms`:** server time for the login (clave check + reading the Sheet + building the panel). The browser's total wait also includes Apps Script startup and Google's redirect, so total − `ms` ≈ Google's overhead.
-- **Not sent:** emails, claves, Jefe de Proyecto, coordinador, modelo.
+- **Not sent:** emails, claves. (Modelo, Jefe/a de Proyecto and Coordinador/a are sent since 05-10-2026 for the band pills, as in EFS.)
 - **Share UI:** one tray row per link, labeled with its grade range. The share message lists each link with its range.
