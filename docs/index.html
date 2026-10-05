@@ -61,7 +61,8 @@
     .btn-salir{flex:none;font-family:var(--f-head);font-weight:700;font-size:13px;white-space:nowrap;padding:10px 0;transition:color 120ms}
     .btn-salir:hover{color:var(--rojo)}
     #view-panel{min-height:100vh;display:flex;flex-direction:column}
-    .contenido{width:100%;max-width:1160px;margin:0 auto;padding:8px 40px 0;display:flex;flex-direction:column;gap:28px;flex:1}
+    /* 960, not README's 1160: that width was for two cards side by side; one card per row at 1160 looked too wide (Mau 05-10-2026) */
+    .contenido{width:100%;max-width:960px;margin:0 auto;padding:8px 40px 0;display:flex;flex-direction:column;gap:28px;flex:1}
     .eyebrow{font-family:var(--f-head);font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
     .colegio-nombre{font-family:var(--f-head);font-weight:800;font-size:38px;line-height:1.15;letter-spacing:-0.01em;color:var(--tinta);margin-top:4px}
     .colegio-meta{font-family:var(--f-head);font-weight:700;font-size:12px;color:var(--muted);margin-top:4px}
@@ -133,7 +134,13 @@
     .nivel-cifra .corto{display:none}
     .chevron{transition:transform 240ms var(--ease)}
     .nivel.abierto .chevron{transform:rotate(90deg)}
-    .cursos{padding:10px 14px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+    .cursos{padding:10px 14px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;align-items:start} /* each class card keeps its own height */
+    /* Class selector: mobile only (one class at a time); desktop shows every class card side by side (Mau 05-10-2026) */
+    .selector-cursos{display:none;flex-wrap:wrap;gap:6px;padding:12px 14px 0}
+    .sel-curso{display:inline-flex;align-items:baseline;gap:6px;font-family:var(--f-head);font-weight:800;font-size:13.5px;background:#fff;border:1.5px solid var(--borde-input);border-radius:999px;padding:8px 14px;min-height:40px;color:var(--tinta);transition:background 120ms,border-color 120ms}
+    .sel-curso small{font-weight:700;font-size:12px;color:var(--muted)}
+    .sel-curso[aria-pressed="true"]{background:var(--prog);border-color:var(--prog);color:#fff}
+    .sel-curso[aria-pressed="true"] small{color:#fff;opacity:.9}
     .curso{background:var(--tray);border-radius:10px;padding:11px 13px;display:flex;flex-direction:column;gap:8px;min-width:0}
     .curso-cab{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
     .curso-cab b{font-family:var(--f-head);font-weight:700;font-size:13.5px}
@@ -142,7 +149,8 @@
     .chips{display:flex;flex-wrap:wrap;gap:4px}
     .chip{font-family:var(--f-head);font-weight:600;font-size:12px;background:#fff;border:1px solid var(--borde);color:var(--tinta);padding:2px 8px;border-radius:999px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .chip.anon{color:var(--muted)}
-    .curso-acciones{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--borde);padding-top:10px;margin-top:2px}
+    .curso-acciones{display:flex;gap:6px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--borde);padding-top:10px;margin-top:2px}
+    .curso-acciones .btn-mini{padding:6px 10px} /* both buttons on one line in a 260px class card */
     /* Small outlined icon buttons for secondary actions (copy, download, WhatsApp): read as buttons, not links */
     .btn-mini{display:inline-flex;align-items:center;gap:6px;flex:none;font-family:var(--f-head);font-weight:700;font-size:12.5px;line-height:1;color:var(--tinta);background:#fff;border:1.5px solid var(--borde-input);border-radius:999px;padding:6px 12px;min-height:32px;text-decoration:none;cursor:pointer;transition:border-color 120ms,color 120ms}
     .btn-mini:hover{border-color:var(--tinta);color:var(--tinta)}
@@ -155,15 +163,15 @@
     .num sup{position:absolute;top:-6px;right:-4px;font-size:9.5px;font-weight:800;background:var(--tinta);color:#fff;border-radius:999px;padding:0 4px;line-height:14px}
 
     /* ── EFA · DOCENTES Y LÍDERES ───────────────────────── */
-    /* Cards are always full width, so the three sections sit in 3 columns (README §2.5 wide case); stacked when narrow */
-    .secciones{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:36px;align-items:start}
-    /* ASE: Docentes by grade (up to 14 rows) takes the full width under Dirección | Líderes, so no tall narrow column */
-    .secciones.por-nivel{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .secciones.por-nivel .seccion-docentes{grid-column:1/-1;border-top:1px solid var(--borde);margin-top:16px;padding-top:16px}
-    .secciones.por-nivel .docentes-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));column-gap:24px}
-    .seccion-cab{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px}
+    /* Sections always stacked, with dividers, even in full-width cards (as in EFS; Mau 05-10-2026): reads in the
+       same vertical direction as the accordions. README §2.5 put them in 3 columns when wide. */
+    .seccion + .seccion{border-top:1px solid var(--borde);margin-top:16px;padding-top:16px}
+    .seccion-cab{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px 10px;margin-bottom:6px}
     .seccion-cab b{font-family:var(--f-head);font-weight:700;font-size:15px}
-    .seccion-cab span{font-family:var(--f-head);font-weight:800;font-size:13px;white-space:nowrap}
+    /* Section count as a pill with the program dot (as in EFS); zero in gray */
+    .seccion-pill{display:inline-flex;align-items:center;gap:7px;flex:none;background:#f2f2f4;border-radius:999px;padding:4px 12px;font-family:var(--f-head);font-weight:700;font-size:12.5px;white-space:nowrap}
+    .seccion-pill.cero{color:#9a9ea9}
+    .seccion-pill.cero .punto{background:#cfd1d6}
     .persona{padding:7px 0}
     .persona b{display:block;font-family:var(--f-head);font-weight:600;font-size:14px;overflow-wrap:anywhere}
     .persona span{display:block;font-size:12px;color:var(--muted)}
@@ -173,9 +181,10 @@
     .fila-docentes:hover{background:#fafafa}
     .fila-docentes .nivel-nombre{font-size:13.5px}
     .fila-docentes-der{display:flex;align-items:center;gap:10px;flex:none}
-    .docentes-lista{padding:0 14px 10px}
+    .docentes-lista{padding:0 14px 10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));column-gap:24px}
     .docentes-lista .persona{padding:5px 0}
     .efa-nota{font-size:12px;color:var(--muted)}
+    .nota-cursos{margin:2px 14px 12px;background:var(--papel);border-radius:10px;padding:10px 14px;font-size:13px;line-height:1.45;color:var(--muted-2)}
 
     /* ── COMPARTIR (sección siempre visible + QR) ───────── */
     .compartir{background:var(--tray);border:1px solid var(--borde);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
@@ -216,7 +225,7 @@
     /* ── PIE ────────────────────────────────────────────── */
     .pie-ola{margin-top:56px;margin-bottom:-1px}
     footer{background:var(--tinta);color:rgba(255,255,255,.75)}
-    .pie{max-width:1160px;margin:0 auto;padding:26px 40px 34px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+    .pie{max-width:960px;margin:0 auto;padding:26px 40px 34px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
     .pie-marca{display:flex;align-items:center;gap:14px}
     .pie-marca img{height:40px;width:auto;display:block}
     .pie-marca b{display:block;font-family:var(--f-head);font-weight:800;font-size:15px;color:#fff}
@@ -231,11 +240,6 @@
     .cargando p{font-family:var(--f-head);font-weight:700;font-size:13px;color:var(--muted)}
 
     /* ── MÓVIL (≤600px) ─────────────────────────────────── */
-    @media (max-width:860px){
-      .secciones{grid-template-columns:minmax(0,1fr)}
-      .secciones.por-nivel{grid-template-columns:minmax(0,1fr)}
-      .seccion + .seccion{border-top:1px solid var(--borde);margin-top:16px;padding-top:16px}
-    }
     @media (max-width:600px){
       #view-login{padding:56px 16px}
       .mascota{top:-70px;right:8px}
@@ -262,6 +266,8 @@
       .nivel-cifra .largo{display:none}
       .nivel-cifra .corto{display:inline}
       .cursos{grid-template-columns:minmax(0,1fr)}
+      .selector-cursos{display:flex}
+      .selector-cursos ~ .cursos .curso:not(.sel){display:none}
       .pie{padding:20px 16px 28px}
     }
     @media (max-width:400px){
@@ -2713,23 +2719,30 @@ window.qrcode=qrcode;
     const fechaLarga = iso => { const p = partesFecha(iso); return p ? `${p.dia} de ${MESES[p.mes]}` : ""; };
     const ORDEN_NIVELES = ["NT1", "NT2", "1° básico", "2° básico", "3° básico", "4° básico", "5° básico", "6° básico", "7° básico", "8° básico", "I° medio", "II° medio", "III° medio", "IV° medio"];
 
-    // "1° básico … 8° básico" → "1° a 8° básico"; two → "4° y 5° básico"; gaps → "4°, 6° y 8° básico"
+    // "1° a 8° básico" · "4° y 5° básico" · "4°, 6° y 8° básico" · "7° básico a I° medio" (continuous across cycles)
+    // · gaps across cycles: grouped by cycle, runs of 3+ as ranges → "1°, 2° y 5° a 8° básico; III° y IV° medio"
     function textoNiveles(niveles) {
-      if (!niveles.length) return "";
       const ORDEN = ORDEN_NIVELES;
-      const idx = niveles.map(n => ORDEN.indexOf(n)).filter(i => i >= 0).sort((a, b) => a - b);
+      const idx = Array.from(new Set(niveles.map(n => ORDEN.indexOf(n)).filter(i => i >= 0))).sort((a, b) => a - b);
+      if (!idx.length) return "";
+      const nombre = i => ORDEN[i];
+      const ciclo = i => ORDEN[i].split(" ")[1] || ""; // "" for NT1/NT2
+      const corto = i => ORDEN[i].split(" ")[0];
+      const conY = l => l.length > 1 ? l.slice(0, -1).join(", ") + " y " + l[l.length - 1] : l[0];
+      if (idx.length === 1) return nombre(idx[0]);
+      const primero = idx[0], ultimo = idx[idx.length - 1];
       const contiguo = idx.every((v, i) => !i || v === idx[i - 1] + 1);
-      const ciclo = n => n.split(" ")[1] || "";
-      const primero = ORDEN[idx[0]], ultimo = ORDEN[idx[idx.length - 1]];
-      if (idx.length === 1) return primero;
-      if (contiguo && idx.length > 2) {
-        return ciclo(primero) && ciclo(primero) === ciclo(ultimo) ? `${primero.split(" ")[0]} a ${ultimo}` : `${primero} a ${ultimo}`;
-      }
-      const nombres = idx.map(i => ORDEN[i]);
-      const mismoCiclo = nombres.every(n => ciclo(n) && ciclo(n) === ciclo(nombres[0]));
-      const cortos = mismoCiclo ? nombres.map(n => n.split(" ")[0]) : nombres;
-      const lista = cortos.slice(0, -1).join(", ") + " y " + cortos[cortos.length - 1];
-      return mismoCiclo ? `${lista} ${ciclo(nombres[0])}` : lista;
+      if (contiguo && ciclo(primero) !== ciclo(ultimo)) return `${nombre(primero)} ${idx.length > 2 ? "a" : "y"} ${nombre(ultimo)}`;
+      const grupos = [];
+      idx.forEach(i => { const g = grupos[grupos.length - 1]; if (g && g.ciclo === ciclo(i)) g.idx.push(i); else grupos.push({ ciclo: ciclo(i), idx: [i] }); });
+      return grupos.map(g => {
+        const et = g.ciclo ? corto : nombre;
+        const tramos = [];
+        g.idx.forEach(i => { const t = tramos[tramos.length - 1]; if (t && i === t[t.length - 1] + 1) t.push(i); else tramos.push([i]); });
+        const partes = [];
+        tramos.forEach(t => t.length >= 3 ? partes.push(`${et(t[0])} a ${et(t[t.length - 1])}`) : t.forEach(i => partes.push(et(i))));
+        return conY(partes) + (g.ciclo ? " " + g.ciclo : "");
+      }).join("; ");
     }
 
     function nivelesEntre(desde, hasta) {
@@ -3135,7 +3148,7 @@ window.qrcode=qrcode;
 
     function uiDe(prog) {
       // Every grade starts collapsed (Mau's choice; the design opened the first one)
-      return estado.ui[prog.programa] || (estado.ui[prog.programa] = { abiertos: new Set(), mas: new Set(), q: "", efa: new Set() });
+      return estado.ui[prog.programa] || (estado.ui[prog.programa] = { abiertos: new Set(), mas: new Set(), q: "", efa: new Set(), sel: {} });
     }
 
     function bloqueTest(prog) {
@@ -3186,12 +3199,29 @@ window.qrcode=qrcode;
           <div class="nivel-cifra">${cifra}</div>
           <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6070" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
         </button>
-        ${abierto ? `<div class="cursos">${(n.cursos || []).map(c => tarjetaCurso(prog, n, c)).join("")}</div>` : ""}
+        ${abierto ? selectorCursos(prog, n) + `<div class="cursos">${(n.cursos || []).map(c => tarjetaCurso(prog, n, c)).join("")}</div>` : ""}
       </div>`;
     }
 
     const etiquetaCurso = (nivel, letra) => letra ? `${nivel} ${letra}` : `${nivel} · sin letra`;
-    const nombreCompleto = x => formatNombre([x.nombres, x.apellidos].filter(Boolean).join(" "));
+    // "Apellidos, Nombres" (lists are sorted by apellidos); no comma when one part is blank
+    const nombreCompleto = x => [x.apellidos, x.nombres].map(formatNombre).filter(Boolean).join(", ");
+
+    // Mobile: pills to pick one class (CSS hides the selector and shows every card on desktop). Default: first class.
+    const cursoSel = (prog, n) => {
+      const u = uiDe(prog), cursos = n.cursos || [];
+      const k = u.sel[n.nivel];
+      return cursos.some(c => (c.letra || "") === k) ? k : cursos.length ? (cursos[0].letra || "") : null;
+    };
+    function selectorCursos(prog, n) {
+      const cursos = n.cursos || [];
+      if (cursos.length < 2) return "";
+      const sel = cursoSel(prog, n);
+      return `<div class="selector-cursos" role="group" aria-label="Cursos de ${esc(n.nivel)}">${cursos.map(c => {
+        const k = c.letra || "";
+        return `<button type="button" class="sel-curso" data-programa="${prog.programa}" data-nivel-sel="${esc(n.nivel)}" data-letra="${esc(k)}" aria-pressed="${k === sel}">${c.letra ? esc(c.letra) : "Sin letra"}<small>${fmtNum(c.r)}</small></button>`;
+      }).join("")}</div>`;
+    }
 
     function tarjetaCurso(prog, n, c) {
       const u = uiDe(prog);
@@ -3209,7 +3239,8 @@ window.qrcode=qrcode;
         cuerpo = `<div class="chips">${(abierto ? todos : todos.slice(0, MAX_CHIPS)).join("")}</div>`
           + (todos.length > MAX_CHIPS ? `<button type="button" class="ver-mas" data-programa="${prog.programa}" data-curso="${esc(clave)}">${abierto ? "Ver menos" : `Ver todas (${fmtNum(todos.length)})`}</button>` : "");
       }
-      return `<div class="curso">
+      const sel = (n.cursos || []).length < 2 || (c.letra || "") === cursoSel(prog, n);
+      return `<div class="curso${sel ? " sel" : ""}">
         <div class="curso-cab"><b>${esc(etiquetaCurso(n.nivel, c.letra))}</b><span>${esc(plural(c.r, "respuesta", "respuestas"))}</span></div>
         ${aviso}${cuerpo}${c.r ? accionesCurso(prog, n, c) : ""}
       </div>`;
@@ -3276,10 +3307,12 @@ window.qrcode=qrcode;
           const buscado = Number(q.replace(/\D/g, ""));
           if (buscado) (c.numeros || []).filter(k => k === buscado).forEach(k => encontrados.push({ id: `N° ${k}`, lugar }));
         } else {
-          const nq = normalizar(q);
+          const palabras = normalizar(q).split(" ");
           (c.respuestas || []).forEach(x => {
             const t = nombreCompleto(x);
-            if (t && normalizar(t).includes(nq)) encontrados.push({ id: t, lugar });
+            // every typed word, any order: "agustin bravo" and "fuente maria" find "Bravo Castro, Agustín" / "De la Fuente O'Higgins, María José"
+            const clave = normalizar(`${x.nombres || ""} ${x.apellidos || ""}`);
+            if (t && palabras.every(w => clave.includes(w))) encontrados.push({ id: t, lugar });
           });
         }
       }));
@@ -3303,29 +3336,38 @@ window.qrcode=qrcode;
     const SECCIONES_EFA = { direccion: "Dirección", lideres: "Líderes educativos", docentes: "Docentes" };
     const vacioEfa = `<div class="seccion-vacia">Aún no hay respuestas.</div>`;
 
+    // REL docentes also carry the grades they declared: "Docente · 5° a 8° básico"
     function filaPersona(x) {
       const nombre = formatNombre(x.nombre);
-      return `<div class="persona"><b>${nombre ? esc(nombre) : "Sin nombre"}</b>${x.rol ? `<span>${esc(x.rol)}</span>` : ""}</div>`;
+      const detalle = [x.rol, textoNiveles(x.niveles || [])].filter(Boolean).join(" · ");
+      return `<div class="persona"><b>${nombre ? esc(nombre) : "Sin nombre"}</b>${detalle ? `<span>${esc(detalle)}</span>` : ""}</div>`;
     }
 
     function contenidoEfa(prog) {
       const cols = (prog.efa.secciones || []).map(s => {
         let cuerpo;
         if (s.niveles) cuerpo = acordeonDocentes(prog, s); // ASE: by grade
-        else cuerpo = (s.personas || []).length ? s.personas.map(filaPersona).join("") : vacioEfa; // REL docentes: flat list (intentional)
-        return `<div class="seccion seccion-${esc(s.id)}">
-          <div class="seccion-cab"><b>${SECCIONES_EFA[s.id] || esc(s.id)}</b><span>${fmtNum(s.r)}</span></div>
+        else cuerpo = (s.personas || []).map(filaPersona).join(""); // REL docentes: flat list (intentional). Empty: the pill says it
+        return `<div class="seccion">
+          <div class="seccion-cab"><b>${SECCIONES_EFA[s.id] || esc(s.id)}</b><span class="seccion-pill${s.r ? "" : " cero"}"><span class="punto"></span>${s.r ? plural(s.r, "respuesta", "respuestas") : "Sin respuestas aún"}</span></div>
           ${cuerpo}
         </div>`;
       }).join("");
-      const porNivel = (prog.efa.secciones || []).some(s => s.niveles);
-      return `<div class="secciones${porNivel ? " por-nivel" : ""}">${cols}</div>`;
+      return `<div class="secciones">${cols}</div>`;
+    }
+
+    // Course count from SF, only inside the open grade (as in EFS): context, never "1 de 3" (one teacher may cover every class)
+    function notaCursos(n) {
+      if (!n.cursos) return "";
+      const texto = n.cursos === 1 ? "hay 1 curso que implementa el programa en este nivel"
+        : `hay ${fmtNum(n.cursos)} cursos que implementan el programa en este nivel`;
+      return `<div class="nota-cursos">Según los datos de implementación, ${texto}.</div>`;
     }
 
     // ASE docentes: implemented ∪ declared grades, all collapsed at start. A docente with several grades
     // is listed under each one but counted once in the section.
     function acordeonDocentes(prog, s) {
-      if (!s.niveles.length) return vacioEfa;
+      if (!s.niveles.length) return "";
       const u = uiDe(prog);
       const filas = s.niveles.map(n => {
         const clave = n.nivel || "";
@@ -3337,7 +3379,7 @@ window.qrcode=qrcode;
             <div class="fila-docentes-der"><span class="nivel-cifra">${fmtNum(n.r)}</span>
             <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6070" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></div>
           </button>
-          ${abierto ? `<div class="docentes-lista">${(n.personas || []).length ? n.personas.map(filaPersona).join("") : vacioEfa}</div>` : ""}
+          ${abierto ? `<div class="docentes-lista">${(n.personas || []).length ? n.personas.map(filaPersona).join("") : vacioEfa}</div>${notaCursos(n)}` : ""}
         </div>`;
       }).join("");
       const varios = s.niveles.reduce((a, n) => a + n.r, 0) > s.r
@@ -3374,6 +3416,11 @@ window.qrcode=qrcode;
         u.efa.has(nivel) ? u.efa.delete(nivel) : u.efa.add(nivel);
         if (prog && cont) cont.innerHTML = contenidoEfa(prog);
         return;
+      }
+      const pill = ev.target.closest(".sel-curso");
+      if (pill) {
+        estado.ui[pill.dataset.programa].sel[pill.dataset.nivelSel] = pill.dataset.letra;
+        return redibujarTest(pill.dataset.programa);
       }
       const mas = ev.target.closest(".ver-mas");
       if (mas) {

@@ -428,6 +428,9 @@ function bloqueEfa_(p, resps) {
   const secciones = SECCIONES.map(id => {
     const s = { id, r: (porSeccion[id] || []).length };
     if (id === 'docentes' && p.programa === 'ase') s.niveles = nivelesDocentes_(p, ordenadas(id), persona);
+    // REL docentes: flat list, so each person carries the grades they declared (canonical order)
+    else if (id === 'docentes') s.personas = ordenadas(id).map(x => Object.assign(persona(x),
+      { niveles: x.niveles.slice().sort((a, b) => a - b).map(i => NIVELES[i]) }));
     else s.personas = ordenadas(id).map(persona);
     return s;
   });
@@ -454,10 +457,11 @@ function nivelesDocentes_(p, docentes, persona) {
   const vistos = declarados.filter(i => p.implementados.indexOf(i) < 0).sort((a, b) => a - b);
   const grupos = p.implementados.concat(vistos).map(i => {
     const lista = docentes.filter(x => x.niveles.indexOf(i) >= 0);
-    return { nivel: NIVELES[i], registrado: p.implementados.indexOf(i) >= 0, r: lista.length, personas: lista.map(persona) };
+    // cursos = SF CxN, shown only when the grade is open: context, not a denominator (one teacher may cover every class)
+    return { nivel: NIVELES[i], registrado: p.implementados.indexOf(i) >= 0, cursos: p.cxn[i] > 0 ? p.cxn[i] : null, r: lista.length, personas: lista.map(persona) };
   });
   const sinNivel = docentes.filter(x => !x.niveles.length);
-  if (sinNivel.length) grupos.push({ nivel: null, registrado: false, r: sinNivel.length, personas: sinNivel.map(persona) });
+  if (sinNivel.length) grupos.push({ nivel: null, registrado: false, cursos: null, r: sinNivel.length, personas: sinNivel.map(persona) });
   return grupos;
 }
 

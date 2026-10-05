@@ -124,6 +124,7 @@ Same import pattern as EFS.
 - **EFA sections:**
   - Role → Dirección / Líderes educativos / Docentes: **PENDING** list. Interim rule (EFS role texts): starts with `Director` → Dirección; starts with `Docente`/`Profesor` → Docentes; anything else → Líderes. The role shown under a name is the text before the first comma (`Mentor/a, es decir, …` → `Mentor/a`).
   - ASE Docentes are grouped by grade: implemented ∪ declared, NT1–IV. A docente with several grades is listed under each but counted once. A docente with no valid grade goes in a `nivel: null` group.
+  - ASE grade `cursos` = SF `CxN` if > 0, else `null` (also `null` for unregistered grades and the `nivel: null` group). Shown only inside the open grade as context ("Según los datos de implementación, hay N cursos…"), never as a denominator: one teacher may cover every class.
   - REL Docentes: one flat list.
 - **Phases:** computed on the server in `America/Santiago`.
   - `pre` before the `abre` date, `closed` after the end of the `cierra` day, `open` otherwise.
@@ -184,7 +185,7 @@ Same import pattern as EFS.
         { "id": "direccion", "r": 2, "personas": [{ "nombre": "María José Fuentes", "rol": "Director/a" }] },
         { "id": "lideres",   "r": 4, "personas": [] },
         { "id": "docentes",  "r": 8,
-          "niveles": [{ "nivel": "6° básico", "registrado": true, "r": 2, "personas": [] }] }
+          "niveles": [{ "nivel": "6° básico", "registrado": true, "cursos": 3, "r": 2, "personas": [] }] }
       ]
     }
   }]
@@ -194,7 +195,7 @@ Same import pattern as EFS.
 Notes:
 - **Course in `numero` mode:**
   `{ "letra": "A", "registrado": true, "r": 26, "tope": 38, "numeros": [1, 2, 4, 14, 14, 35], "sinNumero": 1 }`
-- **REL `docentes`** carries `personas` (a flat list) instead of `niveles`.
+- **REL `docentes`** carries `personas` (a flat list) instead of `niveles`; each person has `niveles` (declared grades, canonical order, may be `[]`), shown after the role ("Docente · 5° a 8° básico").
 - **`ok: false`** on a survey omits `resumen`/`niveles`/`secciones`, but keeps `links` and `nivelesTest`.
 - **A school in `Contraseñas` but not in `SF`** gets `"programas": []`.
 - **`ms`:** server time for the login (clave check + reading the Sheet + building the panel). The browser's total wait also includes Apps Script startup and Google's redirect, so total − `ms` ≈ Google's overhead.

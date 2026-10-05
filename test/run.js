@@ -127,6 +127,8 @@ check('EFA docentes r=3 (Paula, Ricardo, Sin Nivel)', sec('docentes').r === 3);
 const dn = sec('docentes').niveles.map(g=>`${g.nivel}${g.registrado?'':'*'}:${g.r}`).join('|');
 check('ASE docentes grouped: implemented ∪ declared, null group last', dn === '1° básico:0|2° básico:0|3° básico:0|4° básico:0|5° básico:1|6° básico:1|7° básico:0|8° básico:0|I° medio*:1|null*:1');
 check('EFA total = responses after dedup, 2 roles = 2 (5)', ase.efa.total === 5 && ase.efa.total === ase.efa.secciones.reduce((a, s) => a + s.r, 0));
+check('ASE docentes grades carry SF CxN as cursos (2; null outside/no grade)', sec('docentes').niveles.every(g => g.registrado ? g.cursos === 2 : g.cursos === null));
+check('REL docentes carry declared grades', JSON.stringify(rel.efa.secciones[2].personas.map(x => x.niveles)) === JSON.stringify([['6° básico']]) && sec('direccion').personas.every(x => !('niveles' in x)));
 check('REL docentes flat list', Array.isArray(rel.efa.secciones[2].personas) && !rel.efa.secciones[2].niveles);
 check('no emails anywhere in payload', !JSON.stringify(r).includes('@ejemplo.cl'));
 
