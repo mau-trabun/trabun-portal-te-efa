@@ -23,7 +23,8 @@
     html,body{min-height:100%}
     /* No white beyond the footer or the login waves when scrolling past the end: no bounce where supported
        (Safari 16+, Chrome), and the area outside the page takes the color of the bottom edge otherwise */
-    html{overscroll-behavior-y:none;background:var(--celeste)}
+    html,body{overscroll-behavior-y:none}
+    html{background:var(--celeste)}
     html.en-panel{background:var(--tinta)}
     body{font-family:var(--f-body);color:var(--tinta);background:var(--papel);line-height:1.5;-webkit-font-smoothing:antialiased}
     button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
@@ -36,7 +37,8 @@
     [hidden]{display:none!important}
 
     /* ── LOGIN ──────────────────────────────────────────── */
-    #view-login{position:relative;overflow:hidden;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:56px 24px}
+    /* 100dvh: on phones 100vh counts the browser bar as hidden, so the login was taller than the screen and scrolled */
+    #view-login{position:relative;overflow:hidden;min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:56px 24px}
     .login-bg{position:absolute;inset:0;display:flex;flex-direction:column;z-index:0}
     .login-wrap{position:relative;z-index:1;width:100%;max-width:420px}
     .mascota{position:absolute;z-index:0;top:-94px;right:10px;pointer-events:none;filter:drop-shadow(0 10px 16px rgba(21,27,41,.16))}
@@ -67,7 +69,7 @@
     .nav-tag{flex:none;font-family:var(--f-head);font-weight:700;font-size:12px;color:var(--rojo);background:rgba(181,26,42,.1);padding:3px 9px;border-radius:999px}
     .btn-salir{flex:none;display:inline-flex;align-items:center;gap:7px;background:#fff;border:1.5px solid var(--borde-input);color:var(--tinta);border-radius:999px;padding:8px 15px;font-family:var(--f-head);font-weight:700;font-size:13px;white-space:nowrap;min-height:40px;transition:border-color 120ms,color 120ms}
     .btn-salir:hover{border-color:var(--rojo);color:var(--rojo)}
-    #view-panel{min-height:100vh;display:flex;flex-direction:column}
+    #view-panel{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
     /* 960, not README's 1160: that width was for two cards side by side; one card per row at 1160 looked too wide (Mau 05-10-2026).
        The footer keeps 1160 so its text sits outside the cards' edges. */
     .contenido{width:100%;max-width:960px;margin:0 auto;padding:8px 40px 0;display:flex;flex-direction:column;gap:28px;flex:1}
@@ -245,6 +247,36 @@
     .compartir .btn-lleno:hover{background:#2a3142}
     .compartir .interruptor[aria-checked="true"] i{background:var(--prog)}
 
+    /* ── INSTRUCTIVO IMPRIMIBLE ─────────────────────────── */
+    .btn-borde{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-head);font-weight:700;font-size:14px;background:#fff;color:var(--tinta);border:1.5px solid var(--borde-input);padding:9px 17px;border-radius:999px;transition:border-color 120ms}
+    .btn-borde:hover{border-color:var(--tinta)}
+    .compartir-nota{font-size:12.5px;line-height:1.45;color:var(--muted)}
+    #imprimible{display:none}
+    .inst{font-family:var(--f-body);color:var(--tinta);font-size:10.5pt;line-height:1.45}
+    .inst-cab{display:flex;align-items:center;gap:14px;border-bottom:3px solid var(--prog);padding-bottom:10px;margin-bottom:12px}
+    .inst-cab img{height:54px;width:auto}
+    .inst-eyebrow{font-family:var(--f-head);font-weight:700;font-size:8.5pt;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+    .inst h1{font-family:var(--f-head);font-weight:800;font-size:17pt;line-height:1.15}
+    .inst-cab p{font-family:var(--f-head);font-weight:700;font-size:9.5pt;color:var(--muted)}
+    .inst section{margin-top:10px;break-inside:avoid}
+    .inst h2{font-family:var(--f-head);font-weight:800;font-size:11.5pt;color:var(--prog);margin-bottom:3px}
+    .inst p + p{margin-top:4px}
+    .inst-gracias{font-family:var(--f-head);font-weight:800;color:var(--prog)}
+    .inst ul{padding-left:18px}
+    .inst li + li{margin-top:2px}
+    .inst-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 22px;margin-top:6px} /* side by side: one A4 page even with two links */
+    .inst-link{display:flex;align-items:center;gap:10px}
+    .inst-link img{width:26mm;height:26mm;image-rendering:pixelated}
+    .inst-link b{display:block;font-family:var(--f-head);font-weight:800;font-size:10.5pt}
+    .inst-link span{font-family:var(--f-mono);font-size:8.5pt;word-break:break-all}
+    @media print{
+      @page{size:A4;margin:14mm}
+      html,html.en-panel,body.imprimiendo{background:#fff !important} /* the navy past-the-edge color must not print */
+      body.imprimiendo > *:not(#imprimible){display:none !important}
+      body.imprimiendo #imprimible{display:block}
+      .inst *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    }
+
     /* ── PIE ────────────────────────────────────────────── */
     .pie-ola{margin-top:56px;margin-bottom:-1px}
     footer{background:var(--tinta);color:rgba(255,255,255,.75)}
@@ -291,7 +323,7 @@
       .link-fila{flex-wrap:wrap;row-gap:4px}
       .link-rango + .link-dato{flex-basis:100%} /* range on its own line, link + Copiar below */
       .btn-mini{min-height:40px}
-      .btn-lleno,.btn-whatsapp{min-height:44px}
+      .btn-lleno,.btn-whatsapp,.btn-borde{min-height:44px}
       .fila-nivel{grid-template-columns:minmax(84px,120px) minmax(0,1fr) 74px 14px;gap:10px;min-height:44px}
       .nivel-cifra .largo{display:none}
       .nivel-cifra .corto{display:inline}
@@ -399,6 +431,8 @@
       </div>
     </footer>
   </section>
+
+  <div id="imprimible" aria-hidden="true"></div>
 
   <div class="cargando" id="cargando" hidden>
     <div class="spinner"></div>
@@ -2733,6 +2767,7 @@ window.qrcode=qrcode;
       copiar: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>',
       descargar: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>',
       chat: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>',
+      imprimir: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>',
       calendario: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>',
     };
 
@@ -3102,7 +3137,9 @@ window.qrcode=qrcode;
             <div class="botones">
               <button type="button" class="btn-lleno" data-copiar-mensaje="${id}">Copiar mensaje</button>
               <a class="btn-whatsapp" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+              ${clave === "test" ? `<button type="button" class="btn-borde" data-instructivo="${prog.programa}">${ICONOS.imprimir}Imprimir instructivo</button>` : ""}
             </div>
+            ${clave === "test" ? `<p class="compartir-nota">El instructivo es para los docentes que van a aplicar el test: imprímelo o guárdalo en PDF para entregárselo.</p>` : ""}
           </div>
           ${qrs ? `<div class="qrs">${qrs}</div>` : ""}
         </div>
@@ -3127,15 +3164,21 @@ window.qrcode=qrcode;
         .map(n => n.est ? `• ${n.nivel}: ${fmtNum(n.r)} de ~${fmtNum(n.est)}` : `• ${n.nivel}: ${plural(n.r, "respuesta", "respuestas")}`).join("\n");
     }
 
+    // As the forms' closing screen says it (PENDING: check against the 2026 forms before launch)
+    const NOMBRE_TEST = { ase: "Aprendizaje Socioemocional", rel: "Religión" };
+
     function mensajeCompartir(prog, clave, links, incluirAvance) {
       const ve = estado.datos.encuestas[clave] || {};
       const pn = PROGRAMAS[prog.programa].corto;
       const entre = entreFechas(ve);
       const lista = links.length === 1 ? links[0].link : links.map(l => `• ${l.etiqueta || "Link"}: ${l.link}`).join("\n");
       if (clave === "test") {
-        const intro = `Hola, equipo docente:\n\n${entre ? `Entre ${entre} aplicaremos` : "Aplicaremos"} el Test de Estudiantes del programa ${pn}. Les pedimos dedicar unos minutos de clase para que sus estudiantes lo respondan en ${links.length === 1 ? "este link" : "el link que corresponde a su curso"}:\n${lista}`;
+        // Essentials of last year's instructivo (45 min, at school, list, vocabulary only, final message)
+        const intro = `Hola, equipo docente:\n\n${entre ? `Entre ${entre} aplicaremos` : "Aplicaremos"} el Test de Estudiantes del programa ${pn}. Les pedimos dedicar una clase (45 minutos como máximo) para que sus estudiantes lo respondan en el colegio, en ${links.length === 1 ? "este link" : "el link que corresponde a su curso"}:\n${lista}`;
+        const papel = (prog.test.nivelesPapel || []).length ? `\n\nEn ${textoNiveles(prog.test.nivelesPapel)} el test es en papel y lo aplica la Agencia Focus.` : "";
+        const dia = `\n\nPara ese día:\n• Tengan a mano la lista del curso: se les pedirá su número de lista.\n• Revisen antes que el link abra bien.\n• Solo resuelvan dudas de vocabulario, para no influir en las respuestas.\n• Al terminar, cada estudiante debe ver el mensaje «¡Has completado el Test de ${NOMBRE_TEST[prog.programa]}!».\n• Si algo falla, avísenme.`;
         const avance = incluirAvance ? avancePorNivel(prog) : "";
-        return intro + (avance ? `\n\nAvance por nivel:\n${avance}` : "") + "\n\nMuchas gracias.";
+        return intro + papel + dia + (avance ? `\n\nAvance por nivel:\n${avance}` : "") + "\n\nMuchas gracias.";
       }
       return `Hola:\n\n${entre ? `Entre ${entre} está disponible` : "Está disponible"} la Encuesta de Fin de Año (EFA) del programa ${pn}. Puedes responder ${links.length === 1 ? "aquí" : "en el link que te corresponde"}:\n${lista}\n\nGracias.`;
     }
@@ -3455,6 +3498,70 @@ window.qrcode=qrcode;
       return `<div class="acordeon docentes">${filas}</div>`;
     }
 
+
+    // ── Instructivo imprimible (Test de Estudiantes) ────────
+    // Replaces last year's Word instructivos: same content, built from the school's data (dates from Config,
+    // its grades, paper grades, links + QR, contact e-mail, its Jefe/a de Proyecto for urgent matters).
+    const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+    function fechaConDia(iso) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
+      return m ? `${DIAS[new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])).getUTCDay()]} ${fechaLarga(iso)}` : "";
+    }
+
+    function instructivoHTML(prog) {
+      const d = estado.datos, ve = d.encuestas.test || {}, t = prog.test, meta = PROGRAMAS[prog.programa];
+      const c = d.colegio || {};
+      const contacto = d.contacto || "evaluacion@fundaciontrabun.cl";
+      const niveles = (t.nivelesTest || []).filter(n => (prog.nivelesImplementados || []).indexOf(n) >= 0);
+      const papel = t.nivelesPapel || [];
+      const links = linksVisibles(prog, "test");
+      const fechas = ve.abre && ve.cierra ? ` estará disponible del ${fechaConDia(ve.abre)} al ${fechaConDia(ve.cierra)}` : " estará disponible pronto";
+      const qrs = links.map(l => `<div class="inst-link"><img src="${qrChico(l.link)}" alt="" />
+          <div>${l.etiqueta ? `<b>${esc(l.etiqueta)}</b>` : ""}<span>${esc(l.link.replace(/^https?:\/\//, ""))}</span></div></div>`).join("");
+      const jdp = prog.jefeProyecto ? `${esc(prog.jefeProyecto)}, tu Jefe/a de Proyecto Trabün` : "tu Jefe/a de Proyecto Trabün";
+      return `<article class="inst" style="--prog:${meta.color}">
+        <header class="inst-cab">
+          <img src="${document.querySelector(".nav-marca img").src}" alt="Fundación Trabün" />
+          <div><div class="inst-eyebrow">Instructivo · Test de Estudiantes</div>
+            <h1>Test de ${NOMBRE_TEST[prog.programa]}</h1>
+            <p>${esc(c.nombre || "")} · RBD ${esc(c.rbd || "")}</p></div>
+        </header>
+        <section><h2>Antes de partir</h2>
+          <p>Gracias por darte el tiempo de aplicar el Test de Estudiantes. Las respuestas de tus estudiantes nos ayudan a ver cómo va el programa de ${meta.titulo} en tu colegio y a acompañarlos mejor.</p>
+          <p>El test${fechas}. Toma 45 minutos como máximo, contando las instrucciones. Las respuestas son confidenciales: solo las usamos para evaluar y acompañar el programa.</p></section>
+        <section><h2>¿Quiénes lo responden?</h2>
+          ${niveles.length ? `<p>Lo responden los cursos de ${esc(textoNiveles(niveles))}.${papel.length ? ` En ${esc(textoNiveles(papel))} el test es en papel y de eso se encarga la Agencia Focus.` : ""}</p>` : ""}
+          <p>Mientras más estudiantes lo respondan, mejor podemos ver cómo les está yendo, así que te pedimos animar la asistencia ese día. Si hay estudiantes con NEE, pueden responder con apoyo o, si el colegio lo considera mejor, no rendirlo.</p></section>
+        ${links.length ? `<section><h2>¿Cómo entran los estudiantes?</h2>
+          <p>Cada curso tiene su link. Los estudiantes pueden abrirlo desde el computador o escanear el código QR con el celular.</p>
+          <div class="inst-links">${qrs}</div></section>` : ""}
+        <section><h2>Para que todo salga bien</h2><ul>
+          <li>Ten a mano la lista del curso: a cada estudiante se le pedirá su número de lista.</li>
+          <li>Prueba el link antes, en los mismos equipos que van a usar los estudiantes.</li>
+          <li>Si puedes, lee las preguntas con anticipación. Así las dudas que aparezcan no te van a tomar por sorpresa.</li></ul></section>
+        <section><h2>El día del test</h2><ul>
+          <li>Los estudiantes responden el test en el colegio, no en la casa.</li>
+          <li>Ayuda mucho que haya silencio y, si se puede, que los estudiantes salgan de la sala recién cuando todos hayan terminado.</li>
+          <li>Si un estudiante te pregunta algo, ayúdale solo con el significado de las palabras. Así sus respuestas siguen siendo suyas.</li>
+          <li>Al terminar, cada estudiante debería ver el mensaje «¡Has completado el Test de ${NOMBRE_TEST[prog.programa]}!». Si no aparece, pídele que revise si envió sus respuestas. El encargado del programa puede ver en el Portal de Seguimiento quiénes ya respondieron.</li></ul></section>
+        <section><h2>¿Necesitas ayuda?</h2>
+          <p>Escríbenos a <b>${esc(contacto)}</b>. Revisamos el correo seguido, aunque a veces no alcanzamos a responder de inmediato. Si es urgente, llama a ${jdp}: el encargado del programa en tu colegio tiene su número.</p>
+          <p class="inst-gracias">¡Muchas gracias por tu apoyo!</p></section>
+      </article>`;
+    }
+
+    function imprimirInstructivo(programa) {
+      const prog = (estado.datos.programas || []).find(p => p.programa === programa);
+      if (!prog) return;
+      const titulo = document.title;
+      $("imprimible").innerHTML = instructivoHTML(prog);
+      document.title = `Instructivo Test ${PROGRAMAS[programa].corto} · ${(estado.datos.colegio || {}).nombre || ""}`; // saved PDF name
+      document.body.classList.add("imprimiendo");
+      const limpiar = () => { document.body.classList.remove("imprimiendo"); $("imprimible").innerHTML = ""; document.title = titulo; };
+      window.addEventListener("afterprint", limpiar, { once: true });
+      window.print();
+    }
+
     // ── Eventos ─────────────────────────────────────────────
     $("form-login").addEventListener("submit", ingresar);
     $("btn-salir").addEventListener("click", salir);
@@ -3510,6 +3617,8 @@ window.qrcode=qrcode;
     document.addEventListener("click", ev => {
       const copiar = ev.target.closest("[data-copiar]");
       if (copiar) return copiarTexto(copiar.dataset.copiar, copiar, "Copiado");
+      const inst = ev.target.closest("[data-instructivo]");
+      if (inst) return imprimirInstructivo(inst.dataset.instructivo);
       const qr = ev.target.closest("[data-descargar-qr]");
       if (qr) return descargarQR(qr.dataset.descargarQr);
       const msgBtn = ev.target.closest("[data-copiar-mensaje]");
