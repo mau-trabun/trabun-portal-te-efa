@@ -148,48 +148,44 @@
     .num.si{background:var(--prog);border-color:var(--prog);color:#fff}
     .num sup{position:absolute;top:-6px;right:-4px;font-size:9.5px;font-weight:800;background:var(--tinta);color:#fff;border-radius:999px;padding:0 4px;line-height:14px}
 
-    /* ── COMPARTIR (bandeja + modal + QR) ───────────────── */
-    .bandeja{background:var(--tray);border:1px solid var(--borde);border-radius:12px;padding:8px 12px 8px 14px;display:flex;flex-direction:column}
-    .bandeja-fila{display:flex;align-items:center;gap:10px;padding:5px 0;min-width:0}
-    .bandeja-fila + .bandeja-fila{border-top:1px solid var(--borde)}
+    /* ── COMPARTIR (sección siempre visible + QR) ───────── */
+    .compartir{background:var(--tray);border:1px solid var(--borde);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+    .compartir-titulo{display:flex;align-items:center;gap:8px;font-family:var(--f-head);font-weight:700;font-size:14px}
+    .compartir-sub{font-size:12.5px;color:var(--muted);margin-top:2px}
     .punto{width:9px;height:9px;border-radius:50%;background:var(--prog);flex:none}
-    .bandeja-rango{flex:none;font-family:var(--f-head);font-weight:700;font-size:12.5px;white-space:nowrap}
-    .bandeja-dato{flex:1;min-width:0;display:flex;align-items:center;gap:10px}
-    .bandeja-link{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--f-mono);font-size:13px}
-    .btn-copiar{flex:none;font-family:var(--f-head);font-weight:700;font-size:13px;color:var(--rojo);padding:8px 2px}
-    .bandeja-pie{display:flex;justify-content:flex-end;padding-top:6px}
-    .btn-compartir{font-family:var(--f-head);font-weight:700;font-size:13px;background:var(--rojo);color:#fff;padding:8px 16px;border-radius:999px;min-height:36px;transition:background 120ms}
-    .btn-compartir:hover{background:var(--rojo-osc)}
-    .modal-fondo{position:fixed;inset:0;background:rgba(21,27,41,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:100}
-    .modal{background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(21,27,41,.28);width:100%;max-width:560px;max-height:90vh;overflow:auto;padding:26px;display:flex;flex-direction:column;gap:16px}
-    .modal-cab{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-    .modal-cab .eyebrow{display:flex;align-items:center;gap:9px}
-    .modal-titulo{font-family:var(--f-head);font-weight:800;font-size:21px;line-height:1.15;margin-top:4px}
-    .modal-sub{font-size:13px;color:var(--muted);margin-top:4px}
-    .modal-cerrar{font-family:var(--f-head);font-weight:800;font-size:24px;line-height:1;color:var(--muted);padding:2px 6px;min-width:36px;min-height:36px}
-    .modal-etiqueta{font-family:var(--f-head);font-weight:600;font-size:13px}
-    .modal-seccion{display:flex;flex-direction:column;gap:6px}
-    .modal-link{display:flex;gap:8px;align-items:center}
-    .modal-link code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:var(--tray);border:1px solid var(--borde);border-radius:8px;padding:9px 12px;font-family:var(--f-mono);font-size:13px}
-    .btn-borde{flex:none;font-family:var(--f-head);font-weight:700;font-size:14px;border:1.5px solid var(--rojo);color:var(--rojo);padding:8px 14px;border-radius:999px;background:#fff;text-decoration:none;text-align:center}
-    .btn-borde.tinta{border-color:var(--tinta);color:var(--tinta)}
+    .compartir-grid{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:22px;align-items:start}
+    .compartir-main{display:flex;flex-direction:column;gap:12px;min-width:0}
+    .link-filas{display:flex;flex-direction:column;gap:6px}
+    .link-fila{display:flex;align-items:center;gap:10px;min-width:0}
+    .link-rango{flex:none;font-family:var(--f-head);font-weight:700;font-size:12.5px;white-space:nowrap;min-width:0}
+    .link-dato{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--borde);border-radius:8px;padding:4px 6px 4px 10px}
+    .link-texto{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--f-mono);font-size:13px}
+    .btn-copiar{flex:none;font-family:var(--f-head);font-weight:700;font-size:13px;color:var(--rojo);padding:6px 6px}
+    .mensaje-cab{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+    .mensaje-etiqueta{font-family:var(--f-head);font-weight:600;font-size:13px}
+    .mensaje{background:#fff;border:1px solid var(--borde);border-radius:10px;padding:12px 14px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+    .interruptor{display:flex;align-items:center;gap:8px;font-family:var(--f-head);font-weight:600;font-size:12.5px}
+    .interruptor i{width:34px;height:20px;border-radius:999px;background:var(--borde-input);position:relative;transition:background 240ms;flex:none}
+    .interruptor i::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(21,27,41,.2);transition:left 240ms var(--ease)}
+    .interruptor[aria-checked="true"] i{background:var(--rojo)}
+    .interruptor[aria-checked="true"] i::after{left:16px}
+    .botones{display:flex;gap:10px;flex-wrap:wrap}
     .btn-lleno{font-family:var(--f-head);font-weight:700;font-size:14px;background:var(--rojo);color:#fff;padding:10px 18px;border-radius:999px;transition:background 120ms}
     .btn-lleno:hover{background:var(--rojo-osc)}
     .btn-whatsapp{font-family:var(--f-head);font-weight:700;font-size:14px;background:#25d366;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none;transition:background 120ms}
     .btn-whatsapp:hover{background:#1da851;color:#fff}
-    .mensaje{background:var(--tray);border:1px solid var(--borde);border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;max-height:240px;overflow:auto;overflow-wrap:anywhere}
-    .interruptor{display:flex;align-items:center;gap:8px;font-family:var(--f-head);font-weight:600;font-size:12.5px}
-    .interruptor i{width:34px;height:20px;border-radius:999px;background:var(--borde-input);position:relative;transition:background 240ms}
-    .interruptor i::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(21,27,41,.2);transition:left 240ms var(--ease)}
-    .interruptor[aria-checked="true"] i{background:var(--rojo)}
-    .interruptor[aria-checked="true"] i::after{left:16px}
-    .modal-botones{display:flex;gap:10px;flex-wrap:wrap}
-    .qrs{display:flex;flex-direction:column;gap:14px;border-top:1px solid var(--borde);padding-top:16px}
-    .qr{display:flex;gap:14px;align-items:center}
-    .qr img{width:96px;height:96px;flex:none;border:1px solid var(--borde);border-radius:8px;image-rendering:pixelated}
-    .qr p{font-size:13px;line-height:1.5;color:var(--muted-2)}
+    .qrs{display:flex;flex-direction:column;gap:14px;max-width:240px}
+    .qr{display:flex;gap:12px;align-items:center}
+    .qr img{width:96px;height:96px;flex:none;background:#fff;border:1px solid var(--borde);border-radius:8px;image-rendering:pixelated}
     .qr b{font-family:var(--f-head);font-weight:700;font-size:13px;display:block}
-    .qr button{font-family:var(--f-head);font-weight:700;font-size:13px;color:var(--rojo);padding:6px 0}
+    .qr p{font-size:12px;line-height:1.45;color:var(--muted-2)}
+    .qr button{font-family:var(--f-head);font-weight:700;font-size:13px;color:var(--rojo);padding:4px 0}
+    /* Share section in ink, not red: the card already carries the program color and WhatsApp green (Mau, 05-10-2026) */
+    .compartir .btn-copiar,.compartir .qr button{color:var(--tinta);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+    .compartir .btn-copiar:hover,.compartir .qr button:hover{color:#3a4050}
+    .compartir .btn-lleno{background:var(--tinta)}
+    .compartir .btn-lleno:hover{background:#2a3142}
+    .compartir .interruptor[aria-checked="true"] i{background:var(--prog)}
 
     /* ── PIE ────────────────────────────────────────────── */
     .pie-ola{margin-top:56px;margin-bottom:-1px}
@@ -224,10 +220,13 @@
       .banda{padding:16px 18px 12px}
       .cuerpo{padding:4px 16px 18px}
       .btn-actualizar{min-height:44px}
-      .modal{padding:20px}
-      .bandeja-fila{flex-wrap:wrap;row-gap:2px}
-      .bandeja-rango + .bandeja-dato{flex-basis:100%} /* range on its own line, link + Copiar below */
-      .btn-copiar,.btn-compartir{min-height:44px}
+      .compartir{padding:14px}
+      .compartir-grid{grid-template-columns:minmax(0,1fr)}
+      .qrs{max-width:none}
+      .link-fila{flex-wrap:wrap;row-gap:4px}
+      .link-rango + .link-dato{flex-basis:100%} /* range on its own line, link + Copiar below */
+      .btn-copiar{min-height:40px}
+      .btn-lleno,.btn-whatsapp{min-height:44px}
       .fila-nivel{grid-template-columns:minmax(84px,120px) minmax(0,1fr) 74px 14px;gap:10px;min-height:44px}
       .nivel-cifra .largo{display:none}
       .nivel-cifra .corto{display:inline}
@@ -310,10 +309,6 @@
       </div>
     </footer>
   </section>
-
-  <div class="modal-fondo" id="modal-compartir" hidden>
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-titulo" id="modal-contenido"></div>
-  </div>
 
   <div class="cargando" id="cargando" hidden>
     <div class="spinner"></div>
@@ -2647,7 +2642,7 @@ window.qrcode=qrcode;
       calendario: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>',
     };
 
-    const estado = { datos: null, encuesta: "test", ui: {}, compartir: null }; // ui[programa] = { abiertos, mas, q }
+    const estado = { datos: null, encuesta: "test", ui: {} }; // ui[programa] = { abiertos, mas, q, sh: { test, efa } }
     const MAX_CHIPS = 24;
     const MAX_RESULTADOS = 50;
     // Kept in memory only (never storage) so refreshes don't ask for the clave again; cleared on logout.
@@ -2796,7 +2791,6 @@ window.qrcode=qrcode;
       clearInterval(sesion.timerRefresco);
       clearInterval(sesion.timerTexto);
       Object.assign(sesion, { rbd: null, clave: null, ultima: 0, timerTexto: null, timerRefresco: null, actualizando: false });
-      if (estado.compartir) cerrarCompartir();
       estado.datos = null;
       estado.ui = {};
       estado.encuesta = "test";
@@ -2820,7 +2814,6 @@ window.qrcode=qrcode;
       aviso.innerHTML = `Tu acceso es válido, pero no encontramos programas asociados a este RBD. Escríbenos a <a href="mailto:${esc(contacto)}">${esc(contacto)}</a> para revisarlo.`;
       if (!mantenerVista) estado.ui = {}; // new login: fresh accordion and search state
       renderProgramas();
-      if (estado.compartir) renderCompartir(); // refresh while the share modal is open: update its numbers
       if (mantenerVista) return; // refresh: keep scroll position, active tab, open rows and search
       $("view-login").hidden = true;
       $("view-panel").hidden = false;
@@ -2942,19 +2935,77 @@ window.qrcode=qrcode;
       return utiles.length ? utiles : links;
     }
 
-    function bandeja(prog, clave) {
+    // Share section, always visible under each survey block (replaces tray + modal; EFS showed it inline too)
+    function shDe(programa, clave) {
+      const u = estado.ui[programa] || (estado.ui[programa] = { abiertos: new Set(), mas: new Set(), q: "" });
+      u.sh = u.sh || {};
+      // Progress by grade is opt-in: the first share is the link itself, and per-grade numbers sent to
+      // the whole teaching team can read as comparison (supportive tool, not control).
+      return u.sh[clave] || (u.sh[clave] = { incluir: false });
+    }
+
+    const qrCache = new Map(); // link → small PNG data URL (cards re-render on tab switches and refreshes)
+    function qrChico(link) {
+      if (!qrCache.has(link)) {
+        let src = "";
+        try { src = lienzoQR(link, 288).toDataURL("image/png"); } catch (_) { /* QR is optional */ }
+        qrCache.set(link, src);
+      }
+      return qrCache.get(link);
+    }
+
+    function seccionCompartir(prog, clave) {
+      return `<div id="compartir-${prog.programa}-${clave}">${contenidoCompartir(prog, clave)}</div>`;
+    }
+
+    function contenidoCompartir(prog, clave) {
       const ve = estado.datos.encuestas[clave];
-      if (ve && ve.fase === "closed") return ""; // closed: no tray
+      if (ve && ve.fase === "closed") return ""; // closed: nothing left to share
       const links = linksVisibles(prog, clave);
-      if (!links.length) return ""; // no link yet: the tray simply doesn't render
-      const filas = links.map((l, i) => `<div class="bandeja-fila">
+      if (!links.length) return ""; // no link yet: the section simply doesn't render
+      const sh = shDe(prog.programa, clave);
+      const conAvance = clave === "test" && ve && ve.fase === "open";
+      const msg = mensajeCompartir(prog, clave, links, conAvance && sh.incluir);
+      const id = `${prog.programa}|${clave}`;
+      const filas = links.map(l => `<div class="link-fila">
           <span class="punto"></span>
-          ${l.etiqueta && links.length > 1 ? `<span class="bandeja-rango">${esc(l.etiqueta)}</span>` : ""}
-          <span class="bandeja-dato"><span class="bandeja-link" title="${esc(l.link)}">${esc(l.link.replace(/^https?:\/\//, ""))}</span>
+          ${l.etiqueta && links.length > 1 ? `<span class="link-rango">${esc(l.etiqueta)}</span>` : ""}
+          <span class="link-dato"><span class="link-texto" title="${esc(l.link)}">${esc(l.link.replace(/^https?:\/\//, ""))}</span>
           <button type="button" class="btn-copiar" data-copiar="${esc(l.link)}">Copiar</button></span>
         </div>`).join("");
-      const etiqueta = ve && ve.fase === "pre" ? "Compartir" : "Recordar";
-      return `<div class="bandeja">${filas}<div class="bandeja-pie"><button type="button" class="btn-compartir" data-compartir="${prog.programa}" data-clave="${clave}">${etiqueta}</button></div></div>`;
+      const qrs = links.map((l, i) => {
+        const src = qrChico(l.link);
+        return src ? `<div class="qr"><img src="${src}" alt="Código QR del link${l.etiqueta ? " para " + esc(l.etiqueta) : ""}" />
+          <div>${links.length > 1 && l.etiqueta ? `<b>${esc(l.etiqueta)}</b>` : ""}<p>Para proyectar en la sala o imprimir.</p>
+          <button type="button" data-descargar-qr="${id}|${i}">Descargar QR</button></div></div>` : "";
+      }).join("");
+      return `<section class="compartir" aria-label="Compartir el link">
+        <div>
+          <div class="compartir-titulo"><span class="punto"></span>${links.length > 1 ? "Comparte los links" : "Comparte el link"}</div>
+          <div class="compartir-sub">${clave === "test" ? "Para los docentes que aplicarán el test en clases." : "Para el equipo directivo, líderes educativos y docentes."}</div>
+        </div>
+        <div class="compartir-grid">
+          <div class="compartir-main">
+            <div class="link-filas">${filas}</div>
+            <div class="mensaje-cab">
+              <span class="mensaje-etiqueta">Mensaje</span>
+              ${conAvance ? `<button type="button" class="interruptor" role="switch" aria-checked="${sh.incluir}" data-incluir="${id}"><i></i>Incluir avance por nivel</button>` : ""}
+            </div>
+            <div class="mensaje">${esc(msg)}</div>
+            <div class="botones">
+              <button type="button" class="btn-lleno" data-copiar-mensaje="${id}">Copiar mensaje</button>
+              <a class="btn-whatsapp" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+            </div>
+          </div>
+          ${qrs ? `<div class="qrs">${qrs}</div>` : ""}
+        </div>
+      </section>`;
+    }
+
+    function redibujarCompartir(programa, clave) {
+      const prog = (estado.datos.programas || []).find(p => p.programa === programa);
+      const cont = $(`compartir-${programa}-${clave}`);
+      if (prog && cont) cont.innerHTML = contenidoCompartir(prog, clave);
     }
 
     // "el 13 de octubre y el 20 de noviembre" / "el 2 y el 13 de noviembre"
@@ -3014,69 +3065,6 @@ window.qrcode=qrcode;
       return cv;
     }
 
-    function abrirCompartir(programa, clave) {
-      // Progress by grade is opt-in: the first share is the link itself, and per-grade numbers sent to
-      // the whole teaching team can read as comparison (supportive tool, not control).
-      estado.compartir = { programa, clave, incluir: false };
-      renderCompartir();
-      $("modal-compartir").hidden = false;
-      document.body.style.overflow = "hidden";
-      const cerrar = document.querySelector("#modal-contenido .modal-cerrar");
-      if (cerrar) cerrar.focus();
-    }
-
-    function cerrarCompartir() {
-      estado.compartir = null;
-      $("modal-compartir").hidden = true;
-      document.body.style.overflow = "";
-    }
-
-    function renderCompartir() {
-      const sh = estado.compartir;
-      const prog = (estado.datos.programas || []).find(p => p.programa === sh.programa);
-      if (!prog) return cerrarCompartir();
-      const ve = estado.datos.encuestas[sh.clave] || {};
-      const links = linksVisibles(prog, sh.clave);
-      const abierto = ve.fase === "open";
-      const conAvance = abierto && sh.clave === "test";
-      const msg = mensajeCompartir(prog, sh.clave, links, conAvance && sh.incluir);
-      sh.mensaje = msg;
-      const meta = PROGRAMAS[prog.programa];
-      const linksHtml = links.map(l => `<div class="modal-seccion">
-          <div class="modal-etiqueta">${links.length > 1 && l.etiqueta ? `Link · ${esc(l.etiqueta)}` : "Link"}</div>
-          <div class="modal-link"><code title="${esc(l.link)}">${esc(l.link)}</code><button type="button" class="btn-borde" data-copiar="${esc(l.link)}">Copiar</button></div>
-        </div>`).join("");
-      const qrs = links.map((l, i) => {
-        let src = "";
-        try { src = lienzoQR(l.link, 288).toDataURL("image/png"); } catch (_) { /* QR is optional */ }
-        return src ? `<div class="qr"><img src="${src}" alt="Código QR del link${l.etiqueta ? " para " + esc(l.etiqueta) : ""}" />
-          <div>${links.length > 1 && l.etiqueta ? `<b>${esc(l.etiqueta)}</b>` : ""}<p>Para proyectar en la sala o imprimir en la sala de profesores.</p>
-          <button type="button" data-descargar-qr="${i}">Descargar QR</button></div></div>` : "";
-      }).join("");
-      $("modal-contenido").innerHTML = `
-        <div class="modal-cab">
-          <div>
-            <div class="eyebrow" style="--prog:${meta.color}"><span class="punto"></span>Programa ${esc(meta.corto)}</div>
-            <div class="modal-titulo" id="modal-titulo">${abierto ? "Recordar" : "Compartir"}: ${esc(ENCUESTAS[sh.clave].nombre)}</div>
-            <div class="modal-sub">${sh.clave === "test" ? "Para los docentes que aplicarán el test en clases." : "Para el equipo directivo, líderes educativos y docentes."}</div>
-          </div>
-          <button type="button" class="modal-cerrar" data-cerrar-modal aria-label="Cerrar">×</button>
-        </div>
-        ${linksHtml}
-        <div class="modal-seccion">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
-            <div class="modal-etiqueta">Mensaje</div>
-            ${conAvance ? `<button type="button" class="interruptor" role="switch" aria-checked="${sh.incluir}" data-incluir><i></i>Incluir avance por nivel</button>` : ""}
-          </div>
-          <div class="mensaje">${esc(msg)}</div>
-        </div>
-        <div class="modal-botones">
-          <button type="button" class="btn-lleno" data-copiar-mensaje>Copiar mensaje</button>
-          <a class="btn-whatsapp" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Enviar por WhatsApp</a>
-        </div>
-        ${qrs ? `<div class="qrs">${qrs}</div>` : ""}`;
-    }
-
     async function copiarTexto(texto, boton, etiquetaOk) {
       let ok = false;
       try { await navigator.clipboard.writeText(texto); ok = true; } catch (_) {
@@ -3094,15 +3082,15 @@ window.qrcode=qrcode;
       boton._t = setTimeout(() => { boton.textContent = original; }, 1600);
     }
 
-    function descargarQR(i) {
-      const sh = estado.compartir;
-      const prog = (estado.datos.programas || []).find(p => p.programa === sh.programa);
-      const l = linksVisibles(prog, sh.clave)[i];
+    function descargarQR(id) {
+      const [programa, clave, i] = id.split("|");
+      const prog = (estado.datos.programas || []).find(p => p.programa === programa);
+      const l = prog && linksVisibles(prog, clave)[Number(i)];
       if (!l) return;
+      const leyenda = [`${ENCUESTAS[clave].nombre} · ${PROGRAMAS[prog.programa].corto}`, l.etiqueta];
       const a = document.createElement("a");
-      const leyenda = [`${ENCUESTAS[sh.clave].nombre} · ${PROGRAMAS[prog.programa].corto}`, l.etiqueta];
       a.href = lienzoQR(l.link, 1024, l.etiqueta ? leyenda : [leyenda[0]]).toDataURL("image/png");
-      a.download = `QR ${ENCUESTAS[sh.clave].corto} ${PROGRAMAS[prog.programa].corto}${l.etiqueta ? " " + l.etiqueta : ""}.png`.replace(/[°\/\\:*?"<>|]/g, "");
+      a.download = `QR ${ENCUESTAS[clave].corto} ${PROGRAMAS[prog.programa].corto}${l.etiqueta ? " " + l.etiqueta : ""}.png`.replace(/[°\/\\:*?"<>|]/g, "");
       document.body.appendChild(a); a.click(); a.remove();
     }
 
@@ -3136,7 +3124,7 @@ window.qrcode=qrcode;
         + `<div class="resumen"><div class="resumen-total">${esc(total)}</div><div class="resumen-alcance">${esc(alcance)}</div></div>`
         + buscar
         + `<div id="est-${prog.programa}">${contenidoTest(prog)}</div>`
-        + bandeja(prog, "test");
+        + seccionCompartir(prog, "test");
     }
 
     // Search results or the grade accordion (re-rendered alone while typing, so the input keeps focus)
@@ -3234,7 +3222,7 @@ window.qrcode=qrcode;
       if (!e.ok) return notaFase("efa") + errorCarga();
       const total = pre ? "Sin respuestas todavía" : plural(e.total, "respuesta", "respuestas");
       return notaFase("efa") + `<div class="resumen"><div class="resumen-total">${esc(total)}</div><div class="resumen-alcance">${esc(alcance)}</div></div>`
-        + bandeja(prog, "efa");
+        + seccionCompartir(prog, "efa");
     }
 
     // ── Eventos ─────────────────────────────────────────────
@@ -3275,22 +3263,30 @@ window.qrcode=qrcode;
         redibujarTest(clave);
       }
     });
-    // Copy buttons (tray and modal), share button
+    // Share section: copy link, copy message, progress switch, full message, QR download
     document.addEventListener("click", ev => {
       const copiar = ev.target.closest("[data-copiar]");
       if (copiar) return copiarTexto(copiar.dataset.copiar, copiar, "Copiado");
-      const compartir = ev.target.closest("[data-compartir]");
-      if (compartir) return abrirCompartir(compartir.dataset.compartir, compartir.dataset.clave);
-    });
-    $("modal-compartir").addEventListener("click", ev => {
-      if (ev.target === ev.currentTarget || ev.target.closest("[data-cerrar-modal]")) return cerrarCompartir(); // overlay or ×
-      if (ev.target.closest("[data-incluir]")) { estado.compartir.incluir = !estado.compartir.incluir; renderCompartir(); return document.querySelector("[data-incluir]").focus(); }
-      const msg = ev.target.closest("[data-copiar-mensaje]");
-      if (msg) return copiarTexto(estado.compartir.mensaje, msg, "Mensaje copiado");
       const qr = ev.target.closest("[data-descargar-qr]");
-      if (qr) descargarQR(Number(qr.dataset.descargarQr));
+      if (qr) return descargarQR(qr.dataset.descargarQr);
+      const msgBtn = ev.target.closest("[data-copiar-mensaje]");
+      if (msgBtn) {
+        const [programa, clave] = msgBtn.dataset.copiarMensaje.split("|");
+        const prog = (estado.datos.programas || []).find(p => p.programa === programa);
+        const ve = estado.datos.encuestas[clave];
+        const texto = mensajeCompartir(prog, clave, linksVisibles(prog, clave), clave === "test" && ve && ve.fase === "open" && shDe(programa, clave).incluir);
+        return copiarTexto(texto, msgBtn, "Mensaje copiado");
+      }
+      const sw = ev.target.closest("[data-incluir]");
+      if (sw) {
+        const [programa, clave] = sw.dataset.incluir.split("|");
+        const sh = shDe(programa, clave);
+        sh.incluir = !sh.incluir;
+        redibujarCompartir(programa, clave);
+        const mismo = document.querySelector(`[data-incluir="${programa}|${clave}"]`);
+        if (mismo) mismo.focus();
+      }
     });
-    document.addEventListener("keydown", ev => { if (ev.key === "Escape" && estado.compartir) cerrarCompartir(); });
     $("programas").addEventListener("input", ev => {
       const input = ev.target.closest("[data-buscar]");
       if (!input) return;
