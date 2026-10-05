@@ -21,6 +21,10 @@
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     html,body{min-height:100%}
+    /* No white beyond the footer or the login waves when scrolling past the end: no bounce where supported
+       (Safari 16+, Chrome), and the area outside the page takes the color of the bottom edge otherwise */
+    html{overscroll-behavior-y:none;background:var(--celeste)}
+    html.en-panel{background:var(--tinta)}
     body{font-family:var(--f-body);color:var(--tinta);background:var(--papel);line-height:1.5;-webkit-font-smoothing:antialiased}
     button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
     a{color:var(--rojo)} a:hover{color:var(--rojo-osc)}
@@ -244,13 +248,13 @@
     /* ── PIE ────────────────────────────────────────────── */
     .pie-ola{margin-top:56px;margin-bottom:-1px}
     footer{background:var(--tinta);color:rgba(255,255,255,.75)}
-    .pie{max-width:1160px;margin:0 auto;padding:26px 40px 34px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
-    .pie-marca{display:flex;align-items:center;gap:14px}
-    .pie-marca img{height:40px;width:auto;display:block}
-    .pie-marca b{display:block;font-family:var(--f-head);font-weight:800;font-size:15px;color:#fff}
-    .pie-marca span{font-size:13px}
+    /* As in EFS: one line, "© … · Portal de Seguimiento" left, help e-mail right */
+    .pie{max-width:1160px;margin:0 auto;padding:18px 40px 26px;display:flex;justify-content:space-between;align-items:center;gap:12px 24px;flex-wrap:wrap}
+    .pie-marca{display:flex;align-items:center;gap:12px;font-size:13px}
+    .pie-marca img{height:28px;width:auto;display:block}
     .pie-ayuda{font-size:13px;line-height:1.5}
-    .pie-ayuda a{color:#fff;font-weight:700}
+    .pie-ayuda a{color:#fff;font-weight:700;text-decoration:none}
+    .pie-ayuda a:hover{text-decoration:underline}
 
     /* ── CARGA ──────────────────────────────────────────── */
     .cargando{position:fixed;inset:0;background:rgba(245,245,245,.85);z-index:200;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px}
@@ -295,6 +299,8 @@
       .selector-cursos{display:flex}
       .selector-cursos ~ .cursos .curso:not(.sel){display:none}
       .pie{padding:20px 16px 28px}
+      .pie-sep{display:none}
+      .pie-portal{display:block} /* two lines on phones instead of an orphan "2026" */
       /* Tap targets ≥44px */
       .campo input{min-height:44px}
       .buscar{min-height:44px}
@@ -304,6 +310,10 @@
     }
     @media (max-width:400px){
       .nav-tag{display:none} /* at 375px the title + tag + the logout button don't fit */
+    }
+    /* iOS Safari zooms in when a field under 16px gets focus, and stays zoomed after login: 16px on touch screens */
+    @media (max-width:600px), (pointer:coarse){
+      .campo input,.buscar input{font-size:16px}
     }
     /* Smallest phones (320px): title row 252px wide */
     @media (max-width:360px){
@@ -343,7 +353,7 @@
         </div>
         <button class="btn-ingresar" id="btn-ingresar" type="submit">Ingresar</button>
         <p class="login-error" id="login-error" role="alert"></p>
-        <p class="login-ayuda">¿No tienes la clave? Pídela a tu Jefe de Proyecto Trabün.</p>
+        <p class="login-ayuda">¿No tienes la clave? Escríbenos a <a href="mailto:evaluacion@fundaciontrabun.cl">evaluacion@fundaciontrabun.cl</a>.</p>
       </form>
     </div>
   </section>
@@ -383,9 +393,9 @@
       <div class="pie">
         <div class="pie-marca">
           <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADoAAABQCAYAAABI1GYUAAABCGlDQ1BJQ0MgUHJvZmlsZQAAeJxjYGA8wQAELAYMDLl5JUVB7k4KEZFRCuwPGBiBEAwSk4sLGHADoKpv1yBqL+viUYcLcKakFicD6Q9ArFIEtBxopAiQLZIOYWuA2EkQtg2IXV5SUAJkB4DYRSFBzkB2CpCtkY7ETkJiJxcUgdT3ANk2uTmlyQh3M/Ck5oUGA2kOIJZhKGYIYnBncAL5H6IkfxEDg8VXBgbmCQixpJkMDNtbGRgkbiHEVBYwMPC3MDBsO48QQ4RJQWJRIliIBYiZ0tIYGD4tZ2DgjWRgEL7AwMAVDQsIHG5TALvNnSEfCNMZchhSgSKeDHkMyQx6QJYRgwGDIYMZAKbWPz9HbOBQAAAJwklEQVR42tWcW4xdVRnHf9+eM73TzjilBSWWGltKbVIg1ESKLRgrEXyQCEajiYkPJo2aSLwkPhh9aAIJPGhsTPWh0ciL4pUQFCqQ2CCixAs2tEbslZa0U3plbDs9Z/99ON+aWd095+y1Z86Zy0rO7HPOPnvt7//dv2+tPdDjIanPj5+T9Gz8vaQsem+9pCOj9yMAWAxskfSkpK+ZWcPMcklzzazhgI3ZOiTV/PiQrhw7Ja2XtEbS3dNJoAW16xLQhx3gRUmj/v43kr7q75+VdIf/NpsuwFkXgD7igC4XjnkE/EvxNT210WAnkm6Q9AMzk9vSZO3nusLnWmTDBjTcjnsyam3AN4BbgK2SLgC7gF2SzMzqXbxXPPp6pZEt545U7VuS6q5Se6Lz/VVUOQohz/hcdV09wnfPTdZUqoSX3I8fdE7kwKADXwcsM7O8ClP9uDAhBN0E9E/EVIoMikxwsaRt7exziaThyFmc9vdbJG2X9G2f2FIJkrTH52i0kGj47rUowbCK6tkuUdmiFioSPr8fWOrSNGDA338K+DSwBthuZkohQNIcYEFBeq2kfszMGpKysrnje5iZ3KRWRKAzB7seeDNro0KbCmoczn3eiToI3Fwhu5oHLEpQ78NVMjYXVJ+kpcBfgT8Bc/37umdctwGHixM2/PihFtyXn38ZmA/8vUL6d00J0DAuVMotzXKPAo+45EabX1sO3C7pceBu4L+1mDvuBJb7RUXO5h4iXgDuBAYkzTezC0F9OtC0AOivwJjSQsFV/EF3mg86fYuA30s65Pf8hF9yqtbiJhvcQzYK8SeAvgXYDJwDLicSPuhMUiqYxHnvd5/RcPqWRmYHcAmYAxxrBfQDBbspAv2MH18ws3rgbglhg5FWTCoxCEmLx/sNDtIimvMIT78fD2ct4ueGEjUa9ePuCuq2pItlY7jfGmClX5NF5/r8lflnAQeyiEu5pAXA2hIA/c6UP7TwzO2IGmqjJcVxtgIzNjugRgdPbj7n/qxA0LuB60uyJgP2AXsDgxKIW5oo0bcqZFqbEn93ADhRBLrCAbYjPo/ts4K9pQI9kWCfDUnzgI0lxUCgdY+Z5UWg7ypRx/C75xNVkYLqlqnj8ZJ5M898NjqteYKP+Fur0um6RIL2J3Yf8gJQK5n3tHvTrE2u22dmlyR9IZo/K5nzlVZA+xL03oCBqKHV1yKDGtMAJ3iwJM814CLwWkm9W5e0Cvh4lMC0ozMDTgP/agW0nugMvi/pG8BuM3s7IfYtTpz3Oy7RwTZxPPeEZU6Jtw/JzotmdlZSXxHoG4mquw54Gjgi6Z/AXvdux92dj7iUasANkUlYB7ufDzzUpVZtaM/8ZCwtLuS5G4C/JKRqeY/6wvVEgFkJbQYcBVa7SYyprtyWXgX2e8aRYui5M0UFTsYpmSqEoW50/4Lt7vSCo2Zm9czLHQWPBvzUCc0TudvnE9cKqZdF56esO+v3PA/scOE1iqrX8BPfBQ454Q1m16g7psfM7E1grFNhbeq8TZ7L9rco12YyyJonCHd4CakANCtU7A0H+0fgAeB/DrKeqMrTMeSgat6KecBNkNK+U9RBu03Sy4Vu3WU/5uruyH3elFfd6Yh7xHsl3RT3klML3AC2T9IXJb3ahrhw03avbjOkOIYlPSppIKa7Uo8mxNdogs3Afd6nWeVt0G6ongEngSNRsVxWzv0HeBHYZWYnivRWbka5J86K7RJJ1wI3RpnPkDekhgq55j3ebGsXl4MT2WFmWyfYXukD8k42WRqg/eIQekKMbJjZMDDs/dRORKxyoGVSChVLLSFDsohpjYSeVXomEgAXJd1BM0ISfm2Ve6hZXStB3StFgQmnXEXgbboBkrQo0Ux6usrd08m95JqX+PPTsw5o1LnvJ30V++yslWiU6E9V5TJtQBdHEi2z0VOzGWhewTuOzEag8XLh3ESJXprNEl2QYHuBAcMtuohddRa9Vt0Je+4CIyxBMwKTrkoHew10TiFxbzWCVw7Na5MUE6oJMuqKBL82CW534mxNUgNYFkm2LMyciJvXkvppLjcOuK0P0VygXtZBmse9snndzE7EK/G1VO64Pcu3n6qE06N+3flE3o0Cn/VG93torqssj8BVFchZSY+Z2bYg2bJ6tGX54/nrYBtnNsT4GupHgG0lrdMy1Y7bpmUMtkJls9LMDkrKah0kSLS+spbmTpU7aTaFr3eVyjrYZRXvHtqS7frDZaZSHKGHdBfwY+BqoPGeBEn3AV/xC1LVRy36rCmjm53GwJhbHeiVxEftzhXAduBjhU6AJXDXqnQwepywrAzQai1AbgSecPVsRKpXY/aNsLiV16KY0/Ddm097Il6fpeBiib4jrL3Uoo2Ji4Cfz3CQqmgW/cFH1GguLtUlfZ3mRsapAqlC6GiVBbXyvlUkusQFd7LmIIeALyfEO1oQRxsiVRLnbAIOazTy5JX2FgbJ3esJQNmCkqJ0brIe9YK3T8746xTN7Tcnos/DXqee9Huf8Rh5L7CjA72BtoUe708GoPckZB1hgrD9/JjnlSGrOY2vLjtxZ/zzSZobJM9EIOLXSOom5ChCHKkQm/tD8j0HuL2QOrWzp1PAN2nuAzxiZl3pChSa453MJGyJu1hB7ceS+tVRYLUOP86ArWb2RIe0sSxZUKtjWY+40F3MJZ1LABr8zVAAuoHx7SxZhwsOAb/2mlHFZL/ikxNTOfpDxnNrSYEbADwT6sWoVJuuOPqWe+CUlbc8AF1fogZByr/sZU9nAoBTvX4W/qwssanMPedLk+0DdXFciBxSTNOfGe8Ph61BywPQZR2AhgkOmNn5hIcEpkp1R2juryh+/1Shm2ixROd0UMexB2+mqD1atd68qoXCeCM8hKUxZ7Qvwe4uzgh049o0EqlovFZ6Kfr+EvBh4DlJlgG/C42vxGJ6JgDOC/SGROJyZHJvmNnzZnY0SPS3MxFMSRYVJBYketHB7qO50zQDdvtDgv1mpprbaHhUav4sKarF+IMGDeCjNB98eIXmQwWHgUej82NP//wC+BXju7BIKLmme/RFtB00s8cd1A+BtWb2enhsOwA9A7ztAK1Q51V9bmUq2yQn/TgXeGfYi29mZ81spLgnP+wFWk1z5esl4HtuzJcLdd1M6wdddts86gDrwYZbxfsM+DfwJM31jfPAz3yy4cgeBqLKYaY4rXk0d4+tA/4R5+AdkxpJN0u6X9JySXdJ+lG03+6ApLkFrzddXjd0LndKejgqEcvddbTB8RpJC/39eyUdk3RQ0rloU+F0Aw1dy1WSBqs8Zz5WOPvLIq69T9InXao3JnNvNo3o/yeYpKcioDZT6KtCy/8BrI3n2EW9T80AAAAASUVORK5CYII=" alt="" />
-          <div><b>Fundación Trabün</b><span>Portal de Seguimiento 2026</span></div>
+          <span>© 2026 Fundación Trabün<span class="pie-sep"> · </span><span class="pie-portal">Portal de Seguimiento 2026</span></span>
         </div>
-        <div class="pie-ayuda" id="pie-ayuda">¿Dudas? Contacta a tu Jefe de Proyecto Trabün.</div>
+        <div class="pie-ayuda" id="pie-ayuda">¿Necesitas ayuda? Escríbenos a <a href="mailto:evaluacion@fundaciontrabun.cl">evaluacion@fundaciontrabun.cl</a></div>
       </div>
     </footer>
   </section>
@@ -2892,6 +2902,7 @@ window.qrcode=qrcode;
       $("programas").innerHTML = "";
       $("view-panel").hidden = true;
       $("view-login").hidden = false;
+      document.documentElement.classList.remove("en-panel"); // area past the page edge: celeste (login waves)
       window.scrollTo(0, 0);
     }
 
@@ -2903,7 +2914,7 @@ window.qrcode=qrcode;
       $("colegio-nombre").textContent = c.nombre || `Establecimiento ${c.rbd}`;
       $("colegio-meta").textContent = `RBD ${c.rbd}` + (progs.length ? " · " + progs.map(p => PROGRAMAS[p.programa].corto).join(" y ") : "");
       const contacto = datos.contacto || "evaluacion@fundaciontrabun.cl";
-      $("pie-ayuda").innerHTML = `¿Dudas? Contacta a tu Jefe de Proyecto Trabün o escríbenos a <a href="mailto:${esc(contacto)}">${esc(contacto)}</a>.`;
+      $("pie-ayuda").innerHTML = `¿Necesitas ayuda? Escríbenos a <a href="mailto:${esc(contacto)}">${esc(contacto)}</a>`;
       const aviso = $("aviso-sin-programas");
       aviso.hidden = progs.length > 0;
       aviso.innerHTML = `Tu acceso es válido, pero no encontramos programas asociados a este RBD. Escríbenos a <a href="mailto:${esc(contacto)}">${esc(contacto)}</a> para revisarlo.`;
@@ -2912,6 +2923,7 @@ window.qrcode=qrcode;
       if (mantenerVista) return; // refresh: keep scroll position, active tab, open rows and search
       $("view-login").hidden = true;
       $("view-panel").hidden = false;
+      document.documentElement.classList.add("en-panel"); // area past the page edge: footer navy
       window.scrollTo(0, 0);
     }
 
@@ -3286,7 +3298,7 @@ window.qrcode=qrcode;
       const u = uiDe(prog);
       const clave = `${n.nivel}|${c.letra || ""}`;
       const aviso = !c.registrado && n.registrado && c.letra
-        ? `<div class="curso-aviso">Curso no registrado. Si este curso existe, avísale a tu Jefe de Proyecto para agregarlo.</div>` : "";
+        ? `<div class="curso-aviso">Curso no registrado. Si este curso existe, escríbenos a ${esc(estado.datos.contacto || "evaluacion@fundaciontrabun.cl")} para agregarlo.</div>` : "";
       let cuerpo;
       if (!c.r) {
         cuerpo = `<div class="curso-vacio">Aún sin respuestas.</div>`;
@@ -3434,15 +3446,13 @@ window.qrcode=qrcode;
         return `<div class="nivel${abierto ? " abierto" : ""}">
           <button type="button" class="fila-docentes" data-programa="${prog.programa}" data-nivel-efa="${esc(clave)}" aria-expanded="${abierto}">
             <div style="min-width:0"><div class="nivel-nombre">${n.nivel ? esc(n.nivel) : "Sin nivel declarado"}</div>${marca ? `<div class="nivel-marca">${marca}</div>` : ""}</div>
-            <div class="fila-docentes-der"><span class="nivel-cifra">${fmtNum(n.r)}</span>
+            <div class="fila-docentes-der"><span class="nivel-cifra">${plural(n.r, "respuesta", "respuestas")}</span>
             <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6070" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></div>
           </button>
           ${abierto ? `<div class="docentes-lista">${(n.personas || []).length ? n.personas.map(filaPersona).join("") : vacioEfa}</div>${notaCursos(n)}` : ""}
         </div>`;
       }).join("");
-      const varios = s.niveles.reduce((a, n) => a + n.r, 0) > s.r
-        ? `<div class="efa-nota" style="margin-top:8px">Quien hace clases en más de un nivel aparece en cada uno.</div>` : "";
-      return `<div class="acordeon docentes">${filas}</div>${varios}`;
+      return `<div class="acordeon docentes">${filas}</div>`;
     }
 
     // ── Eventos ─────────────────────────────────────────────
