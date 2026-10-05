@@ -124,7 +124,7 @@ Same import pattern as EFS.
 - **EFA sections:**
   - Role → Dirección / Líderes educativos / Docentes: **PENDING** list. Interim rule (EFS role texts): starts with `Director` → Dirección; starts with `Docente`/`Profesor` → Docentes; anything else → Líderes. The role shown under a name is the text before the first comma (`Mentor/a, es decir, …` → `Mentor/a`).
   - ASE Docentes are grouped by grade: implemented ∪ declared, NT1–IV. A docente with several grades is listed under each but counted once. A docente with no valid grade goes in a `nivel: null` group.
-  - ASE grade `cursos` = SF `CxN` if > 0, else `null` (also `null` for unregistered grades and the `nivel: null` group). Shown only inside the open grade as context ("Según los datos de implementación, hay N cursos…"), never as a denominator: one teacher may cover every class.
+  - ASE grade `cursos` = SF `CxN` if > 0, else `null` (also `null` for unregistered grades and the `nivel: null` group). Shown only inside the open grade as context ("En este nivel, hay N cursos con el programa."), never as a denominator: one teacher may cover every class.
   - REL Docentes: one flat list.
 - **Phases:** computed on the server in `America/Santiago`.
   - `pre` before the `abre` date, `closed` after the end of the `cierra` day, `open` otherwise.

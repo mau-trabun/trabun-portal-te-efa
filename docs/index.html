@@ -3167,20 +3167,22 @@ window.qrcode=qrcode;
     // As the forms' closing screen says it (PENDING: check against the 2026 forms before launch)
     const NOMBRE_TEST = { ase: "Aprendizaje Socioemocional", rel: "Religión" };
 
+    // Written as if the encargado sends it (Mau 05-10-2026): "Estimado equipo," / "Estimado/a,", full program name
     function mensajeCompartir(prog, clave, links, incluirAvance) {
       const ve = estado.datos.encuestas[clave] || {};
-      const pn = PROGRAMAS[prog.programa].corto;
+      const programa = `programa de ${PROGRAMAS[prog.programa].titulo} de Fundación Trabün`;
       const entre = entreFechas(ve);
       const lista = links.length === 1 ? links[0].link : links.map(l => `• ${l.etiqueta || "Link"}: ${l.link}`).join("\n");
       if (clave === "test") {
         // Essentials of last year's instructivo (45 min, at school, list, vocabulary only, final message)
-        const intro = `Hola, equipo docente:\n\n${entre ? `Entre ${entre} aplicaremos` : "Aplicaremos"} el Test de Estudiantes del programa ${pn}. Les pedimos dedicar una clase (45 minutos como máximo) para que sus estudiantes lo respondan en el colegio, en ${links.length === 1 ? "este link" : "el link que corresponde a su curso"}:\n${lista}`;
+        const intro = `Estimado equipo,\n\n${entre ? `Entre ${entre} vamos a aplicar` : "Vamos a aplicar"} el Test de Estudiantes del ${programa}. Les pido reservar una clase para que sus estudiantes lo respondan en el colegio. Toma 45 minutos como máximo.`;
+        const enlaces = links.length === 1 ? `\n\nEl link es: ${lista}` : `\n\nCada curso tiene su link:\n${lista}`;
         const papel = (prog.test.nivelesPapel || []).length ? `\n\nEn ${textoNiveles(prog.test.nivelesPapel)} el test es en papel y lo aplica la Agencia Focus.` : "";
-        const dia = `\n\nPara ese día:\n• Tengan a mano la lista del curso: se les pedirá su número de lista.\n• Revisen antes que el link abra bien.\n• Solo resuelvan dudas de vocabulario, para no influir en las respuestas.\n• Al terminar, cada estudiante debe ver el mensaje «¡Has completado el Test de ${NOMBRE_TEST[prog.programa]}!».\n• Si algo falla, avísenme.`;
+        const dia = `\n\nAlgunas cosas para ese día:\n• Tengan a mano la lista del curso, porque a cada estudiante se le pedirá su número de lista.\n• Prueben el link antes, en los mismos equipos que van a usar.\n• Si les preguntan algo, ayuden solo con el significado de las palabras, para no influir en las respuestas.\n• Al terminar, cada estudiante debería ver el mensaje «¡Has completado el Test de ${NOMBRE_TEST[prog.programa]}!».\n\nSi algo no funciona, me avisan y lo vemos.`;
         const avance = incluirAvance ? avancePorNivel(prog) : "";
-        return intro + papel + dia + (avance ? `\n\nAvance por nivel:\n${avance}` : "") + "\n\nMuchas gracias.";
+        return intro + enlaces + papel + (avance ? `\n\nAsí vamos por nivel:\n${avance}` : "") + dia + "\n\n¡Muchas gracias por su apoyo!";
       }
-      return `Hola:\n\n${entre ? `Entre ${entre} está disponible` : "Está disponible"} la Encuesta de Fin de Año (EFA) del programa ${pn}. Puedes responder ${links.length === 1 ? "aquí" : "en el link que te corresponde"}:\n${lista}\n\nGracias.`;
+      return `Estimado/a,\n\n${entre ? `Entre ${entre} estará disponible` : "Estará disponible"} la Encuesta de Fin de Año del ${programa}. Solo toma unos minutos y tu participación es muy importante para nuestra comunidad. Puedes responderla ${links.length === 1 ? "aquí" : "en el link que te corresponde"}:\n${lista}\n\n¡Muchas gracias!`;
     }
 
     // QR from the kept qrcode library, drawn on a canvas (crisp at any size).
