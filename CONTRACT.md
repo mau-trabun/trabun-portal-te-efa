@@ -53,7 +53,7 @@ Grade suffixes: `NT1, NT2, 1º, 2º, 3º, 4º, 5º, 6º, 7º, 8º, I, II, III, I
 
 - **Matching:** a blank cell means "any". A school-program uses every row of that `Encuesta` whose filled-in cells all equal its SF values. `Año inicio` is compared with the program's own `Año inicio` column. Text values (`Programa`, `EDI`, `Modelo`) are compared ignoring case and accents (SF writes `Semi-Intensivo`, EFS labels wrote `Semi-intensivo`).
 - **Test grades** for a school-program = union of `Desde`…`Hasta` over its matching `test` rows. This replaces any fixed availability rule.
-  - EDI grades with no row are surveyed on paper (part of the RCT: cohort 2025 → 5°–8° básico, cohort 2026 → 4°–7° básico), so they never show in the portal.
+  - EDI grades with no row are surveyed on paper by Agencia Focus (part of the RCT: cohort 2025 → 5°–8° básico, cohort 2026 → 4°–7° básico). Hardcoded in `PAPEL_EDI` (fixed by design); sent as `test.nivelesPapel` (∩ implemented) and shown as fixed, non-expandable rows ("Test en papel · a cargo de la Agencia Focus"), never with data.
 - **`Link`:** an empty `Link` hides that share row, but the row still defines which grades have a Test.
 - **`Form`:** uses the same label as the `Form` column of the response imports.
 
@@ -164,6 +164,7 @@ Same import pattern as EFS.
     "test": {
       "ok": true,
       "nivelesTest": ["4° básico", "…", "8° básico"],
+      "nivelesPapel": [],
       "links": [
         { "form": "ASE_4-5",  "desde": "4° básico", "hasta": "5° básico", "link": "https://…" },
         { "form": "ASE_6-IV", "desde": "6° básico", "hasta": "IV° medio", "link": "https://…" }

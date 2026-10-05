@@ -146,6 +146,7 @@ delete cacheStore['intentos_22222'];
 const re2 = post({rbd:'22222', clave:'bbb222'});
 check('EDI cohort 2025: contacto EDI, test grades 4° + I°–IV°, link only where filled', re2.contacto === 'consultas_edi@fundaciontrabun.cl' && re2.programas[0].test.nivelesTest.join() === '4° básico,I° medio,II° medio,III° medio,IV° medio' && re2.programas[0].test.links.map(l=>l.form).join() === 'ASE_EDI_4');
 check('EDI: only EFA_EDI form', re2.programas[0].efa.links.map(l=>l.form).join() === 'EFA_EDI');
+check('EDI cohort 2025: paper grades 5°–8° (implemented, not online); non-EDI none', re2.programas[0].test.nivelesPapel.join() === '5° básico,6° básico,7° básico,8° básico' && ase.test.nivelesPapel.length === 0 && rel.test.nivelesPapel.length === 0);
 check('EDI: 8° response from cohort-2 form shows as outside', re2.programas[0].test.niveles.find(n=>n.nivel==='8° básico').registrado === false);
 
 const rx = post({rbd:'44444', clave:'ddd444'});

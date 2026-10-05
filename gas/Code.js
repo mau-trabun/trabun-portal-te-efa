@@ -26,6 +26,12 @@ const NIVELES = ['NT1', 'NT2', '1° básico', '2° básico', '3° básico', '4°
 const SF_SUFIJOS = ['NT1', 'NT2', '1º', '2º', '3º', '4º', '5º', '6º', '7º', '8º', 'I', 'II', 'III', 'IV'];
 const LETRAS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 const SECCIONES = ['direccion', 'lideres', 'docentes'];
+// EDI (RCT): these grades take the Test on paper, run by Agencia Focus, by cohort (Año inicio ASE). Fixed by design.
+// Shown as fixed rows in Estudiantes (no data); intersected with the grades the school implements.
+const PAPEL_EDI = {
+  2025: ['5° básico', '6° básico', '7° básico', '8° básico'],
+  2026: ['4° básico', '5° básico', '6° básico', '7° básico'],
+};
 
 // ── HTTP ────────────────────────────────────────────────────
 
@@ -323,7 +329,9 @@ function panelPrograma_(rbd, p, d, studentId) {
   formsTest.forEach(f => rango_(f).forEach(i => { if (testIdx.indexOf(i) < 0) testIdx.push(i); }));
   testIdx.sort((a, b) => a - b);
 
-  const test = { ok: !!d.test, nivelesTest: testIdx.map(i => NIVELES[i]), links: links_(formsTest) };
+  const papelIdx = p.programa === 'ase' && p.edi ? (PAPEL_EDI[p.anioInicio] || []).map(nivelIdx_)
+    .filter(i => p.implementados.indexOf(i) >= 0 && testIdx.indexOf(i) < 0) : [];
+  const test = { ok: !!d.test, nivelesTest: testIdx.map(i => NIVELES[i]), nivelesPapel: papelIdx.map(i => NIVELES[i]), links: links_(formsTest) };
   if (d.test) {
     Object.assign(test, bloqueTest_(p, testIdx,
       d.test.filter(x => x.rbd === rbd && x.programa === p.programa), studentId));

@@ -97,6 +97,7 @@
     .banda{background:var(--prog);padding:18px 26px 14px;position:relative;overflow:hidden}
     .banda .destello{position:absolute;top:0;right:0;pointer-events:none}
     .banda-fila{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+    .banda-texto{min-width:0} /* pill always beside the title, as in EFS */
     .banda .eyebrow{color:rgba(255,255,255,.92)}
     .banda-titulo{font-family:var(--f-head);font-weight:800;font-size:23px;line-height:1.15;color:#fff;margin-top:4px}
     .banda-pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
@@ -104,8 +105,15 @@
     .banda-pills .k{font-weight:500;opacity:.9}
     .banda-pills b{font-weight:800}
     .banda-pills > .modelo{background:rgba(255,255,255,.28)}
-    .banda-linea{font-size:12.5px;color:rgba(255,255,255,.92);margin-top:10px}
-    .banda-pill{flex:none;font-family:var(--f-head);font-weight:800;font-size:18px;color:#fff;background:rgba(255,255,255,.2);padding:5px 12px;border-radius:999px;white-space:nowrap}
+    /* Survey dates: icon + Mulish, full white, dates in bold, so they don't read as an afterthought */
+    .banda-linea{display:flex;align-items:flex-start;gap:8px;font-family:var(--f-head);font-weight:600;font-size:14px;line-height:1.35;color:#fff;margin-top:14px}
+    .banda-linea svg{flex:none;width:17px;height:17px;margin-top:0}
+    .banda-linea{position:relative;z-index:1} /* full width under the title row, above the band's light flare */
+    .banda-linea b{font-weight:800;white-space:nowrap}
+    .banda-pill{flex:none;display:flex;flex-direction:column;align-items:center;font-family:var(--f-head);font-weight:800;font-size:18px;line-height:1.2;color:#fff;background:rgba(255,255,255,.2);padding:5px 12px;border-radius:999px;white-space:nowrap}
+    /* Count + caption, as in EFS ("23 respuestas / EN ESTE PROGRAMA") */
+    .banda-pill.con-sub{padding:9px 20px;border-radius:22px}
+    .banda-pill small{font-weight:700;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;opacity:.9;margin-top:2px}
     .banda + .wave{margin-top:-1px;position:relative} /* band height is fractional: overlap 1px so the white card never shows as a hairline */
     .cuerpo{padding:6px 26px 26px;display:flex;flex-direction:column;gap:14px}
 
@@ -136,6 +144,10 @@
     .barra{height:8px;background:var(--track);border-radius:99px;overflow:hidden}
     .barra i{display:block;height:100%;background:var(--prog);border-radius:99px}
     .barra.tenue{opacity:.35}
+    .fila-nivel.fija{cursor:default}
+    .fila-nivel.fija:hover{background:none}
+    .nivel.papel .nivel-nombre{color:var(--muted)}
+    .papel-texto{grid-column:2 / -1;font-size:12.5px;line-height:1.4;color:var(--muted)}
     .nivel-cifra{font-family:var(--f-head);font-weight:800;font-size:13px;text-align:right;white-space:nowrap}
     .nivel-cifra .corto{display:none}
     .chevron{transition:transform 240ms var(--ease)}
@@ -259,6 +271,13 @@
       .lbl-largo,.pestana-estado{display:none}
       .lbl-corto{display:inline}
       .banda{padding:16px 18px 12px}
+      /* Pill beside the title as in EFS: at 375px the row is 307px, so title 20px ("Socioemocional" 152px)
+         and pill 16px ("123 respuestas" / "1.110 / ~1.191"); the Test caption wraps to two lines */
+      .banda-fila{gap:10px}
+      .banda-titulo{font-size:20px}
+      .banda-pill{font-size:16px}
+      .banda-pill.con-sub{padding:8px 12px}
+      .banda-pill small.partible{white-space:normal;text-align:center;max-width:92px}
       .cuerpo{padding:4px 16px 18px}
       .btn-actualizar,.btn-salir{min-height:44px}
       .compartir{padding:14px}
@@ -2759,30 +2778,34 @@ window.qrcode=qrcode;
 
     // ── Fases y textos por encuesta ─────────────────────────
     // Band line: where the survey stands, each date once. The tab already names the survey.
+    // HTML: dates and days left in bold (all values are dates/numbers built here, escaped anyway)
     function etiquetaFase(ve) {
       if (!ve || !ve.fase) return "";
-      if (ve.fase === "pre") return `Abre el ${fechaCorta(ve.abre)} · disponible hasta el ${fechaCorta(ve.cierra)}`;
-      if (ve.fase === "closed") return `Cerrada el ${fechaCorta(ve.cierra)}`;
+      const b = t => `<b>${esc(t)}</b>`;
+      if (ve.fase === "pre") return `Abre el ${b(fechaCorta(ve.abre))} · disponible hasta el ${b(fechaCorta(ve.cierra))}`;
+      if (ve.fase === "closed") return `Cerrada el ${b(fechaCorta(ve.cierra))}`;
       const d = ve.diasRestantes;
-      if (d === 0) return "Abierta · cierra hoy";
-      return `Abierta hasta el ${fechaCorta(ve.cierra)} · ${d === 1 ? "cierra mañana" : `cierra en ${d} días`}`;
+      if (d === 0) return `Abierta · ${b("cierra hoy")}`;
+      return `Abierta hasta el ${b(fechaCorta(ve.cierra))} · ${d === 1 ? b("cierra mañana") : `cierra en ${b(`${d} días`)}`}`;
     }
 
-    function pctTest(test) {
-      if (!test || !test.ok || !test.resumen || !test.resumen.est) return null;
-      return Math.round(test.resumen.rConEst / test.resumen.est * 100);
-    }
-
-    // Short status for tab and band pill
+    // Status for tab and band pill. Counts are written out ("11 respuestas", never "resp."); the pill adds a
+    // small caption underneath, as in EFS. Test with an estimate: "110 / ~191" (no %; Mau 05-10-2026),
+    // same numbers as the summary line ("110 respuestas de ~191 estudiantes estimados").
     function cifra(prog, clave) {
       const ve = estado.datos.encuestas[clave];
-      if (ve && ve.fase === "pre") return { tab: fechaCorta(ve.abre), pill: "—" };
       const enc = prog[clave];
+      if (ve && ve.fase === "pre") {
+        const est = clave === "test" && enc && enc.ok && enc.resumen && enc.resumen.est;
+        return est ? { tab: fechaCorta(ve.abre), pill: `~${fmtNum(est)}`, sub: "estudiantes estimados", subCorta: true } : { tab: fechaCorta(ve.abre), pill: "—" };
+      }
       if (!enc || !enc.ok) return { tab: "—", pill: "—" };
-      if (clave === "efa") return { tab: `${fmtNum(enc.total)} resp.`, pill: `${fmtNum(enc.total)} resp.` };
-      const p = pctTest(enc);
-      const t = p == null ? `${fmtNum(enc.resumen.r)} resp.` : `${p}%`;
-      return { tab: t, pill: t };
+      if (clave === "test" && enc.resumen.est) {
+        const t = `${fmtNum(enc.resumen.r)} / ~${fmtNum(enc.resumen.est)}`;
+        return { tab: t, pill: t, sub: "respuestas / estimados", subCorta: true }; // caption may wrap on phones
+      }
+      const n = plural(clave === "efa" ? enc.total : enc.resumen.r, "respuesta", "respuestas");
+      return { tab: n, pill: n, sub: "en este programa" };
     }
 
     // ── Login ───────────────────────────────────────────────
@@ -2942,14 +2965,14 @@ window.qrcode=qrcode;
           <div class="banda">
             <svg class="destello" width="320" height="170" viewBox="0 0 320 170" aria-hidden="true"><defs><radialGradient id="destello-${prog.programa}" cx="100%" cy="0%" r="100%"><stop offset="0%" stop-color="#fff" stop-opacity="0.22"/><stop offset="50%" stop-color="#fff" stop-opacity="0.07"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/></radialGradient></defs><rect width="320" height="170" fill="url(#destello-${prog.programa})"/></svg>
             <div class="banda-fila">
-              <div style="min-width:0">
+              <div class="banda-texto">
                 <div class="eyebrow">Programa</div>
                 <div class="banda-titulo">${meta.titulo}</div>
                 ${pillsImplementacion(prog)}
-                <div class="banda-linea">${esc(linea)}</div>
               </div>
-              <span class="banda-pill">${esc(cifra(prog, clave).pill)}</span>
+              ${(c => `<span class="banda-pill${c.sub ? " con-sub" : ""}">${esc(c.pill)}${c.sub ? `<small${c.subCorta ? ' class="partible"' : ""}>${c.sub}</small>` : ""}</span>`)(cifra(prog, clave))}
             </div>
+            ${linea ? `<div class="banda-linea">${ICONOS.calendario}<span>${linea}</span></div>` : ""}
           </div>
           <div class="wave" style="background:${meta.color};--abajo:#fff"><svg viewBox="0 0 1440 100" preserveAspectRatio="none" style="height:56px"><path d="${WAVE_DRIP}" fill="#fff"/></svg></div>
           <div class="cuerpo">${clave === "test" ? bloqueTest(prog) : bloqueEfa(prog)}</div>
@@ -3163,13 +3186,10 @@ window.qrcode=qrcode;
     function bloqueTest(prog) {
       const t = prog.test;
       const pre = estado.datos.encuestas.test && estado.datos.encuestas.test.fase === "pre";
-      const registrados = (t.nivelesTest || []).filter(n => (prog.nivelesImplementados || []).indexOf(n) >= 0);
-      const alcance = registrados.length ? `Niveles con Test de Estudiantes: ${textoNiveles(registrados)}`
-        : "Este programa no tiene niveles registrados con Test de Estudiantes.";
       if (!t.ok) return notaFase("test") + errorCarga();
-      const r = t.resumen;
-      const total = pre ? (r.est ? `~${fmtNum(r.est)} estudiantes estimados` : "Sin estimado de estudiantes")
-        : r.est ? `${plural(r.r, "respuesta", "respuestas")} de ~${fmtNum(r.est)} estudiantes estimados` : plural(r.r, "respuesta", "respuestas");
+      // No summary lines (Mau 05-10-2026): the band pill shows responses / estimate and the rows show the grades
+      const sinNiveles = !(t.niveles || []).length && !(t.nivelesPapel || []).length
+        ? `<div class="resumen"><div class="resumen-alcance">Este programa no tiene niveles registrados con Test de Estudiantes.</div></div>` : "";
       const u = uiDe(prog);
       const porNumero = estado.datos.studentId === "numero";
       const buscar = pre ? "" : `<label class="buscar">
@@ -3178,7 +3198,7 @@ window.qrcode=qrcode;
           ${u.q ? `<button type="button" class="buscar-limpiar" data-limpiar="${prog.programa}" aria-label="Borrar búsqueda">×</button>` : ""}
         </label>`;
       return notaFase("test")
-        + `<div class="resumen"><div class="resumen-total">${esc(total)}</div><div class="resumen-alcance">${esc(alcance)}</div></div>`
+        + sinNiveles
         + buscar
         + `<div id="est-${prog.programa}">${contenidoTest(prog)}</div>`
         + seccionCompartir(prog, "test");
@@ -3190,8 +3210,22 @@ window.qrcode=qrcode;
       const pre = estado.datos.encuestas.test && estado.datos.encuestas.test.fase === "pre";
       if (!pre && u.q.trim()) return resultadosBusqueda(prog, u.q);
       const niveles = prog.test.niveles || [];
-      if (!niveles.length) return "";
-      return `<div class="acordeon">${niveles.map(n => filaNivel(prog, n, pre)).join("")}</div>`;
+      const enLinea = new Set(niveles.map(n => n.nivel));
+      const papel = (prog.test.nivelesPapel || []).filter(n => !enLinea.has(n)); // online answers in a paper grade win
+      if (!niveles.length && !papel.length) return "";
+      // Registered grades and paper grades in canonical order, then grades outside what's registered
+      const filas = niveles.filter(n => n.registrado).map(n => ({ n })).concat(papel.map(nivel => ({ papel: nivel })))
+        .sort((a, b) => ORDEN_NIVELES.indexOf(a.n ? a.n.nivel : a.papel) - ORDEN_NIVELES.indexOf(b.n ? b.n.nivel : b.papel))
+        .concat(niveles.filter(n => !n.registrado).map(n => ({ n })));
+      return `<div class="acordeon">${filas.map(f => (f.n ? filaNivel(prog, f.n, pre) : filaPapel(f.papel))).join("")}</div>`;
+    }
+
+    // EDI (RCT) grades: Test on paper by Agencia Focus. Fixed row, no data, not expandable.
+    function filaPapel(nivel) {
+      return `<div class="nivel papel"><div class="fila-nivel fija">
+        <div class="nivel-nombre">${esc(nivel)}</div>
+        <div class="papel-texto">Test en papel · a cargo de la Agencia Focus</div>
+      </div></div>`;
     }
 
     function filaNivel(prog, n, pre) {
@@ -3334,10 +3368,9 @@ window.qrcode=qrcode;
     function bloqueEfa(prog) {
       const e = prog.efa;
       const pre = estado.datos.encuestas.efa && estado.datos.encuestas.efa.fase === "pre";
-      const alcance = (prog.nivelesImplementados || []).length ? `Niveles implementados: ${textoNiveles(prog.nivelesImplementados)}` : "";
       if (!e.ok) return notaFase("efa") + errorCarga();
-      // No total line here: the band pill and the tab already show "N resp." (Mau 05-10-2026)
-      return notaFase("efa") + (alcance ? `<div class="resumen"><div class="resumen-alcance">${esc(alcance)}</div></div>` : "")
+      // No summary lines (Mau 05-10-2026): the band pill shows the count and the sections show the grades
+      return notaFase("efa")
         + (pre ? "" : `<div id="efa-${prog.programa}">${contenidoEfa(prog)}</div>`) // before opening there is no one to list
         + seccionCompartir(prog, "efa");
     }
