@@ -3327,8 +3327,8 @@ window.qrcode=qrcode;
       const pre = estado.datos.encuestas.efa && estado.datos.encuestas.efa.fase === "pre";
       const alcance = (prog.nivelesImplementados || []).length ? `Niveles implementados: ${textoNiveles(prog.nivelesImplementados)}` : "";
       if (!e.ok) return notaFase("efa") + errorCarga();
-      const total = pre ? "Sin respuestas todavía" : plural(e.total, "respuesta", "respuestas");
-      return notaFase("efa") + `<div class="resumen"><div class="resumen-total">${esc(total)}</div><div class="resumen-alcance">${esc(alcance)}</div></div>`
+      // No total line here: the band pill and the tab already show "N resp." (Mau 05-10-2026)
+      return notaFase("efa") + (alcance ? `<div class="resumen"><div class="resumen-alcance">${esc(alcance)}</div></div>` : "")
         + (pre ? "" : `<div id="efa-${prog.programa}">${contenidoEfa(prog)}</div>`) // before opening there is no one to list
         + seccionCompartir(prog, "efa");
     }
