@@ -3069,7 +3069,7 @@ window.qrcode=qrcode;
     // ── Compartir: bandeja, modal, mensaje, QR ──────────────
     const esLinkValido = u => /^https?:\/\/\S+$/i.test(u || "");
 
-    // What the survey's first page shows ("Estás respondiendo por …"): the link's colegio custom variable
+    // What the survey's first page shows ("Estás respondiendo por: …"): the link's colegio custom variable
     function colegioDelLink(links) {
       for (const l of links) {
         try { const v = new URL(l.link).searchParams.get("colegio"); if (v) return v; } catch (_) { /* not a URL */ }
@@ -3140,7 +3140,7 @@ window.qrcode=qrcode;
         <div>
           <div class="compartir-titulo"><span class="punto"></span>${links.length > 1 ? "Comparte los links" : "Comparte el link"}</div>
           <div class="compartir-sub">${clave === "test" ? "Para los docentes que aplicarán el test en clases." : "Para el equipo educativo del colegio."}</div>
-          ${clave === "test" ? `<p class="compartir-aviso">${links.length === 1 ? "Este link es personalizado" : "Estos links son personalizados"} para tu colegio: así sabemos que las respuestas son de tus estudiantes. Por eso es importante ${links.length === 1 ? "copiarlo tal como está, con el botón Copiar, y no escribirlo a mano. Por lo mismo, compártelo" : "copiarlos tal como están, con el botón Copiar, y no escribirlos a mano. Por lo mismo, compártelos"} solo con personas de tu colegio.${colegioDelLink(links) ? ` En la primera página del test aparecerá en letras grandes «Estás respondiendo por <b>${esc(colegioDelLink(links))}</b>»: así puedes comprobar que el link es el correcto.` : ""}</p>` : ""}
+          ${clave === "test" ? `<p class="compartir-aviso">${links.length === 1 ? "Este link es personalizado" : "Estos links son personalizados"} para tu colegio: así sabemos que las respuestas son de tus estudiantes. Por eso es importante ${links.length === 1 ? "copiarlo tal como está, con el botón Copiar, y no escribirlo a mano. Por lo mismo, compártelo" : "copiarlos tal como están, con el botón Copiar, y no escribirlos a mano. Por lo mismo, compártelos"} solo con personas de tu colegio.${colegioDelLink(links) ? ` En la primera página del test aparecerá en letras grandes «Estás respondiendo por: <b>${esc(colegioDelLink(links))}</b>»: así puedes comprobar que el link es el correcto.` : ""}</p>` : ""}
         </div>
         <div class="compartir-grid">
           <div class="compartir-main">
@@ -3195,7 +3195,7 @@ window.qrcode=qrcode;
         const uno = links.length === 1;
         const enlaces = (uno ? `\n\nEl link es: ${lista}` : `\n\nCada curso tiene su link:\n${lista}`)
           + `\n\n${uno ? "Este link es personalizado" : "Estos links son personalizados"} para nuestro colegio: así sabemos que las respuestas son de nuestros estudiantes. Por eso, ${uno ? "compártanlo tal como está (copiándolo de este mensaje, sin escribirlo a mano)" : "compártanlos tal como están (copiándolos de este mensaje, sin escribirlos a mano)"} y solo con sus estudiantes, nunca con personas fuera del colegio.`
-          + (colegioDelLink(links) ? ` En la primera página del test aparecerá en letras grandes «Estás respondiendo por ${colegioDelLink(links)}»: así pueden comprobar que están usando el link correcto.` : "");
+          + (colegioDelLink(links) ? ` En la primera página del test aparecerá en letras grandes «Estás respondiendo por: ${colegioDelLink(links)}»: así pueden comprobar que están usando el link correcto.` : "");
         const papel = (prog.test.nivelesPapel || []).length ? `\n\nEn ${textoNiveles(prog.test.nivelesPapel)} el test es en papel y lo aplica la Agencia Focus.` : "";
         const dia = `\n\nAlgunas cosas para ese día:\n• Tengan a mano la lista del curso, porque a cada estudiante se le pedirá su número de lista.\n• Prueben el link antes, en los mismos equipos que van a usar.\n• Si les preguntan algo, ayuden solo con el significado de las palabras, para no influir en las respuestas.\n• Al terminar, cada estudiante debería ver el mensaje «¡Has completado el Test de ${NOMBRE_TEST[prog.programa]}!».\n\nSi algo no funciona, me avisan y lo vemos.`;
         const avance = incluirAvance ? avancePorNivel(prog) : "";
@@ -3555,7 +3555,7 @@ window.qrcode=qrcode;
           <p>Mientras más estudiantes lo respondan, mejor podemos ver cómo les está yendo, así que te pedimos animar la asistencia ese día. Si hay estudiantes con NEE, pueden responder con apoyo o, si el colegio lo considera mejor, no rendirlo.</p></section>
         ${links.length ? `<section><h2>¿Cómo entran los estudiantes?</h2>
           <p>${links.length === 1 ? "El link es personalizado" : "Cada curso tiene su link, personalizado"} para tu colegio: así sabemos que las respuestas son de tus estudiantes. Los estudiantes pueden abrirlo desde el computador o escanear el código QR con el celular. ${links.length === 1 ? "Compártelo tal como está, sin escribirlo a mano" : "Compártelos tal como están, sin escribirlos a mano"}, y solo con tus estudiantes, nunca con personas fuera del colegio.</p>
-          ${colegioDelLink(links) ? `<p>Para comprobar que están usando el link correcto: en la primera página del test aparecerá en letras grandes «Estás respondiendo por <b>${esc(colegioDelLink(links))}</b>». Si no aparece el nombre de tu colegio, revisa el link antes de seguir.</p>` : ""}
+          ${colegioDelLink(links) ? `<p>Para comprobar que están usando el link correcto: en la primera página del test aparecerá en letras grandes «Estás respondiendo por: <b>${esc(colegioDelLink(links))}</b>». Si no aparece el nombre de tu colegio, revisa el link antes de seguir.</p>` : ""}
           <div class="inst-links">${qrs}</div></section>` : ""}
         <section><h2>Para que todo salga bien</h2><ul>
           <li>Ten a mano la lista del curso: a cada estudiante se le pedirá su número de lista.</li>
