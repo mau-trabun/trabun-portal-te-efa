@@ -124,6 +124,9 @@ const lv = n => ase.test.niveles.find(x=>x.nivel===n);
 check('registered grades = 4°..8° then outside IV° medio last', ase.test.niveles.map(n=>n.nivel+(n.registrado?'':'*')).join('|') === '4° básico|5° básico|6° básico|7° básico|8° básico|IV° medio*');
 check('4° básico r=4, est=60, letters A,B + C unregistered', lv('4° básico').r === 4 && lv('4° básico').est === 60 && lv('4° básico').cursos.map(c=>c.letra+(c.registrado?'':'*')).join() === 'A,B,C*');
 check('sort by apellido, accent-insensitive', lv('4° básico').cursos[0].respuestas.map(x=>x.apellidos).join() === 'bravo,Rojas Díaz');
+check('class est = round(Alumnos ÷ CxN) for SF letters only (4°: 60 ÷ 2 = 30; unregistered C and no-letter bucket null)',
+  lv('4° básico').cursos.map(c => c.est).join() === '30,30,' && lv('6° básico').cursos.map(c => c.est).join() === '30,30,'
+  && lv('IV° medio').cursos.every(c => c.est === null));
 check('Sin identificar → nulls', lv('4° básico').cursos[2].respuestas[0].nombres === null);
 check('6º ordinal + lowercase letter b matched; no-letter bucket last', lv('6° básico').cursos.map(c=>`${c.letra}:${c.r}`).join() === 'A:0,B:1,null:1');
 check('invalid grade row skipped; resumen', JSON.stringify(ase.test.resumen) === JSON.stringify({r:7, rConEst:6, est:300}));
@@ -145,7 +148,7 @@ check('no emails anywhere in payload', !JSON.stringify(r).includes('@ejemplo.cl'
 sheets['Config'][5][1] = 'numero';
 const rn = post({rbd:'11111', clave:'aaa111'});
 const c4 = rn.programas[0].test.niveles[0].cursos;
-check('numero mode: no names, numbers sorted, tope = max(highest, round(60/2)=30)', !JSON.stringify(rn).includes('Martina') && JSON.stringify(c4[0]) === JSON.stringify({letra:'A',registrado:true,r:2,tope:30,numeros:[3,12],sinNumero:0}));
+check('numero mode: no names, numbers sorted, tope = max(highest, round(60/2)=30)', !JSON.stringify(rn).includes('Martina') && JSON.stringify(c4[0]) === JSON.stringify({letra:'A',registrado:true,r:2,est:30,tope:30,numeros:[3,12],sinNumero:0}));
 check('numero mode: unregistered class tope = highest answered', c4[2].tope === 35);
 check('numero mode: bad number → sinNumero', rn.programas[0].test.niveles.find(n=>n.nivel==='6° básico').cursos[1].sinNumero === 1);
 sheets['Config'][5][1] = '';

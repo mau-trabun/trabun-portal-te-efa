@@ -452,7 +452,8 @@ function cursos_(p, i, resps, studentId) {
   return letras.map(l => {
     const lista = porLetra[l] || [];
     const reg = registradas.indexOf(l) >= 0;
-    const curso = { letra: l || null, registrado: reg, r: lista.length };
+    // est: SF Alumnos ÷ CxN for the grade (an average per class), only for SF letters with both values
+    const curso = { letra: l || null, registrado: reg, r: lista.length, est: reg && porCurso ? porCurso : null };
     if (studentId === 'numero') {
       const numeros = lista.map(x => x.numero).filter(n => n != null).sort((a, b) => a - b);
       curso.tope = Math.max(numeros.length ? numeros[numeros.length - 1] : 0, reg ? porCurso : 0);

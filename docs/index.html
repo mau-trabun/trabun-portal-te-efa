@@ -3387,7 +3387,7 @@ window.qrcode=qrcode;
       }
       const sel = (n.cursos || []).length < 2 || (c.letra || "") === cursoSel(prog, n);
       return `<div class="curso${sel ? " sel" : ""}">
-        <div class="curso-cab"><b>${esc(etiquetaCurso(n.nivel, c.letra))}</b><span>${esc(plural(c.r, "respuesta", "respuestas"))}</span></div>
+        <div class="curso-cab"><b>${esc(etiquetaCurso(n.nivel, c.letra))}</b><span>${esc(c.est ? `${fmtNum(c.r)} / ~${fmtNum(c.est)}` : plural(c.r, "respuesta", "respuestas"))}</span></div>
         ${aviso}${cuerpo}${c.r ? accionesCurso(prog, n, c) : ""}
       </div>`;
     }

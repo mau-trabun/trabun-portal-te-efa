@@ -187,7 +187,7 @@ Same import pattern as EFS.
       "niveles": [{
         "nivel": "4° básico", "registrado": true, "est": 60, "r": 41,
         "cursos": [
-          { "letra": "A", "registrado": true, "r": 21,
+          { "letra": "A", "registrado": true, "r": 21, "est": 30,
             "respuestas": [{ "nombres": "Agustín", "apellidos": "Bravo Castro" }] }
         ]
       }]
@@ -209,7 +209,8 @@ Same import pattern as EFS.
 
 Notes:
 - **Course in `numero` mode:**
-  `{ "letra": "A", "registrado": true, "r": 26, "tope": 38, "numeros": [1, 2, 4, 14, 14, 35], "sinNumero": 1 }`
+  `{ "letra": "A", "registrado": true, "r": 26, "est": 38, "tope": 38, "numeros": [1, 2, 4, 14, 14, 35], "sinNumero": 1 }`
+- **Course `est`** (both modes, 07-10-2026): `round(SF Alumnos ÷ CxN)` for the grade, an average per class; only for letters registered in SF and when both values are > 0, else `null` (unregistered letters, the no-letter bucket, grades missing Alumnos or CxN). Shown in the class card as "r / ~est".
 - **REL `docentes`** carries `personas` (a flat list) instead of `niveles`; each person has `niveles` (declared grades, canonical order, may be `[]`), shown after the role ("Docente · 5° a 8° básico").
 - **`ok: false`** on a survey omits `resumen`/`niveles`/`secciones`, but keeps `links` and `nivelesTest`.
 - **A school in `Contraseñas` but not in `SF`** gets `"programas": []`.
