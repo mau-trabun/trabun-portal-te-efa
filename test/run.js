@@ -111,6 +111,12 @@ const ase = r.programas.find(p=>p.programa==='ase'), rel = r.programas.find(p=>p
 check('ASE test grades from Formularios ∩ implemented', JSON.stringify(ase.test.nivelesTest) === JSON.stringify(['4° básico','5° básico','6° básico','7° básico','8° básico','I° medio','II° medio','III° medio','IV° medio']));
 check('ASE test links (2, non-EDI)', ase.test.links.map(l=>l.form).join() === 'ASE_4-5,ASE_6-IV');
 check('Test links carry the school (SurveyMonkey custom variables, as in the links file)', ase.test.links[0].link === 'https://f.example/ase45?RBD=11111&colegio=Colegio%20Los%20Aromos%2C%20Villa%20Ficticia');
+const nMetCorto = sheets['Métricas'].length;
+const corto = c => post({ corto: c });
+check('short link → the same full link the panel shares (no clave needed)', corto('11111-ASE_4-5').link === ase.test.links[0].link && corto(' 11111-rel_5-8 ').link === rel.test.links.find(l => l.form === 'REL_5-8').link);
+check('short link rejected: unknown RBD, form of another program, EDI form for a non-EDI school, EFA or unknown form, garbage',
+  ['99999-ASE_4-5', '33333-REL_5-8', '11111-ASE_EDI_4', '11111-ASE Semi-intensivo', '11111-XYZ', 'ASE_4-5', '', null].every(c => corto(c).error === 'link'));
+check('short link: no Métricas row, no throttle', sheets['Métricas'].length === nMetCorto && !Object.keys(cacheStore).some(k => k.startsWith('intentos_1')));
 check('EFA links unchanged (no RBD added)', ase.efa.links[0].link === 'https://s.example/efa-ase-si');
 check('link that already has RBD or a query: kept / appended with &', ctx.linkColegio_('https://x.example/r/A?RBD=5', '11111', null) === 'https://x.example/r/A?RBD=5'
   && ctx.linkColegio_('https://x.example/r/A?lang=es', '11111', { nombre: 'Escuela  Uno', comuna: 'Ñuble' }) === 'https://x.example/r/A?lang=es&RBD=11111&colegio=Escuela%20Uno%2C%20%C3%91uble');

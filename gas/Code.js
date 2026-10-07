@@ -54,6 +54,7 @@ function doPost(e) {
 function login_(e) {
   let body = {};
   try { body = JSON.parse((e && e.postData && e.postData.contents) || '{}'); } catch (_) { /* malformed → credenciales */ }
+  if (body && body.corto !== undefined) return linkCorto_(body.corto); // /t/ page: no clave, returns only what the link carries
   const rbd = normRbd_(body.rbd);
   const clave = String(body.clave == null ? '' : body.clave).trim();
   if (!rbd || !clave) return { ok: false, error: 'credenciales' };
@@ -395,6 +396,20 @@ function linkColegio_(link, rbd, col) {
   const texto = col && col.nombre ? [col.nombre, col.comuna].filter(Boolean).join(', ').replace(/\s+/g, ' ').trim() : '';
   const enc = s => encodeURIComponent(s).replace(/[!'()*]/g, ch => '%' + ch.charCodeAt(0).toString(16).toUpperCase());
   return link + (link.indexOf('?') >= 0 ? '&' : '?') + 'RBD=' + enc(rbd) + (texto ? '&colegio=' + enc(texto) : '');
+}
+
+// Short Test link shown as text in the portal and the instructivo: "<RBD>-<Form>" (e.g. "12885-REL_5-8") → the
+// school's full link. Only if that school-program in SF matches that Test form, so a typo never opens a survey.
+function linkCorto_(codigo) {
+  const m = String(codigo == null ? '' : codigo).trim().match(/^(\d+)-(.+)$/);
+  if (!m) return { ok: false, error: 'link' };
+  const rbd = normRbd_(m[1]);
+  const d = cargarDatos_();
+  const col = d.sf[rbd];
+  const f = d.formularios.find(x => x.encuesta === 'test' && x.link && normTexto_(x.form) === normTexto_(m[2]));
+  const p = col && f ? col.programas[f.programa] : null;
+  if (!p || !aplica_(f, p)) return { ok: false, error: 'link' };
+  return { ok: true, link: linkColegio_(f.link, rbd, col) };
 }
 
 function links_(forms) {

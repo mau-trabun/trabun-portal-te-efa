@@ -151,6 +151,8 @@ Same import pattern as EFS.
 
 **Usage event:** same request plus `"evento"` (and `"programa":"ase"|"rel"` when it concerns one card). Same clave check and throttle as a login; on success it appends one `Métricas` row and answers `{"ok":true}` without building the panel. An `evento` outside the fixed list (§1 `Métricas`) or a bad `programa` → `{"ok":false,"error":"evento"}`, no row. Sent with `navigator.sendBeacon` (text/plain), response ignored.
 
+**Short Test link:** body `{"corto":"12885-REL_5-8"}` (`<RBD>-<Form>`, Form compared ignoring case and accents), no clave, no throttle, not logged → `{"ok":true,"link":"<full per-school SurveyMonkey link>"}` only if that RBD is in SF with a program that matches that `test` row of `Formularios` (same matching as the panel) and the row has a `Link`; otherwise `{"ok":false,"error":"link"}`. Used by `docs/t/index.html` (`portal.fundaciontrabun.cl/t/?12885-REL_5-8`), which redirects to the link. It returns what the link itself carries (RBD, school name, comuna). It does reveal whether an RBD is a partner school, accepted (school names are public; claves are untouched). **Renaming a `test` Form breaks the short links already printed or shared.**
+
 **Health check:** `GET /exec` → `{"ok":true,"v":1}`. It never returns data.
 
 **Error:** `{"ok":false,"error":"credenciales"|"bloqueado"|"servidor"}`. The frontend owns the wording, and `credenciales` shows "RBD o clave incorrectos".

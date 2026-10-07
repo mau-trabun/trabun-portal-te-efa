@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Test de Estudiantes · Fundación Trabün</title>
+  <style>
+    :root{--tinta:#151b29;--papel:#f5f5f5;--celeste:#6bacc4;--muted:#5b6070}
+    html,body{margin:0;background:var(--papel);color:var(--tinta);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+    main{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px 16px;box-sizing:border-box}
+    .caja{max-width:420px;background:#fff;border-radius:16px;padding:28px 24px;box-shadow:0 1px 0 rgba(0,0,0,.04),0 8px 24px rgba(21,27,41,.08);text-align:center}
+    .caja::before{content:"";display:block;width:48px;height:6px;border-radius:3px;background:var(--celeste);margin:0 auto 18px}
+    h1{font-size:20px;margin:0 0 8px}
+    p{margin:0;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <main><div class="caja"><h1 id="titulo">Abriendo el test…</h1><p id="texto">Un momento, por favor.</p></div></main>
+  <script>
+    // Short Test link "/t/?<RBD>-<Form>" (shown as text in the portal and the instructivo): asks the backend for the
+    // school's full SurveyMonkey link and opens it. Same backend as the portal: change both API_URL at the prod switch.
+    const API_URL = "https://portal-api-staging-975999694722.southamerica-west1.run.app/"; // staging (Cloud Run)
+
+    function noValido() {
+      document.getElementById("titulo").textContent = "Este link no está completo";
+      document.getElementById("texto").textContent = "Revisa que esté escrito tal como aparece en el instructivo, o pídele el link de nuevo a tu profesor o profesora.";
+    }
+
+    (async () => {
+      let codigo = "";
+      try { codigo = decodeURIComponent(location.search.slice(1)).trim(); } catch (_) { /* malformed escape */ }
+      if (!codigo) return noValido();
+      for (let intento = 0; intento < 3; intento++) {
+        const ctl = new AbortController();
+        const plazo = setTimeout(() => ctl.abort(), 15000);
+        try {
+          const r = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ corto: codigo }), signal: ctl.signal });
+          const d = await r.json();
+          if (d.ok && /^https:\/\/\S+$/.test(d.link)) return location.replace(d.link);
+          return noValido();
+        } catch (_) { /* network or cold start: retry */ }
+        finally { clearTimeout(plazo); }
+        await new Promise(res => setTimeout(res, 800 * (intento + 1)));
+      }
+      document.getElementById("titulo").textContent = "No pudimos abrir el test";
+      document.getElementById("texto").textContent = "Revisa tu conexión a internet y vuelve a intentarlo en unos minutos.";
+    })();
+  </script>
+</body>
+</html>

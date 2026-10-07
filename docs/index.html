@@ -3077,6 +3077,13 @@ window.qrcode=qrcode;
       return "";
     }
 
+    // Test link as shown in text (portal row, instructivo): short, typeable, opens the full one via /t/.
+    // Copiar, QR and messages keep the full SurveyMonkey link (no extra hop).
+    function textoLink(l, clave) {
+      const rbd = (estado.datos.colegio || {}).rbd;
+      return clave === "test" && l.form && rbd ? `${location.host}/t/?${rbd}-${encodeURIComponent(l.form)}` : l.link.replace(/^https?:\/\//, "");
+    }
+
     // Links to show for a program × survey. Test: only forms whose grades touch the school's
     // (registered ∪ seen); none of them → no links, unless Habilitar is ticked in the Sheet's "Sin Test" tab.
     function linksVisibles(prog, clave) {
@@ -3127,7 +3134,7 @@ window.qrcode=qrcode;
       const filas = links.map(l => `<div class="link-fila">
           <span class="punto"></span>
           ${l.etiqueta && links.length > 1 ? `<span class="link-rango">${esc(l.etiqueta)}</span>` : ""}
-          <span class="link-dato"><span class="link-texto" title="${esc(l.link)}">${esc(l.link.replace(/^https?:\/\//, ""))}</span>
+          <span class="link-dato"><span class="link-texto" title="${esc(l.link)}">${esc(textoLink(l, clave))}</span>
           <button type="button" class="btn-mini" data-copiar="${esc(l.link)}" ${ev("copiar_link")}>${ICONOS.copiar}<span class="lbl">Copiar</span></button></span>
         </div>`).join("");
       const qrs = links.map((l, i) => {
@@ -3538,7 +3545,7 @@ window.qrcode=qrcode;
       const links = linksVisibles(prog, "test");
       const fechas = ve.abre && ve.cierra ? ` estará disponible del ${fechaConDia(ve.abre)} al ${fechaConDia(ve.cierra)}` : " estará disponible pronto";
       const qrs = links.map(l => `<div class="inst-link"><img src="${qrChico(l.link)}" alt="" />
-          <div>${l.etiqueta ? `<b>${esc(l.etiqueta)}</b>` : ""}<span>${esc(l.link.replace(/^https?:\/\//, ""))}</span></div></div>`).join("");
+          <div>${l.etiqueta ? `<b>${esc(l.etiqueta)}</b>` : ""}<span>${esc(textoLink(l, "test"))}</span></div></div>`).join("");
       const jdp = prog.jefeProyecto ? `${esc(prog.jefeProyecto)}, tu Jefe/a de Proyecto Trabün` : "tu Jefe/a de Proyecto Trabün";
       return `<article class="inst" style="--prog:${meta.color}">
         <header class="inst-cab">
@@ -3554,7 +3561,7 @@ window.qrcode=qrcode;
           ${niveles.length ? `<p>Lo responden los cursos de ${esc(textoNiveles(niveles))}.${papel.length ? ` En ${esc(textoNiveles(papel))} el test es en papel y de eso se encarga la Agencia Focus.` : ""}</p>` : ""}
           <p>Mientras más estudiantes lo respondan, mejor podemos ver cómo les está yendo, así que te pedimos animar la asistencia ese día. Si hay estudiantes con NEE, pueden responder con apoyo o, si el colegio lo considera mejor, no rendirlo.</p></section>
         ${links.length ? `<section><h2>¿Cómo entran los estudiantes?</h2>
-          <p>${links.length === 1 ? "El link es personalizado" : "Cada curso tiene su link, personalizado"} para tu colegio: así sabemos que las respuestas son de tus estudiantes. Los estudiantes pueden abrirlo desde el computador o escanear el código QR con el celular. ${links.length === 1 ? "Compártelo tal como está, sin escribirlo a mano" : "Compártelos tal como están, sin escribirlos a mano"}, y solo con tus estudiantes, nunca con personas fuera del colegio.</p>
+          <p>${links.length === 1 ? "El link es personalizado" : "Cada curso tiene su link, personalizado"} para tu colegio: así sabemos que las respuestas son de tus estudiantes. Los estudiantes pueden abrirlo desde el computador o escanear el código QR con el celular. ${links.length === 1 ? "Compártelo tal como está, sin cambiarle nada" : "Compártelos tal como están, sin cambiarles nada"}, y solo con tus estudiantes, nunca con personas fuera del colegio.</p>
           ${colegioDelLink(links) ? `<p>Para comprobar que están usando el link correcto: en la primera página del test aparecerá en letras grandes «Estás respondiendo por: <b>${esc(colegioDelLink(links))}</b>». Si no aparece el nombre de tu colegio, revisa el link antes de seguir.</p>` : ""}
           <div class="inst-links">${qrs}</div></section>` : ""}
         <section><h2>Para que todo salga bien</h2><ul>

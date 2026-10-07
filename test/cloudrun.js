@@ -82,6 +82,10 @@ const sinTiempos = o => { delete o.ms; delete o.generado; return o; };
   check('evento: {ok:true} only, one row written after the reply, no clave', JSON.stringify(ev) === '{"ok":true}' && filasMetricas.length === n + 1
     && ultima.fila[5] === 'test_whatsapp' && ultima.fila[2] === 'ASE' && !JSON.stringify(ultima).includes(casos[0].clave));
 
+  const corto = await post({ corto: casos[0].rbd + '-ASE_4-5' });
+  check('short link: same full link as Apps Script, unknown code rejected', corto.ok && corto.link === gasPost({ corto: casos[0].rbd + '-ASE_4-5' }).link
+    && (await post({ corto: '99999-ASE_4-5' })).error === 'link');
+
   // Refresh endpoint and degradation
   await svc.manejar('POST', '/refrescar', '');
   check('/refrescar within 30 s does not re-read', lecturas === 1);
