@@ -3208,10 +3208,7 @@ window.qrcode=qrcode;
           + `\n\n${uno ? "Este link es personalizado" : "Estos links son personalizados"} para nuestro colegio: así sabemos que las respuestas son de nuestros estudiantes. ${uno ? "Compártanlo tal como está" : "Compártanlos tal como están"} y solo con sus estudiantes.`
           + (colegioDelLink(links) ? ` Al ${uno ? "abrirlo" : "abrirlos"}, el test mostrará en grande «Estás respondiendo por: ${colegioDelLink(links)}»; si ven ese nombre, el link está bien.` : "");
         const papel = (prog.test.nivelesPapel || []).length ? `\n\nEn ${textoNiveles(prog.test.nivelesPapel)} el test es en papel y lo aplica la Agencia Focus.` : "";
-        const dia = `\n\nAlgunas cosas para ese día:\n• Tengan a mano la lista del curso, porque a cada estudiante se le pedirá su número de lista.\n• ${(cc => cc && cc.unico
-          ? "Recuérdenles a los estudiantes marcar bien su curso y letra. En nuestro colegio hay un solo curso por nivel, así que la letra es siempre «A»."
-          : cc ? `Recuérdenles a los estudiantes marcar bien su curso y letra. Nuestros cursos son: ${cc.lista}.`
-          : "Recuérdenles a los estudiantes marcar bien su curso y letra (por ejemplo, 5° básico B). Si hay un solo curso por nivel, la letra es «A».")(cursosDelColegio(prog))}\n• Prueben el link antes, en los mismos equipos que van a usar.\n• Si les preguntan algo, ayuden solo con el significado de las palabras, para no influir en las respuestas.\n• Al terminar, cada estudiante debería ver el mensaje «¡Has completado el Test de ${NOMBRE_TEST[prog.programa]}!».\n\nSi algo no funciona, me avisan y lo vemos.`;
+        const dia = `\n\nAlgunas cosas para ese día:\n• Tengan a mano la lista del curso, porque a cada estudiante se le pedirá su número de lista.\n• Recuérdenles a los estudiantes marcar bien su curso y letra (por ejemplo, 5° básico A, 5° básico B, 5° básico C…). Si hay un solo curso por nivel, normalmente la letra es «A», a menos que en los registros oficiales aparezca con otra letra.\n• Prueben el link antes, en los mismos equipos que van a usar.\n• Si les preguntan algo, ayuden solo con el significado de las palabras, para no influir en las respuestas.\n• Al terminar, cada estudiante debería ver el mensaje «¡Has completado el Test de ${NOMBRE_TEST[prog.programa]}!».\n\nSi algo no funciona, me avisan y lo vemos.`;
         const avance = incluirAvance ? avancePorNivel(prog) : "";
         return intro + enlaces + papel + (avance ? `\n\nAsí vamos por nivel:\n${avance}` : "") + dia + "\n\n¡Muchas gracias por su apoyo!";
       }
@@ -3543,22 +3540,6 @@ window.qrcode=qrcode;
       return m ? `${DIAS[new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])).getUTCDay()]} ${fechaLarga(iso)}` : "";
     }
 
-    // Class letters per Test grade, from SF (CxN). null when a Test grade has none registered (SF incomplete):
-    // the instructivo and the message then use the generic wording.
-    function cursosDelColegio(prog) {
-      const ns = ((prog.test || {}).niveles || []).filter(n => n.registrado);
-      const l = ns.map(n => ({ nivel: n.nivel, letras: (n.cursos || []).filter(c => c.registrado && c.letra).map(c => c.letra) }));
-      if (!l.length || !l.every(x => x.letras.length)) return null;
-      if (l.every(x => x.letras.length === 1)) return { unico: true, ejemplo: `${l[0].nivel} A` };
-      const conY = a => (a.length > 1 ? a.slice(0, -1).join(", ") + " y " + a[a.length - 1] : a[0]);
-      const grupos = [];
-      l.forEach(x => {
-        const g = grupos[grupos.length - 1], k = x.letras.join();
-        if (g && g.k === k) g.niveles.push(x.nivel); else grupos.push({ k, letras: x.letras, niveles: [x.nivel] });
-      });
-      return { unico: false, lista: conY(grupos.map(g => `${textoNiveles(g.niveles)} (${conY(g.letras)})`)) };
-    }
-
     function instructivoHTML(prog) {
       const d = estado.datos, ve = d.encuestas.test || {}, t = prog.test, meta = PROGRAMAS[prog.programa];
       const c = d.colegio || {};
@@ -3592,10 +3573,7 @@ window.qrcode=qrcode;
           <li>Prueba el link antes, en los mismos equipos que van a usar los estudiantes.</li>
           <li>Si puedes, lee las preguntas con anticipación. Así las dudas que aparezcan no te van a tomar por sorpresa.</li></ul></section>
         <section><h2>El día del test</h2><ul>
-          <li>Antes de empezar, recuérdales a tus estudiantes que marquen bien su <b>curso y letra</b>${(cc => cc && cc.unico
-            ? `. En tu colegio hay un solo curso por nivel, así que la letra es siempre <b>«A»</b> (por ejemplo, ${esc(cc.ejemplo)})`
-            : cc ? `. Los cursos de tu colegio son: ${esc(cc.lista)}`
-            : ` (por ejemplo, 5° básico B). Si en tu colegio hay un solo curso por nivel, la letra es siempre <b>«A»</b> (5° básico A)`)(cursosDelColegio(prog))}. Así sus respuestas quedan en el curso correcto.</li>
+          <li>Antes de empezar, recuérdales a tus estudiantes que marquen bien su <b>curso y letra</b> (por ejemplo, 5° básico A, 5° básico B, 5° básico C…). Si en tu colegio hay un solo curso por nivel, normalmente la letra es <b>«A»</b> (5° básico A), a menos que en los registros oficiales aparezca con otra letra. Así sus respuestas quedan en el curso correcto.</li>
           <li>Los estudiantes responden el test en el colegio, no en la casa.</li>
           <li>Ayuda mucho que haya silencio y, si se puede, que los estudiantes salgan de la sala recién cuando todos hayan terminado.</li>
           <li>Si un estudiante te pregunta algo, ayúdale solo con el significado de las palabras. Así sus respuestas siguen siendo suyas.</li>
