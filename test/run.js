@@ -114,6 +114,8 @@ check('Test links carry the school (SurveyMonkey custom variables, as in the lin
 const nMetCorto = sheets['Métricas'].length;
 const corto = c => post({ corto: c });
 check('short link → the same full link the panel shares (no clave needed)', corto('11111-ASE_4-5').link === ase.test.links[0].link && corto(' 11111-rel_5-8 ').link === rel.test.links.find(l => l.form === 'REL_5-8').link);
+check('short link: separators and case ignored (ASE-4-5, ASE_4-5, ASE4-5, ase45)', ['11111-ASE-4-5', '11111-ASE_4-5', '11111-ASE4-5', '11111-ase45', '11111-ASE 4 5']
+  .every(c => corto(c).link === ase.test.links[0].link) && corto('11111-REL-I-IV').link === rel.test.links.find(l => l.form === 'REL_I-IV').link);
 check('short link rejected: unknown RBD, form of another program, EDI form for a non-EDI school, EFA or unknown form, garbage',
   ['99999-ASE_4-5', '33333-REL_5-8', '11111-ASE_EDI_4', '11111-ASE Semi-intensivo', '11111-XYZ', 'ASE_4-5', '', null].every(c => corto(c).error === 'link'));
 check('short link: no Métricas row, no throttle', sheets['Métricas'].length === nMetCorto && !Object.keys(cacheStore).some(k => k.startsWith('intentos_1')));

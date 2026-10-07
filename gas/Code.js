@@ -398,7 +398,7 @@ function linkColegio_(link, rbd, col) {
   return link + (link.indexOf('?') >= 0 ? '&' : '?') + 'RBD=' + enc(rbd) + (texto ? '&colegio=' + enc(texto) : '');
 }
 
-// Short Test link shown as text in the portal and the instructivo: "<RBD>-<Form>" (e.g. "12885-REL_5-8") → the
+// Short Test link shown as text in the portal and the instructivo: "<RBD>-<Form>" (e.g. "12885-REL-5-8") → the
 // school's full link. Only if that school-program in SF matches that Test form, so a typo never opens a survey.
 function linkCorto_(codigo) {
   const m = String(codigo == null ? '' : codigo).trim().match(/^(\d+)-(.+)$/);
@@ -406,7 +406,9 @@ function linkCorto_(codigo) {
   const rbd = normRbd_(m[1]);
   const d = cargarDatos_();
   const col = d.sf[rbd];
-  const f = d.formularios.find(x => x.encuesta === 'test' && x.link && normTexto_(x.form) === normTexto_(m[2]));
+  // Separators ignored: "ASE-6-IV", "ASE_6-IV", "ASE6-IV" (an underlined link hides "_") all name ASE_6-IV
+  const clave = s => normTexto_(s).replace(/[^a-z0-9]/g, '');
+  const f = d.formularios.find(x => x.encuesta === 'test' && x.link && clave(x.form) === clave(m[2]));
   const p = col && f ? col.programas[f.programa] : null;
   if (!p || !aplica_(f, p)) return { ok: false, error: 'link' };
   return { ok: true, link: linkColegio_(f.link, rbd, col) };

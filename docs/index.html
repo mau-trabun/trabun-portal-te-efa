@@ -3081,7 +3081,8 @@ window.qrcode=qrcode;
     // opens the full one via /t/. The Copiar button next to the link and the QR keep the full SurveyMonkey link.
     function urlCorta(l) {
       const rbd = (estado.datos.colegio || {}).rbd;
-      return l.form && rbd ? `${location.origin}/t/?${rbd}-${encodeURIComponent(l.form)}` : l.link;
+      // "-" instead of "_": an underlined link (PDF viewer, WhatsApp, mail) hides "_"; the backend ignores separators
+      return l.form && rbd ? `${location.origin}/t/?${rbd}-${encodeURIComponent(l.form.replace(/_/g, "-"))}` : l.link;
     }
     function textoLink(l, clave) {
       return (clave === "test" ? urlCorta(l) : l.link).replace(/^https?:\/\//, "");
