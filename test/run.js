@@ -110,6 +110,10 @@ check('phases computed (Config dates as Date and dd-mm-yyyy)', r.encuestas.test.
 const ase = r.programas.find(p=>p.programa==='ase'), rel = r.programas.find(p=>p.programa==='rel');
 check('ASE test grades from Formularios ∩ implemented', JSON.stringify(ase.test.nivelesTest) === JSON.stringify(['4° básico','5° básico','6° básico','7° básico','8° básico','I° medio','II° medio','III° medio','IV° medio']));
 check('ASE test links (2, non-EDI)', ase.test.links.map(l=>l.form).join() === 'ASE_4-5,ASE_6-IV');
+check('Test links carry the school (SurveyMonkey custom variables, as in the links file)', ase.test.links[0].link === 'https://f.example/ase45?RBD=11111&colegio=Colegio%20Los%20Aromos%2C%20Villa%20Ficticia');
+check('EFA links unchanged (no RBD added)', ase.efa.links[0].link === 'https://s.example/efa-ase-si');
+check('link that already has RBD or a query: kept / appended with &', ctx.linkColegio_('https://x.example/r/A?RBD=5', '11111', null) === 'https://x.example/r/A?RBD=5'
+  && ctx.linkColegio_('https://x.example/r/A?lang=es', '11111', { nombre: 'Escuela  Uno', comuna: 'Ñuble' }) === 'https://x.example/r/A?lang=es&RBD=11111&colegio=Escuela%20Uno%2C%20%C3%91uble');
 const lv = n => ase.test.niveles.find(x=>x.nivel===n);
 check('registered grades = 4°..8° then outside IV° medio last', ase.test.niveles.map(n=>n.nivel+(n.registrado?'':'*')).join('|') === '4° básico|5° básico|6° básico|7° básico|8° básico|IV° medio*');
 check('4° básico r=4, est=60, letters A,B + C unregistered', lv('4° básico').r === 4 && lv('4° básico').est === 60 && lv('4° básico').cursos.map(c=>c.letra+(c.registrado?'':'*')).join() === 'A,B,C*');

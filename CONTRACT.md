@@ -55,15 +55,16 @@ Grade suffixes: `NT1, NT2, 1º, 2º, 3º, 4º, 5º, 6º, 7º, 8º, I, II, III, I
 - **Test grades** for a school-program = union of `Desde`…`Hasta` over its matching `test` rows. This replaces any fixed availability rule.
   - EDI grades with no row are surveyed on paper by Agencia Focus (part of the RCT: cohort 2025 → 5°–8° básico, cohort 2026 → 4°–7° básico). Hardcoded in `PAPEL_EDI` (fixed by design); sent as `test.nivelesPapel` (∩ implemented) and shown as fixed, non-expandable rows ("Test en papel · a cargo de la Agencia Focus"), never with data.
 - **`Link`:** an empty `Link` hides that share row, but the row still defines which grades have a Test.
+- **Test links are per school (SurveyMonkey custom variables, 07-10-2026).** `Link` holds the survey's base link (`https://www.surveymonkey.com/r/XXXXXXX`); the backend appends `?RBD=<rbd>&colegio=<Nombre, Comuna>` (`linkColegio_()`: name and comuna from SF `Nombre para formulario`, spaces collapsed, URL-encoded with `!'()*` escaped too). This reproduces the 2026 per-school links file byte for byte (533/533). SurveyMonkey stores the values, so `RBD` reaches the responses; the survey shows the `colegio` text. A `Link` that already has `RBD=` is left as is. EFA links are not changed.
 - **`Form`:** uses the same label as the `Form` column of the response imports.
 
 ### `Respuestas Test`
-Header row typed by hand. Row 2 holds the stacked `{QUERY(IMPORTRANGE(…)); …}` import, one block per form, each labeling `Form`. **Import only these columns**, never test answers.
+Header row typed by hand. **Source (07-10-2026): SurveyMonkey, not Google Forms**: a compiled responses Sheet with one tab per survey (7), SurveyMonkey export columns (`Respondent ID`, `Start Date`, …, `QN. Nombres`, `QN. Apellidos`, `QN. Número de lista …`, `QN. ¿En qué curso estás?`, `QN. ¿Cuál es la letra de tu curso? …`, answers, then `RBD` and `colegio` from the link's custom variables). Question positions differ between REL and ASE tabs. A2 holds one `LET`/`VSTACK` formula: per tab it reads the header row via `IMPORTRANGE`, finds each column by header (`XMATCH` wildcards), imports only the span of identification columns plus the `RBD` column, keeps rows with an RBD, and labels `Form`. A missing tab or column writes a visible "REVISAR" row. **Import only these columns**, never test answers.
 
-| Form | Marca temporal | Nombres | Apellidos | Número de lista | Nivel | Letra | Colegio (×N, one per region) |
+| Form | Marca temporal | Nombres | Apellidos | Número de lista | Nivel | Letra | Colegio (×N) |
 |---|---|---|---|---|---|---|---|
 
-- The `Colegio` block goes last, so its length (number of regions in the form) never shifts the fixed columns. The setup function writes 16 `Colegio` headers; unused ones are harmless.
+- `Marca temporal` = SurveyMonkey `Start Date`. The bare `RBD` goes into the first `Colegio` column (the backend takes the last ` - ` segment of the first non-empty `Colegio`, so a bare RBD works); the other `Colegio` columns stay empty. They remain from the Google Forms design (one per region) and are harmless.
 
 - `Marca temporal` is optional (students are not deduplicated).
 - `Nivel` is mandatory in the form.

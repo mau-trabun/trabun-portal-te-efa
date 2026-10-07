@@ -328,7 +328,8 @@ function panelPrograma_(rbd, p, d, studentId) {
 
   const papelIdx = p.programa === 'ase' && p.edi ? (PAPEL_EDI[p.anioInicio] || []).map(nivelIdx_)
     .filter(i => p.implementados.indexOf(i) >= 0 && testIdx.indexOf(i) < 0) : [];
-  const test = { ok: !!d.test, nivelesTest: testIdx.map(i => NIVELES[i]), nivelesPapel: papelIdx.map(i => NIVELES[i]), links: links_(formsTest) };
+  const linksTest = links_(formsTest).map(l => Object.assign(l, { link: linkColegio_(l.link, rbd, d.sf[rbd]) }));
+  const test = { ok: !!d.test, nivelesTest: testIdx.map(i => NIVELES[i]), nivelesPapel: papelIdx.map(i => NIVELES[i]), links: linksTest };
   if (d.test) {
     Object.assign(test, bloqueTest_(p, testIdx,
       d.test.filter(x => x.rbd === rbd && x.programa === p.programa), studentId));
@@ -368,6 +369,15 @@ function rango_(f) {
   const out = [];
   for (let i = d; i <= h; i++) out.push(i);
   return out;
+}
+
+// SurveyMonkey custom variables: the response carries the school's RBD (Respuestas Test reads it) and the
+// survey shows "Nombre, Comuna". Same format as the 2026 per-school links file. A link already carrying RBD is kept.
+function linkColegio_(link, rbd, col) {
+  if (/[?&]RBD=/i.test(link)) return link;
+  const texto = col && col.nombre ? [col.nombre, col.comuna].filter(Boolean).join(', ').replace(/\s+/g, ' ').trim() : '';
+  const enc = s => encodeURIComponent(s).replace(/[!'()*]/g, ch => '%' + ch.charCodeAt(0).toString(16).toUpperCase());
+  return link + (link.indexOf('?') >= 0 ? '&' : '?') + 'RBD=' + enc(rbd) + (texto ? '&colegio=' + enc(texto) : '');
 }
 
 function links_(forms) {
