@@ -85,6 +85,12 @@ Same import pattern as EFS.
 - Login: `programas` = the school's programs (`ASE,REL`), `testOk`/`efaOk` booleans, `evento` = `login`.
 - Usage event (sent by the portal once per session each): `programas` = the program of the card used (`ASE` | `REL`; blank for `ver_efa`), `testOk`/`efaOk` blank, `evento` one of: `ver_efa` (EFA tab opened); `test_copiar_link`, `test_copiar_mensaje`, `test_whatsapp`, `test_qr`, `test_instructivo`, `test_copiar_lista`, `test_whatsapp_lista`; `efa_copiar_link`, `efa_copiar_mensaje`, `efa_whatsapp`, `efa_qr`.
 
+### `Sin Test` (written by `listarSinTest()`, manual; Mau ticks `Habilitar`)
+`RBD | Colegio | Comuna | Programa | Modelo | EDI | Año inicio | Jefe/a de Proyecto | Niveles del colegio | Test en papel | Habilitar`, plus any column Mau adds.
+- One row per school-program (all SF programs, Control included) whose SF grades have no online Test: `Formularios` test grades ∩ SF grades is empty. `Niveles del colegio` and `Test en papel` are written as ranges ("NT1 a 3° básico").
+- **The portal shows these school-programs no Test links** (only "No hay niveles con Test…" or their paper rows). `Habilitar` ticked (checkbox, or `SÍ`/`TRUE` typed) → `test.habilitado: true` → the share section shows every Test link of the group, as before 07-10-2026.
+- Re-run after SF or `Formularios` change: the tab is rebuilt, sorted by Programa, Jefe/a de Proyecto, Colegio; `Habilitar` and extra columns are kept per RBD + Programa **as values** (a formula in an extra column becomes its value: keep lookups in another tab). Rows that no longer qualify are dropped. Missing tab = nobody habilitado; login never depends on it.
+
 ### `Precalculo` (not built yet; see §3 Volume)
 `rbd | json | actualizado`.
 
@@ -170,6 +176,7 @@ Same import pattern as EFS.
       "ok": true,
       "nivelesTest": ["4° básico", "…", "8° básico"],
       "nivelesPapel": [],
+      "habilitado": false,
       "links": [
         { "form": "ASE_4-5",  "desde": "4° básico", "hasta": "5° básico", "link": "https://…" },
         { "form": "ASE_6-IV", "desde": "6° básico", "hasta": "IV° medio", "link": "https://…" }

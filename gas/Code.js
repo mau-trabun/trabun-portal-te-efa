@@ -13,6 +13,7 @@ const TABS = {
   metricas: 'Métricas',
   respTest: 'Respuestas Test',
   respEfa: 'Respuestas EFA',
+  sinTest: 'Sin Test',
 };
 
 const TZ = 'America/Santiago';
@@ -100,7 +101,22 @@ function cargarDatos_() {
     formularios,
     test: intentar_(TABS.respTest, () => leerRespuestasTest_(formularios), null),
     efa: intentar_(TABS.respEfa, () => leerRespuestasEfa_(formularios), null),
+    habilitados: intentar_(TABS.sinTest, leerHabilitados_, {}),
   };
+}
+
+// "Sin Test" tab (written by listarSinTest()): school-programs ticked in Habilitar see their group's Test links
+// even with no Test grade. Missing tab = nobody ticked.
+function leerHabilitados_() {
+  const out = {};
+  if (!SpreadsheetApp.getActiveSpreadsheet().getSheetByName(TABS.sinTest)) return out;
+  const t = leerTabla_(TABS.sinTest);
+  const cR = colExacta_(t, 'RBD'), cP = colExacta_(t, 'Programa'), cH = colExacta_(t, 'Habilitar');
+  t.rows.forEach(r => {
+    const rbd = normRbd_(r[cR]), p = programa_(r[cP]);
+    if (rbd && (p === 'ase' || p === 'rel') && esVerdadero_(r[cH])) out[rbd + '|' + p] = true;
+  });
+  return out;
 }
 
 function intentar_(nombre, fn, porDefecto) {
@@ -329,7 +345,8 @@ function panelPrograma_(rbd, p, d, studentId) {
   const papelIdx = p.programa === 'ase' && p.edi ? (PAPEL_EDI[p.anioInicio] || []).map(nivelIdx_)
     .filter(i => p.implementados.indexOf(i) >= 0 && testIdx.indexOf(i) < 0) : [];
   const linksTest = links_(formsTest).map(l => Object.assign(l, { link: linkColegio_(l.link, rbd, d.sf[rbd]) }));
-  const test = { ok: !!d.test, nivelesTest: testIdx.map(i => NIVELES[i]), nivelesPapel: papelIdx.map(i => NIVELES[i]), links: linksTest };
+  const test = { ok: !!d.test, nivelesTest: testIdx.map(i => NIVELES[i]), nivelesPapel: papelIdx.map(i => NIVELES[i]), links: linksTest,
+    habilitado: !!(d.habilitados && d.habilitados[rbd + '|' + p.programa]) };
   if (d.test) {
     Object.assign(test, bloqueTest_(p, testIdx,
       d.test.filter(x => x.rbd === rbd && x.programa === p.programa), studentId));
@@ -729,6 +746,76 @@ function revisarFormularios() {
   const texto = out.join('\n');
   console.log(texto);
   return texto;
+}
+
+// ── Sin Test (manual, from the editor; re-run after SF or Formularios change) ─
+
+const COLS_SIN_TEST = ['RBD', 'Colegio', 'Comuna', 'Programa', 'Modelo', 'EDI', 'Año inicio', 'Jefe/a de Proyecto',
+  'Niveles del colegio', 'Test en papel', 'Habilitar'];
+
+/**
+ * Lists every school-program whose SF grades have no online Test (Formularios grades ∩ SF grades is empty).
+ * By default the portal shows them no Test links; ticking Habilitar shows them their group's links.
+ * Rebuilds the tab each run; Habilitar and any column Mau adds are kept per RBD + Programa (as values).
+ */
+function listarSinTest() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sf = leerSF_();
+  const forms = leerFormularios_();
+  let sh = ss.getSheetByName(TABS.sinTest);
+  const previo = {};
+  let extras = [];
+  if (sh && sh.getLastRow() > 0) {
+    const t = leerTabla_(TABS.sinTest);
+    extras = t.headers.filter(h => h && COLS_SIN_TEST.indexOf(h) < 0);
+    const cR = t.headers.indexOf('RBD'), cP = t.headers.indexOf('Programa');
+    if (cR >= 0 && cP >= 0) t.rows.forEach(r => {
+      const fila = {};
+      t.headers.forEach((h, i) => { fila[h] = r[i]; });
+      previo[normRbd_(r[cR]) + '|' + programa_(r[cP])] = fila;
+    });
+  }
+  const filas = [];
+  Object.keys(sf).forEach(rbd => Object.keys(sf[rbd].programas).forEach(k => {
+    const p = sf[rbd].programas[k];
+    const testIdx = [].concat.apply([], formulariosDe_(forms, 'test', p).map(rango_));
+    if (p.implementados.some(i => testIdx.indexOf(i) >= 0)) return;
+    const papel = p.programa === 'ase' && p.edi
+      ? (PAPEL_EDI[p.anioInicio] || []).map(nivelIdx_).filter(i => p.implementados.indexOf(i) >= 0) : [];
+    const antes = previo[rbd + '|' + p.programa] || {};
+    filas.push([rbd, sf[rbd].nombre || '', sf[rbd].comuna || '', p.programa.toUpperCase(), p.modelo || '', p.edi ? 'SÍ' : 'NO',
+      p.anioInicio || '', p.jefeProyecto || '', tramos_(p.implementados), tramos_(papel), esVerdadero_(antes['Habilitar'])]
+      .concat(extras.map(h => (antes[h] == null ? '' : antes[h]))));
+  }));
+  const orden = f => [f[3], normTexto_(f[7]), normTexto_(f[1])].join('|');
+  filas.sort((a, b) => (orden(a) < orden(b) ? -1 : orden(a) > orden(b) ? 1 : 0));
+
+  const enc = COLS_SIN_TEST.concat(extras);
+  if (!sh) sh = ss.insertSheet(TABS.sinTest, ss.getNumSheets());
+  const viejas = sh.getLastRow();
+  if (viejas > 0) sh.getRange(1, 1, viejas, Math.max(sh.getLastColumn(), enc.length)).clearContent().clearDataValidations();
+  sh.getRange(1, 1, 1, enc.length).setValues([enc]).setFontWeight('bold');
+  if (filas.length) {
+    sh.getRange(2, COLS_SIN_TEST.length, filas.length, 1).insertCheckboxes(); // before the values: it resets cells to false
+    sh.getRange(2, 1, filas.length, enc.length).setValues(filas);
+  }
+  const habilitados = filas.filter(f => f[COLS_SIN_TEST.length - 1] === true).length;
+  const texto = `${TABS.sinTest}: ${filas.length} colegio-programa sin niveles con Test en línea (${habilitados} habilitados).`;
+  console.log(texto);
+  return texto;
+}
+
+// Grade indices → "NT1 a 3° básico, I° medio"
+function tramos_(idx) {
+  const s = idx.slice().sort((a, b) => a - b);
+  const out = [];
+  for (let i = 0; i < s.length; i++) {
+    let j = i;
+    while (j + 1 < s.length && s[j + 1] === s[j] + 1) j++;
+    out.push(i === j ? NIVELES[s[i]] : `${NIVELES[s[i]]} a ${NIVELES[s[j]]}`);
+    i = j;
+  }
+  return out.join(', ');
 }
 
 // ── Fake test data (staging only; cleared by hand at launch) ─

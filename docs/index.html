@@ -215,6 +215,7 @@
     .compartir{background:var(--tray);border:1px solid var(--borde);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
     .compartir-titulo{display:flex;align-items:center;gap:8px;font-family:var(--f-head);font-weight:700;font-size:14px}
     .compartir-sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+    .compartir-aviso{font-size:13px;line-height:1.45;margin-top:8px;max-width:72ch}
     .punto{width:9px;height:9px;border-radius:50%;background:var(--prog);flex:none}
     .compartir-grid{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:22px;align-items:start}
     .compartir-main{display:flex;flex-direction:column;gap:12px;min-width:0}
@@ -222,7 +223,7 @@
     .link-fila{display:flex;align-items:center;gap:10px;min-width:0}
     .link-rango{flex:none;font-family:var(--f-head);font-weight:700;font-size:12.5px;white-space:nowrap;min-width:0}
     .link-dato{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--borde);border-radius:8px;padding:4px 4px 4px 10px}
-    .link-texto{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--f-mono);font-size:13px}
+    .link-texto{flex:1;min-width:0;word-break:break-all;font-family:var(--f-mono);font-size:13px} /* full link: it carries the school's RBD */
     .mensaje-cab{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
     .mensaje-etiqueta{font-family:var(--f-head);font-weight:600;font-size:13px}
     .mensaje{background:#fff;border:1px solid var(--borde);border-radius:10px;padding:12px 14px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
@@ -252,13 +253,13 @@
     .btn-borde:hover{border-color:var(--tinta)}
     .compartir-nota{font-size:12.5px;line-height:1.45;color:var(--muted)}
     #imprimible{display:none}
-    .inst{font-family:var(--f-body);color:var(--tinta);font-size:10.5pt;line-height:1.45}
+    .inst{font-family:var(--f-body);color:var(--tinta);font-size:10.5pt;line-height:1.4}
     .inst-cab{display:flex;align-items:center;gap:14px;border-bottom:3px solid var(--prog);padding-bottom:10px;margin-bottom:12px}
     .inst-cab img{height:54px;width:auto}
     .inst-eyebrow{font-family:var(--f-head);font-weight:700;font-size:8.5pt;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
     .inst h1{font-family:var(--f-head);font-weight:800;font-size:17pt;line-height:1.15}
     .inst-cab p{font-family:var(--f-head);font-weight:700;font-size:9.5pt;color:var(--muted)}
-    .inst section{margin-top:10px;break-inside:avoid}
+    .inst section{margin-top:8px;break-inside:avoid}
     .inst h2{font-family:var(--f-head);font-weight:800;font-size:11.5pt;color:var(--prog);margin-bottom:3px}
     .inst p + p{margin-top:4px}
     .inst-gracias{font-family:var(--f-head);font-weight:800;color:var(--prog)}
@@ -3068,8 +3069,16 @@ window.qrcode=qrcode;
     // ── Compartir: bandeja, modal, mensaje, QR ──────────────
     const esLinkValido = u => /^https?:\/\/\S+$/i.test(u || "");
 
+    // What the survey's first page shows ("Estás respondiendo por …"): the link's colegio custom variable
+    function colegioDelLink(links) {
+      for (const l of links) {
+        try { const v = new URL(l.link).searchParams.get("colegio"); if (v) return v; } catch (_) { /* not a URL */ }
+      }
+      return "";
+    }
+
     // Links to show for a program × survey. Test: only forms whose grades touch the school's
-    // (registered ∪ seen); a school with none of them sees every form (diagnostic use).
+    // (registered ∪ seen); none of them → no links, unless Habilitar is ticked in the Sheet's "Sin Test" tab.
     function linksVisibles(prog, clave) {
       const enc = prog[clave] || {};
       const links = (enc.links || []).filter(l => esLinkValido(l.link)).map(l => {
@@ -3079,7 +3088,7 @@ window.qrcode=qrcode;
       if (clave !== "test") return links;
       const propios = new Set((enc.niveles || []).map(n => n.nivel).concat((enc.nivelesTest || []).filter(n => (prog.nivelesImplementados || []).indexOf(n) >= 0)));
       const utiles = links.filter(l => !l.rango.length || l.rango.some(n => propios.has(n)));
-      return utiles.length ? utiles : links;
+      return utiles.length || !enc.habilitado ? utiles : links;
     }
 
     // Share section, always visible under each survey block (replaces tray + modal; EFS showed it inline too)
@@ -3131,6 +3140,7 @@ window.qrcode=qrcode;
         <div>
           <div class="compartir-titulo"><span class="punto"></span>${links.length > 1 ? "Comparte los links" : "Comparte el link"}</div>
           <div class="compartir-sub">${clave === "test" ? "Para los docentes que aplicarán el test en clases." : "Para el equipo educativo del colegio."}</div>
+          ${clave === "test" ? `<p class="compartir-aviso">${links.length === 1 ? "Este link es personalizado" : "Estos links son personalizados"} para tu colegio: así sabemos que las respuestas son de tus estudiantes. Por eso es importante ${links.length === 1 ? "copiarlo tal como está, con el botón Copiar, y no escribirlo a mano. Por lo mismo, compártelo" : "copiarlos tal como están, con el botón Copiar, y no escribirlos a mano. Por lo mismo, compártelos"} solo con personas de tu colegio.${colegioDelLink(links) ? ` En la primera página del test aparecerá en letras grandes «Estás respondiendo por <b>${esc(colegioDelLink(links))}</b>»: así puedes comprobar que el link es el correcto.` : ""}</p>` : ""}
         </div>
         <div class="compartir-grid">
           <div class="compartir-main">
@@ -3182,7 +3192,10 @@ window.qrcode=qrcode;
       if (clave === "test") {
         // Essentials of last year's instructivo (45 min, at school, list, vocabulary only, final message)
         const intro = `Estimado equipo,\n\n${entre ? `Entre ${entre} vamos a aplicar` : "Vamos a aplicar"} el Test de Estudiantes del ${programa}. Les pido reservar una clase para que sus estudiantes lo respondan en el colegio. Toma 45 minutos como máximo.`;
-        const enlaces = links.length === 1 ? `\n\nEl link es: ${lista}` : `\n\nCada curso tiene su link:\n${lista}`;
+        const uno = links.length === 1;
+        const enlaces = (uno ? `\n\nEl link es: ${lista}` : `\n\nCada curso tiene su link:\n${lista}`)
+          + `\n\n${uno ? "Este link es personalizado" : "Estos links son personalizados"} para nuestro colegio: así sabemos que las respuestas son de nuestros estudiantes. Por eso, ${uno ? "compártanlo tal como está (copiándolo de este mensaje, sin escribirlo a mano)" : "compártanlos tal como están (copiándolos de este mensaje, sin escribirlos a mano)"} y solo con sus estudiantes, nunca con personas fuera del colegio.`
+          + (colegioDelLink(links) ? ` En la primera página del test aparecerá en letras grandes «Estás respondiendo por ${colegioDelLink(links)}»: así pueden comprobar que están usando el link correcto.` : "");
         const papel = (prog.test.nivelesPapel || []).length ? `\n\nEn ${textoNiveles(prog.test.nivelesPapel)} el test es en papel y lo aplica la Agencia Focus.` : "";
         const dia = `\n\nAlgunas cosas para ese día:\n• Tengan a mano la lista del curso, porque a cada estudiante se le pedirá su número de lista.\n• Prueben el link antes, en los mismos equipos que van a usar.\n• Si les preguntan algo, ayuden solo con el significado de las palabras, para no influir en las respuestas.\n• Al terminar, cada estudiante debería ver el mensaje «¡Has completado el Test de ${NOMBRE_TEST[prog.programa]}!».\n\nSi algo no funciona, me avisan y lo vemos.`;
         const avance = incluirAvance ? avancePorNivel(prog) : "";
@@ -3541,7 +3554,8 @@ window.qrcode=qrcode;
           ${niveles.length ? `<p>Lo responden los cursos de ${esc(textoNiveles(niveles))}.${papel.length ? ` En ${esc(textoNiveles(papel))} el test es en papel y de eso se encarga la Agencia Focus.` : ""}</p>` : ""}
           <p>Mientras más estudiantes lo respondan, mejor podemos ver cómo les está yendo, así que te pedimos animar la asistencia ese día. Si hay estudiantes con NEE, pueden responder con apoyo o, si el colegio lo considera mejor, no rendirlo.</p></section>
         ${links.length ? `<section><h2>¿Cómo entran los estudiantes?</h2>
-          <p>Cada curso tiene su link. Los estudiantes pueden abrirlo desde el computador o escanear el código QR con el celular.</p>
+          <p>${links.length === 1 ? "El link es personalizado" : "Cada curso tiene su link, personalizado"} para tu colegio: así sabemos que las respuestas son de tus estudiantes. Los estudiantes pueden abrirlo desde el computador o escanear el código QR con el celular. ${links.length === 1 ? "Compártelo tal como está, sin escribirlo a mano" : "Compártelos tal como están, sin escribirlos a mano"}, y solo con tus estudiantes, nunca con personas fuera del colegio.</p>
+          ${colegioDelLink(links) ? `<p>Para comprobar que están usando el link correcto: en la primera página del test aparecerá en letras grandes «Estás respondiendo por <b>${esc(colegioDelLink(links))}</b>». Si no aparece el nombre de tu colegio, revisa el link antes de seguir.</p>` : ""}
           <div class="inst-links">${qrs}</div></section>` : ""}
         <section><h2>Para que todo salga bien</h2><ul>
           <li>Ten a mano la lista del curso: a cada estudiante se le pedirá su número de lista.</li>
