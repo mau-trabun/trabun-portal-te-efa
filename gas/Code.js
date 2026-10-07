@@ -573,8 +573,9 @@ function normTexto_(v) {
     .toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
+// Grade sign optional: "5° básico", "5º Básico" and "5 basico" are the same key. Still an exact match (never substring).
 function claveNivel_(v) {
-  return normTexto_(String(v == null ? '' : v).replace(/º/g, '°'));
+  return normTexto_(String(v == null ? '' : v).replace(/[°º]/g, ' '));
 }
 
 // Exact match against the 14 canonical grades after normalization. Never substring.

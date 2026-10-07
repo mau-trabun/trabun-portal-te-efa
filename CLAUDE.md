@@ -66,7 +66,7 @@ Carried from EFS (keep):
 - Login: unified error "RBD o clave incorrectos" (no RBD enumeration). Per-RBD throttle 8 attempts / 900 s via CacheService. Data scoped to the logged-in RBD only. Emails never leave the server; only names are returned.
 - **Degradation:** login depends only on `Contraseñas` + `SF`. If responses fail to load, the user still gets in and sees a clear message. If links are missing, the share card simply doesn't render.
 - **Union rule:** grades/classes shown = registered (SF) ∪ self-declared by respondents. Out-of-range answers count in totals. Neutral flag only ("Fuera de lo registrado", "Curso no registrado…"). Never "probable error", no red, no alert icons.
-- Exact-match grade tokens (`NIVELES.indexOf`), never substring (I°/II°/III° medio trap).
+- Exact-match grade tokens (`NIVELES.indexOf`), never substring (I°/II°/III° medio trap). Case, accents, extra spaces and the grade sign are ignored (`°`, `º` or none: "5 Básico", "I Medio"; 07-10-2026). SurveyMonkey writes "7° Básico" / "I° Medio" (U+00B0), checked against the fake-response export.
 - All respondent-controlled strings escaped via `esc()` or `.textContent`.
 
 New for 2026:

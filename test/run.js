@@ -127,6 +127,10 @@ check('sort by apellido, accent-insensitive', lv('4° básico').cursos[0].respue
 check('class est = round(Alumnos ÷ CxN) for SF letters only (4°: 60 ÷ 2 = 30; unregistered C and no-letter bucket null)',
   lv('4° básico').cursos.map(c => c.est).join() === '30,30,' && lv('6° básico').cursos.map(c => c.est).join() === '30,30,'
   && lv('IV° medio').cursos.every(c => c.est === null));
+const N = vm.runInContext('NIVELES', ctx), nv = v => N[ctx.nivelIdx_(v)] || null;
+check('grade sign optional (° / º / none, any case, extra spaces), still exact', nv('7° Básico') === '7° básico' && nv('6º básico') === '6° básico'
+  && nv('5 Básico') === '5° básico' && nv('5 ° basico') === '5° básico' && nv('I Medio') === 'I° medio' && nv('II medio') === 'II° medio'
+  && nv('IV  MEDIO') === 'IV° medio' && nv('NT1') === 'NT1' && nv('I° medio A') === null && nv('Cuarto') === null && nv('1') === null);
 check('Sin identificar → nulls', lv('4° básico').cursos[2].respuestas[0].nombres === null);
 check('6º ordinal + lowercase letter b matched; no-letter bucket last', lv('6° básico').cursos.map(c=>`${c.letra}:${c.r}`).join() === 'A:0,B:1,null:1');
 check('invalid grade row skipped; resumen', JSON.stringify(ase.test.resumen) === JSON.stringify({r:7, rConEst:6, est:300}));
