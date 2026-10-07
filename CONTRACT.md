@@ -79,8 +79,10 @@ Same import pattern as EFS.
 - `Niveles` is comma-separated (`5° básico, 6° básico`); `-` = empty.
 - `Rol` values: fixed list, **PENDING**.
 
-### `Métricas` (append-only, successful logins only)
-`timestamp | rbd | programas | testOk | efaOk`. It never stores the clave, IP or names.
+### `Métricas` (append-only, successful logins and usage events only)
+`timestamp | rbd | programas | testOk | efaOk | evento`. It never stores the clave, IP or names.
+- Login: `programas` = the school's programs (`ASE,REL`), `testOk`/`efaOk` booleans, `evento` = `login`.
+- Usage event (sent by the portal once per session each): `programas` = the program of the card used (`ASE` | `REL`; blank for `ver_efa`), `testOk`/`efaOk` blank, `evento` one of: `ver_efa` (EFA tab opened); `test_copiar_link`, `test_copiar_mensaje`, `test_whatsapp`, `test_qr`, `test_instructivo`, `test_copiar_lista`, `test_whatsapp_lista`; `efa_copiar_link`, `efa_copiar_mensaje`, `efa_whatsapp`, `efa_qr`.
 
 ### `Precalculo` (not built yet; see §3 Volume)
 `rbd | json | actualizado`.
@@ -139,6 +141,8 @@ Same import pattern as EFS.
 
 ## 4. API
 **Request:** `POST /exec`, header `Content-Type: text/plain`, body `{"rbd":"12345","clave":"abc123"}`. Refreshes (the "Actualizar" button and the 5-min auto-refresh) add `"refresco":true`: same response, but not logged in `Métricas`. The "Actualizar" button also adds `"fresco":true`: the Cloud Run backend then re-reads the Sheet before answering if its copy is older than 15 s (at most one read every 30 s); Apps Script ignores it.
+
+**Usage event:** same request plus `"evento"` (and `"programa":"ase"|"rel"` when it concerns one card). Same clave check and throttle as a login; on success it appends one `Métricas` row and answers `{"ok":true}` without building the panel. An `evento` outside the fixed list (§1 `Métricas`) or a bad `programa` → `{"ok":false,"error":"evento"}`, no row. Sent with `navigator.sendBeacon` (text/plain), response ignored.
 
 **Health check:** `GET /exec` → `{"ok":true,"v":1}`. It never returns data.
 

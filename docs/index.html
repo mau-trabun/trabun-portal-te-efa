@@ -2775,7 +2775,7 @@ window.qrcode=qrcode;
     const MAX_CHIPS = 24;
     const MAX_RESULTADOS = 50;
     // Kept in memory only (never storage) so refreshes don't ask for the clave again; cleared on logout.
-    const sesion = { rbd: null, clave: null, ultima: 0, timerTexto: null, timerRefresco: null, actualizando: false };
+    const sesion = { rbd: null, clave: null, ultima: 0, timerTexto: null, timerRefresco: null, actualizando: false, eventos: new Set() };
 
     // ── Utilidades ──────────────────────────────────────────
     function esc(s) {
@@ -2916,6 +2916,7 @@ window.qrcode=qrcode;
         $("input-clave").value = "";
         sesion.rbd = rbd;
         sesion.clave = clave;
+        sesion.eventos = new Set();
         mostrarPanel(datos);
         marcarActualizado();
         sesion.timerRefresco = setInterval(() => { if (document.visibilityState === "visible") actualizar(false); }, REFRESCO_MS);
@@ -2930,7 +2931,7 @@ window.qrcode=qrcode;
     function salir() {
       clearInterval(sesion.timerRefresco);
       clearInterval(sesion.timerTexto);
-      Object.assign(sesion, { rbd: null, clave: null, ultima: 0, timerTexto: null, timerRefresco: null, actualizando: false });
+      Object.assign(sesion, { rbd: null, clave: null, ultima: 0, timerTexto: null, timerRefresco: null, actualizando: false, eventos: new Set() });
       estado.datos = null;
       estado.ui = {};
       estado.encuesta = "test";
@@ -3011,7 +3012,7 @@ window.qrcode=qrcode;
     function pestana(prog, clave, actual) {
       const activa = actual === clave;
       const e = ENCUESTAS[clave];
-      return `<button type="button" class="pestana${activa ? " activa" : ""}" data-encuesta="${clave}" aria-pressed="${activa}">
+      return `<button type="button" class="pestana${activa ? " activa" : ""}" data-encuesta="${clave}" aria-pressed="${activa}"${clave === "efa" ? ' data-evento="ver_efa"' : ""}>
         <span class="pestana-lbl">${ICONOS[clave]}<span class="lbl-largo">${e.nombre}</span><span class="lbl-corto">${e.corto}</span></span>
         <span class="pestana-estado">${esc(cifra(prog, clave).tab)}</span>
       </button>`;
@@ -3113,17 +3114,18 @@ window.qrcode=qrcode;
       const conAvance = clave === "test" && ve && ve.fase === "open";
       const msg = mensajeCompartir(prog, clave, links, conAvance && sh.incluir);
       const id = `${prog.programa}|${clave}`;
+      const ev = accion => `data-evento="${clave}_${accion}" data-evento-programa="${prog.programa}"`;
       const filas = links.map(l => `<div class="link-fila">
           <span class="punto"></span>
           ${l.etiqueta && links.length > 1 ? `<span class="link-rango">${esc(l.etiqueta)}</span>` : ""}
           <span class="link-dato"><span class="link-texto" title="${esc(l.link)}">${esc(l.link.replace(/^https?:\/\//, ""))}</span>
-          <button type="button" class="btn-mini" data-copiar="${esc(l.link)}">${ICONOS.copiar}<span class="lbl">Copiar</span></button></span>
+          <button type="button" class="btn-mini" data-copiar="${esc(l.link)}" ${ev("copiar_link")}>${ICONOS.copiar}<span class="lbl">Copiar</span></button></span>
         </div>`).join("");
       const qrs = links.map((l, i) => {
         const src = qrChico(l.link);
         return src ? `<div class="qr"><img src="${src}" alt="Código QR del link${l.etiqueta ? " para " + esc(l.etiqueta) : ""}" />
           <div>${links.length > 1 && l.etiqueta ? `<b>${esc(l.etiqueta)}</b>` : ""}<p>Para proyectar en la sala o imprimir.</p>
-          <button type="button" class="btn-mini" data-descargar-qr="${id}|${i}">${ICONOS.descargar}<span class="lbl">Descargar QR</span></button></div></div>` : "";
+          <button type="button" class="btn-mini" data-descargar-qr="${id}|${i}" ${ev("qr")}>${ICONOS.descargar}<span class="lbl">Descargar QR</span></button></div></div>` : "";
       }).join("");
       return `<section class="compartir" aria-label="Compartir el link">
         <div>
@@ -3139,9 +3141,9 @@ window.qrcode=qrcode;
             </div>
             <div class="mensaje">${esc(msg)}</div>
             <div class="botones">
-              <button type="button" class="btn-lleno" data-copiar-mensaje="${id}">Copiar mensaje</button>
-              <a class="btn-whatsapp" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Enviar por WhatsApp</a>
-              ${clave === "test" ? `<button type="button" class="btn-borde" data-instructivo="${prog.programa}">${ICONOS.imprimir}Imprimir instructivo</button>` : ""}
+              <button type="button" class="btn-lleno" data-copiar-mensaje="${id}" ${ev("copiar_mensaje")}>Copiar mensaje</button>
+              <a class="btn-whatsapp" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener" ${ev("whatsapp")}>Enviar por WhatsApp</a>
+              ${clave === "test" ? `<button type="button" class="btn-borde" data-instructivo="${prog.programa}" ${ev("instructivo")}>${ICONOS.imprimir}Imprimir instructivo</button>` : ""}
             </div>
             ${clave === "test" ? `<p class="compartir-nota">El instructivo es para los docentes que van a aplicar el test: imprímelo o guárdalo en PDF para entregárselo.</p>` : ""}
           </div>
@@ -3370,8 +3372,8 @@ window.qrcode=qrcode;
     function accionesCurso(prog, n, c) {
       const msg = mensajeCurso(prog, n, c);
       return `<div class="curso-acciones">
-        <button type="button" class="btn-mini" data-copiar="${esc(msg)}">${ICONOS.copiar}<span class="lbl">Copiar lista</span></button>
-        <a class="btn-mini wa" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">${ICONOS.chat}<span class="lbl">WhatsApp</span></a>
+        <button type="button" class="btn-mini" data-copiar="${esc(msg)}" data-evento="test_copiar_lista" data-evento-programa="${prog.programa}">${ICONOS.copiar}<span class="lbl">Copiar lista</span></button>
+        <a class="btn-mini wa" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener" data-evento="test_whatsapp_lista" data-evento-programa="${prog.programa}">${ICONOS.chat}<span class="lbl">WhatsApp</span></a>
       </div>`;
     }
 
@@ -3644,6 +3646,24 @@ window.qrcode=qrcode;
         const mismo = document.querySelector(`[data-incluir="${programa}|${clave}"]`);
         if (mismo) mismo.focus();
       }
+    });
+    // Usage events for Métricas: once per session each, fire-and-forget. Its own listener, never prevents
+    // the click and swallows every error, so a failure here cannot affect what the button does.
+    function registrarEvento(evento, programa) {
+      try {
+        if (!sesion.rbd) return;
+        const k = `${evento}|${programa || ""}`;
+        if (sesion.eventos.has(k)) return;
+        sesion.eventos.add(k);
+        const cuerpo = JSON.stringify({ rbd: sesion.rbd, clave: sesion.clave, evento, ...(programa ? { programa } : {}) });
+        if (!(navigator.sendBeacon && navigator.sendBeacon(API_URL, cuerpo))) { // text/plain: no CORS preflight; survives leaving for WhatsApp
+          fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: cuerpo, keepalive: true }).catch(() => {});
+        }
+      } catch (_) { /* tracking never breaks the portal */ }
+    }
+    document.addEventListener("click", ev => {
+      const el = ev.target.closest && ev.target.closest("[data-evento]");
+      if (el) registrarEvento(el.dataset.evento, el.dataset.eventoPrograma);
     });
     $("programas").addEventListener("input", ev => {
       const input = ev.target.closest("[data-buscar]");

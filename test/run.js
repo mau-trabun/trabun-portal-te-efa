@@ -38,7 +38,7 @@ const sheets = {
     ['efa','REL Consolidado','REL','','','Consolidado','','','https://s.example/efa-rel-c'],
     ['', '', '', '', '', '', '', '', ''],
   ],
-  'Métricas': [['timestamp','rbd','programas','testOk','efaOk']],
+  'Métricas': [['timestamp','rbd','programas','testOk','efaOk','evento']],
 };
 const C = n => { const a = Array(16).fill(''); a[n % 16] = arguments; return a; };
 function test(form, nombres, apellidos, num, nivel, letra, colegio, region) {
@@ -166,7 +166,21 @@ const rf = post({rbd:'11111', clave:'aaa111', refresco:true});
 check('refresh returns the panel but is not logged in Métricas', rf.ok && sheets['Métricas'].length === nMet);
 const met = sheets['Métricas'];
 check('Métricas: only successful logins appended (5)', met.length - 1 === 5);
-check('Métricas row shape (5 values, no timing)', JSON.stringify(met[1].slice(1)) === JSON.stringify(['11111','ASE,REL',true,true]) && met.find(r=>r[1]==='11111' && r[3]===false));
+check('Métricas row shape (6 values, evento login, no timing)', JSON.stringify(met[1].slice(1)) === JSON.stringify(['11111','ASE,REL',true,true,'login']) && met.find(r=>r[1]==='11111' && r[3]===false));
+
+// Usage events: same clave check and throttle as a login, one Métricas row, no panel
+const nEv = met.length;
+const ev1 = post({rbd:'11111', clave:'aaa111', evento:'test_whatsapp', programa:'ase'});
+check('evento: ok, no panel, one row', ev1.ok === true && !ev1.programas && met.length === nEv + 1 && JSON.stringify(met[nEv].slice(1)) === JSON.stringify(['11111','ASE','','','test_whatsapp']));
+const ev2 = post({rbd:'11111', clave:'aaa111', evento:'ver_efa'});
+check('evento without programa: blank programa', ev2.ok && met[nEv + 1][2] === '' && met[nEv + 1][5] === 'ver_efa');
+check('evento not in the list / bad programa / empty: rejected, no row', post({rbd:'11111', clave:'aaa111', evento:'=HYPERLINK("x")'}).error === 'evento'
+  && post({rbd:'11111', clave:'aaa111', evento:'test_qr', programa:'xyz'}).error === 'evento'
+  && post({rbd:'11111', clave:'aaa111', evento:''}).error === 'evento' && met.length === nEv + 2);
+check('evento with wrong clave: credenciales, counts as an attempt, no row', post({rbd:'33333', clave:'nope', evento:'ver_efa'}).error === 'credenciales' && cacheStore['intentos_33333'] && met.length === nEv + 2);
+check('evento blocked like a login', (() => { [...Array(8)].forEach(() => post({rbd:'33333', clave:'nope'})); return post({rbd:'33333', clave:'ccc333', evento:'ver_efa'}).error === 'bloqueado'; })());
+delete cacheStore['intentos_33333'];
+check('evento + refresco: still only the event row', post({rbd:'11111', clave:'aaa111', evento:'efa_qr', programa:'rel', refresco:true}).ok && met.length === nEv + 3);
 check('response carries no timing', !('ms' in r));
 const pp = ctx.probarPanel(); console.log('--- probarPanel() ---\n' + pp);
 check('probarPanel logs counts, no names or emails', !/Martina|Rojas|@ejemplo/.test(pp) && /RBD 11111/.test(pp));

@@ -70,6 +70,8 @@ function login_(e) {
   }
   cache.remove(kIntentos);
 
+  if (body.evento !== undefined) return registrarEvento_(rbd, body); // usage event: no panel built
+
   const res = panel_(rbd, cargarDatos_(), reloj_());
   if (body.refresco !== true) registrarMetrica_(res); // auto/manual refreshes are not new logins
   return res;
@@ -494,10 +496,28 @@ function registrarMetrica_(res) {
       res.programas.map(p => p.programa.toUpperCase()).join(','),
       res.programas.every(p => p.test.ok),
       res.programas.every(p => p.efa.ok),
+      'login',
     ]);
   } catch (err) {
     console.error('Métricas: ' + (err && err.message));
   }
+}
+
+// Usage events sent by the portal, once per session each. Fixed list: anything else is ignored.
+const EVENTOS = ['ver_efa',
+  'test_copiar_link', 'test_copiar_mensaje', 'test_whatsapp', 'test_qr', 'test_instructivo', 'test_copiar_lista', 'test_whatsapp_lista',
+  'efa_copiar_link', 'efa_copiar_mensaje', 'efa_whatsapp', 'efa_qr'];
+
+function registrarEvento_(rbd, body) {
+  const programa = body.programa == null ? '' : String(body.programa);
+  if (EVENTOS.indexOf(body.evento) < 0 || ['', 'ase', 'rel'].indexOf(programa) < 0) return { ok: false, error: 'evento' };
+  try {
+    const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(TABS.metricas);
+    if (sh) sh.appendRow([new Date(), rbd, programa.toUpperCase(), '', '', body.evento]);
+  } catch (err) {
+    console.error('Métricas: ' + (err && err.message));
+  }
+  return { ok: true };
 }
 
 // ── Normalization ───────────────────────────────────────────
@@ -954,7 +974,7 @@ const MAX_COLEGIO_COLS = 16; // one school dropdown per Chilean region
 const HEADERS = {
   [TABS.config]: ['clave', 'valor', 'nota'],
   [TABS.formularios]: ['Encuesta', 'Form', 'Programa', 'EDI', 'Año inicio', 'Modelo', 'Desde', 'Hasta', 'Link'],
-  [TABS.metricas]: ['timestamp', 'rbd', 'programas', 'testOk', 'efaOk'],
+  [TABS.metricas]: ['timestamp', 'rbd', 'programas', 'testOk', 'efaOk', 'evento'],
   [TABS.respTest]: ['Form', 'Marca temporal', 'Nombres', 'Apellidos', 'Número de lista', 'Nivel', 'Letra']
     .concat(Array(MAX_COLEGIO_COLS).fill('Colegio')),
   [TABS.respEfa]: ['Form', 'Fecha', 'Nombre', 'Apellido', 'Correo', 'Colegio', 'Rol', 'Niveles'],

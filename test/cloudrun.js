@@ -76,6 +76,11 @@ const sinTiempos = o => { delete o.ms; delete o.generado; return o; };
   await new Promise(r => setTimeout(r, 10));
   check('Métricas rows appended for logins, not for refreshes', n > 0 && filasMetricas.length === n && filasMetricas.every(m => m.tab === 'Métricas'));
   check('Métricas timestamp sent as text, no clave in the row', /^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$/.test(filasMetricas[0].fila[0]) && !JSON.stringify(filasMetricas).includes('aaa111'));
+  const ev = await post({ ...casos[0], evento: 'test_whatsapp', programa: 'ase' });
+  await new Promise(r => setTimeout(r, 10));
+  const ultima = filasMetricas[filasMetricas.length - 1];
+  check('evento: {ok:true} only, one row written after the reply, no clave', JSON.stringify(ev) === '{"ok":true}' && filasMetricas.length === n + 1
+    && ultima.fila[5] === 'test_whatsapp' && ultima.fila[2] === 'ASE' && !JSON.stringify(ultima).includes(casos[0].clave));
 
   // Refresh endpoint and degradation
   await svc.manejar('POST', '/refrescar', '');
