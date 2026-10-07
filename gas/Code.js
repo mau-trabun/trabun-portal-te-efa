@@ -837,6 +837,298 @@ function tramos_(idx) {
   return out.join(', ');
 }
 
+// ── Correos de anuncio del Test (manual, run as evaluacion@ from the editor) ─
+// 1) Mau pastes the encargados export into "Encargados" (headers as exported from SF); "correos_jdp" maps each
+//    Jefe/a de Proyecto or Coordinador/a name to an email (CC).
+// 2) prepararCorreosTest() builds "Correos Test": one row per school, all its encargados together, review + Enviar box.
+// 3) enviarCorreoPrueba() sends up to 3 samples to Config "correos_prueba". 4) enviarCorreosTest() sends, stamping Enviado.
+// Programs come from SF, never from the encargados' "Programa" column; Control and no-Test programs are left out.
+
+const TAB_ENCARGADOS = 'Encargados'; // not in TABS: Cloud Run never reads people's emails
+const TAB_CORREOS_JDP = 'correos_jdp';
+const TAB_CORREOS = 'Correos Test';
+const COLS_CORREOS = ['RBD', 'Colegio', 'Programas', 'Jefe/a de Proyecto', 'Para', 'CC', 'Nombres', 'Contacto', 'Asunto', 'Mensaje',
+  'Observaciones', 'Enviar', 'Enviado'];
+const DIAS_SEMANA = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+const TITULO_PROGRAMA = { ase: 'Aprendizaje Socioemocional', rel: 'Religión Católica' };
+const PORTAL_URL = 'https://portal.fundaciontrabun.cl';
+const LOGO_CORREO = PORTAL_URL + '/correo/logo-trabun.png'; // hosted by GitHub Pages (docs/correo): mail clients drop data: images
+const COLOR = { tinta: '#151b29', rojo: '#b51a2a', naranjo: '#dc911b', verde: '#a2c037', celeste: '#6bacc4', amarillo: '#f9dc0a',
+  gris: '#f5f5f5', celesteClaro: '#c8e3ed', amarilloClaro: '#fef7c1', muted: '#5b6070' };
+const RE_CORREO = /^[^@\s,;]+@[^@\s,;]+\.[^@\s,;]+$/;
+
+function prepararCorreosTest() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ctx = contextoCorreos_();
+  const encargados = ctx.encargados;
+  const cJdp = leerCorreosJdp_();
+
+  let sh = ss.getSheetByName(TAB_CORREOS);
+  const previo = {};
+  if (sh && sh.getLastRow() > 1) {
+    const t = leerTabla_(TAB_CORREOS);
+    const iR = t.headers.indexOf('RBD'), iE = t.headers.indexOf('Enviar'), iS = t.headers.indexOf('Enviado');
+    const iP = t.headers.indexOf('Para'), iG = t.headers.indexOf('Programas');
+    if (iR >= 0) t.rows.forEach(r => {
+      previo[normRbd_(r[iR])] = { enviar: iE >= 0 ? r[iE] : '', enviado: iS >= 0 ? r[iS] : '', listo: !!(iP >= 0 && r[iP] && iG >= 0 && r[iG]) };
+    });
+  }
+
+  const filas = [];
+  Object.keys(ctx.claves).forEach(rbd => {
+    const res = panel_(rbd, ctx.d, ctx.reloj);
+    const obs = [];
+    const progs = programasConTest_(res);
+    if (!res.programas.length) obs.push('No está en SF');
+    else if (!progs.length) obs.push('Sin programas con Test (Control o pestaña Sin Test)');
+    const enc = encargados.porRbd[rbd] || [];
+    if (!enc.length) obs.push('Sin encargado en la pestaña Encargados');
+    (encargados.programas[rbd] || []).forEach(p => {
+      if (!res.programas.some(x => x.programa === p)) obs.push(`En Encargados figura ${p.toUpperCase()}, que no está en SF`);
+    });
+    const cc = copiaEquipo_(progs, cJdp, enc);
+    if (cc.faltan.length) obs.push(`Sin correo en ${TAB_CORREOS_JDP} para: ${cc.faltan.join(', ')}`);
+    const correo = progs.length && enc.length ? correoTest_(res, progs, enc, ctx.claves[rbd]) : { asunto: '', texto: '' };
+    const antes = previo[rbd] || {};
+    const listo = !!(progs.length && enc.length);
+    filas.push([rbd, res.colegio.nombre || '', progs.map(p => p.programa.toUpperCase()).join(' + '),
+      Array.from(new Set(progs.map(p => p.jefeProyecto).filter(Boolean))).join(', '),
+      enc.map(e => e.email).join(', '), cc.correos.join(', '), enc.map(e => e.nombre).filter(Boolean).join(', '), res.contacto,
+      correo.asunto, correo.texto, obs.join(' · '),
+      listo && (antes.listo ? esVerdadero_(antes.enviar) : true), antes.enviado || '']); // keeps Mau's choice once the row was ready
+  });
+  const iEnviar = COLS_CORREOS.indexOf('Enviar'), iEnviado = COLS_CORREOS.indexOf('Enviado'), iObs = COLS_CORREOS.indexOf('Observaciones');
+  filas.sort((a, b) => (a[iEnviar] === b[iEnviar] ? (normTexto_(a[1]) < normTexto_(b[1]) ? -1 : 1) : a[iEnviar] ? 1 : -1)); // issues first
+
+  if (!sh) sh = ss.insertSheet(TAB_CORREOS, ss.getNumSheets());
+  const viejas = sh.getLastRow();
+  if (viejas > 0) sh.getRange(1, 1, viejas, Math.max(sh.getLastColumn(), COLS_CORREOS.length)).clearContent().clearDataValidations();
+  sh.getRange(1, 1, 1, COLS_CORREOS.length).setValues([COLS_CORREOS]).setFontWeight('bold');
+  if (filas.length) {
+    sh.getRange(2, iEnviar + 1, filas.length, 1).insertCheckboxes();
+    sh.getRange(2, 1, filas.length, COLS_CORREOS.length).setValues(filas);
+  }
+  const aEnviar = filas.filter(f => f[iEnviar] === true && !f[iEnviado]).length;
+  const texto = `${TAB_CORREOS}: ${filas.length} colegios · ${aEnviar} por enviar · ${filas.filter(f => f[iObs]).length} con observaciones.`;
+  console.log(texto);
+  return texto;
+}
+
+// Programs announced: not Control, and with an online Test grade (or ticked Habilitar in "Sin Test")
+function programasConTest_(res) {
+  return res.programas.filter(p => normTexto_(p.modelo) !== 'control'
+    && ((p.test.nivelesTest || []).some(n => (p.nivelesImplementados || []).indexOf(n) >= 0) || p.test.habilitado));
+}
+
+// CC: Jefe/a de Proyecto and Coordinador/a of the announced programs, matched by name (case/accents/spaces ignored)
+function copiaEquipo_(progs, cJdp, enc) {
+  const nombres = [];
+  progs.forEach(p => [p.jefeProyecto, p.coordinador].forEach(n => { if (n && nombres.indexOf(n) < 0) nombres.push(n); }));
+  const correos = [], faltan = [];
+  nombres.forEach(n => {
+    const c = cJdp[normTexto_(n)];
+    if (!c) faltan.push(n);
+    else if (correos.indexOf(c) < 0 && !enc.some(e => e.email === c)) correos.push(c);
+  });
+  return { correos, faltan };
+}
+
+// "correos_jdp": name in the first column, email in the column whose header contains "correo"
+function leerCorreosJdp_() {
+  const out = {};
+  if (!SpreadsheetApp.getActiveSpreadsheet().getSheetByName(TAB_CORREOS_JDP)) return out;
+  const t = leerTabla_(TAB_CORREOS_JDP);
+  const cE = t.headers.findIndex(h => normTexto_(h).indexOf('correo') >= 0);
+  if (cE < 0) throw new Error(`La pestaña ${TAB_CORREOS_JDP} necesita una columna "correo".`);
+  const cN = cE === 0 ? 1 : 0;
+  t.rows.forEach(r => {
+    const n = normTexto_(r[cN]), e = String(r[cE] == null ? '' : r[cE]).trim().toLowerCase();
+    if (n && RE_CORREO.test(e)) out[n] = e;
+  });
+  return out;
+}
+
+// Encargados export: one row per person. RBD from "ID RBD", or from "Nombre para formulario" (Comuna - Nombre - RBD).
+// Emails lower-cased and deduplicated per school; first names in title case.
+function leerEncargados_() {
+  const t = leerTabla_(TAB_ENCARGADOS);
+  const cR = colExacta_(t, 'ID RBD'), cN = colExacta_(t, 'Nombre para formulario'), cE = colExacta_(t, 'Email');
+  const cF = t.headers.indexOf('First Name'), cP = t.headers.indexOf('Programa que participa');
+  const porRbd = {}, programas = {};
+  t.rows.forEach(r => {
+    const rbd = normRbd_(r[cR]) || rbdDeColegio_(r[cN]);
+    const email = String(r[cE] == null ? '' : r[cE]).trim().toLowerCase();
+    if (!rbd || !RE_CORREO.test(email)) return;
+    const lista = porRbd[rbd] || (porRbd[rbd] = []);
+    if (!lista.some(e => e.email === email)) lista.push({ email, nombre: cF >= 0 ? nombrePropio_(r[cF]) : '' });
+    const p = cP >= 0 ? programa_(r[cP]) : '';
+    if ((p === 'ase' || p === 'rel') && (programas[rbd] || (programas[rbd] = [])).indexOf(p) < 0) programas[rbd].push(p);
+  });
+  return { porRbd, programas };
+}
+
+function nombrePropio_(v) {
+  return String(v == null ? '' : v).trim().toLowerCase().replace(/\s+/g, ' ')
+    .replace(/(^|[\s'-])(\S)/g, (m, sep, ch) => sep + ch.toUpperCase());
+}
+
+// "2026-10-13" → "martes 13 de octubre"
+function fechaLarga_(iso) {
+  const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return '';
+  const f = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  return `${DIAS_SEMANA[f.getUTCDay()]} ${+m[3]} de ${MESES[+m[2] - 1]}`;
+}
+
+function escHtml_(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// One email per school: singular (tú) for one encargado, plural (ustedes) for several. Plain text + designed HTML
+// (table layout and inline styles: what Gmail and Outlook render; brand colors, Lato with Arial fallback, no icons).
+function correoTest_(res, progs, enc, clave) {
+  const uno = enc.length === 1;
+  const y = l => (l.length > 1 ? l.slice(0, -1).join(', ') + ' y ' + l[l.length - 1] : l[0] || '');
+  const e = escHtml_;
+  const nombres = enc.map(x => x.nombre).filter(Boolean);
+  const titulos = progs.map(p => TITULO_PROGRAMA[p.programa]);
+  const programa = titulos.length > 1 ? `de los programas de ${y(titulos)}` : `del programa de ${titulos[0]}`;
+  const papel = [].concat.apply([], progs.map(p => (p.test.nivelesPapel || []).map(nivelIdx_)));
+  const t = res.encuestas.test;
+  const abre = fechaLarga_(t.abre), cierra = fechaLarga_(t.cierra);
+  const contacto = res.contacto;
+  const colegio = res.colegio.nombre || `RBD ${res.colegio.rbd}`;
+  const asunto = `Test de Estudiantes 2026 · ${colegio}`;
+  const tu = (a, b) => (uno ? a : b);
+
+  const saludo = `Hola${nombres.length ? ', ' + y(nombres) : ''}:`;
+  const intro = `${tu('Te escribimos', 'Les escribimos')} del equipo de Evaluación de Fundación Trabün para ${tu('contarte', 'contarles')} que el Test de Estudiantes ${programa}`
+    + (abre && cierra ? ` estará disponible desde el ${abre} hasta el ${cierra}.` : ' estará disponible pronto.');
+  const portal = `Para ${tu('acompañarte', 'acompañarlos')} en este proceso creamos el Portal de Seguimiento 2026. Ahí ${tu('vas', 'van')} a encontrar:`;
+  const items = [
+    ['Los links del test', `De ${tu('tu', 'su')} colegio, listos para copiar, enviar por WhatsApp o mostrar con código QR.`, COLOR.naranjo],
+    ['Un instructivo para docentes', 'Para imprimir y entregar a quienes aplicarán el test.', COLOR.verde],
+    ['El avance de cada curso', `Quiénes ya respondieron, para que ${tu('puedas', 'puedan')} acompañar a cada profesor.`, COLOR.rojo],
+  ];
+  const reserva = `La clave es solo para el equipo de ${tu('tu', 'su')} colegio; ${tu('te', 'les')} pedimos no compartirla fuera de él.`;
+  const enPapel = papel.length ? `En ${tramos_(papel)} el test es en papel y lo aplica la Agencia Focus.` : '';
+  const gracias = `¡Muchas gracias por ${tu('tu', 'su')} apoyo!`;
+  const pie = `Este es un correo automático, por favor no lo ${tu('respondas', 'respondan')}. Si ${tu('tienes', 'tienen')} cualquier duda, ${tu('escríbenos', 'escríbannos')} a ${contacto}.`;
+
+  const texto = [saludo, intro, portal, items.map(i => `• ${i[0]}: ${i[1]}`).join('\n'),
+    `${tu('Entra', 'Entren')} en portal.fundaciontrabun.cl con estos datos:\nRBD: ${res.colegio.rbd}\nClave: ${clave}`,
+    reserva].concat(enPapel ? [enPapel] : []).concat([gracias, 'Equipo de Evaluación\nFundación Trabün']).join('\n\n') + '\n\n—\n' + pie;
+
+  const titulo = t.fase === 'open' ? 'El Test de Estudiantes ya está disponible'
+    : abre ? `El Test de Estudiantes comienza el ${abre}` : 'El Test de Estudiantes está por comenzar';
+  const bajada = (titulos.length > 1 ? `Programas de ${y(titulos)}` : `Programa de ${titulos[0]}`) + (cierra ? ` · disponible hasta el ${cierra}` : '');
+  const fuente = "font-family:Lato,'Helvetica Neue',Arial,sans-serif";
+  const parrafo = s => `<p style="margin:0 0 14px;font-size:15px;line-height:1.55;color:${COLOR.tinta}">${s}</p>`;
+  const caja = (fondo, borde, interior) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${fondo};border-left:5px solid ${borde};border-radius:12px;margin:0 0 12px"><tr><td style="padding:14px 18px">${interior}</td></tr></table>`;
+  const franja = [COLOR.rojo, COLOR.naranjo, COLOR.verde, COLOR.celeste, COLOR.amarillo]
+    .map(c => `<td height="6" style="height:6px;background:${c};font-size:0;line-height:0">&nbsp;</td>`).join('');
+  const dato = (k, v) => `<tr><td style="padding:3px 18px 3px 0;font-size:14px;color:${COLOR.tinta}">${k}</td><td style="padding:3px 0;font-size:22px;font-weight:bold;letter-spacing:1px;color:${COLOR.tinta};font-family:Menlo,Consolas,'Courier New',monospace">${e(v)}</td></tr>`;
+  const html = `<div style="margin:0;padding:24px 12px;background:${COLOR.gris};${fuente}">
+<!--prueba-->
+<table role="presentation" align="center" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:14px;overflow:hidden;border-collapse:separate">
+<tr><td><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>${franja}</tr></table></td></tr>
+<tr><td style="padding:26px 32px 0"><img src="${LOGO_CORREO}" width="64" height="59" alt="Fundación Trabün" style="display:block;border:0;outline:none"></td></tr>
+<tr><td style="padding:18px 32px 0">
+<h1 style="margin:0 0 6px;font-size:24px;line-height:1.25;font-weight:bold;color:${COLOR.tinta}">${e(titulo)}</h1>
+<p style="margin:0 0 22px;font-size:15px;line-height:1.4;color:${COLOR.tinta};opacity:.8">${e(bajada)}</p>
+${parrafo(e(saludo))}${parrafo(e(intro))}
+${caja(COLOR.celesteClaro, COLOR.celeste, `<p style="margin:0 0 8px;font-size:16px;font-weight:bold;color:${COLOR.tinta}">${tu('Tus datos', 'Sus datos')} para entrar</p>
+<table role="presentation" cellpadding="0" cellspacing="0">${dato('RBD', res.colegio.rbd)}${dato('Clave', clave)}</table>
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:14px 0 10px"><tr><td style="border-radius:999px;background:${COLOR.rojo}"><a href="${PORTAL_URL}" style="display:inline-block;padding:12px 26px;font-size:15px;font-weight:bold;color:#ffffff;text-decoration:none;border-radius:999px">Entrar al portal</a></td></tr></table>
+<p style="margin:0;font-size:13px;line-height:1.45;color:${COLOR.tinta}"><a href="${PORTAL_URL}" style="color:${COLOR.tinta}">portal.fundaciontrabun.cl</a> · ${e(reserva)}</p>`)}
+<p style="margin:22px 0 10px;font-size:16px;font-weight:bold;color:${COLOR.tinta}">En el portal ${tu('vas', 'van')} a encontrar</p>
+${items.map(i => caja(COLOR.gris, i[2], `<p style="margin:0;font-size:15px;font-weight:bold;color:${COLOR.tinta}">${e(i[0])}</p><p style="margin:2px 0 0;font-size:14px;line-height:1.45;color:${COLOR.tinta}">${e(i[1])}</p>`)).join('')}
+${enPapel ? caja(COLOR.amarilloClaro, COLOR.amarillo, `<p style="margin:0;font-size:14px;line-height:1.45;color:${COLOR.tinta}">${e(enPapel)}</p>`) : ''}
+<div style="height:8px"></div>${parrafo(e(gracias))}
+<p style="margin:0 0 28px;font-size:15px;line-height:1.45;color:${COLOR.tinta}"><b>Equipo de Evaluación</b><br>Fundación Trabün</p>
+</td></tr>
+<tr><td style="padding:18px 32px;background:${COLOR.gris};font-size:12px;line-height:1.5;color:${COLOR.muted}">${e(pie).replace(e(contacto), `<a href="mailto:${e(contacto)}" style="color:${COLOR.muted}">${e(contacto)}</a>`)}</td></tr>
+</table></div>`;
+  return { asunto, texto, html };
+}
+
+function correoDeFila_(fila, ctx) {
+  const rbd = normRbd_(fila.RBD);
+  const res = panel_(rbd, ctx.d, ctx.reloj);
+  const progs = res.programas.filter(p => String(fila.Programas).toUpperCase().split(/\s*\+\s*/).indexOf(p.programa.toUpperCase()) >= 0);
+  const lista = s => String(s == null ? '' : s).split(/[\s,;]+/).map(x => x.trim().toLowerCase()).filter(x => RE_CORREO.test(x));
+  const enc = lista(fila.Para).map(email => (ctx.encargados.porRbd[rbd] || []).find(x => x.email === email) || { email, nombre: '' });
+  if (!progs.length || !enc.length) return null;
+  return Object.assign(correoTest_(res, progs, enc, ctx.claves[rbd]),
+    { para: enc.map(x => x.email).join(','), cc: lista(fila.CC).filter(c => !enc.some(x => x.email === c)).join(','), replyTo: res.contacto });
+}
+
+function filasCorreos_() {
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(TAB_CORREOS);
+  if (!sh) throw new Error(`Falta la pestaña ${TAB_CORREOS}: corre primero prepararCorreosTest().`);
+  const t = leerTabla_(TAB_CORREOS);
+  return { sh, t, filas: t.rows.map((r, i) => { const o = { fila: i + 2 }; t.headers.forEach((h, j) => { o[h] = r[j]; }); return o; }) };
+}
+
+function contextoCorreos_() {
+  const tc = leerTabla_(TABS.claves);
+  const cR = colExacta_(tc, 'rbd'), cC = colExacta_(tc, 'clave');
+  const claves = {};
+  tc.rows.forEach(r => { const rbd = normRbd_(r[cR]); if (rbd && !claves[rbd]) claves[rbd] = String(r[cC]).trim(); });
+  return { d: cargarDatos_(), reloj: reloj_(), claves, encargados: leerEncargados_() };
+}
+
+// Sends up to 3 sample emails (one encargado, several encargados, EDI), subject "[PRUEBA] …", only to the addresses in
+// Config "correos_prueba" (comma-separated; kept in the Sheet, never in this public repo) or else to whoever runs it.
+// Never CCs anyone; a box at the top shows who would get the real one.
+function enviarCorreoPrueba() {
+  const { filas } = filasCorreos_();
+  const ctx = contextoCorreos_();
+  const lista = String((ctx.d.cfg || {}).correos_prueba || '').split(/[\s,;]+/).filter(x => RE_CORREO.test(x));
+  const yo = lista.length ? lista.join(',') : Session.getActiveUser().getEmail();
+  if (!yo) throw new Error('No se pudo saber a quién enviar la prueba: agrega correos_prueba en Config.');
+  const listas = filas.filter(f => esVerdadero_(f.Enviar) && !f.Enviado);
+  const muestras = [listas.find(f => String(f.Para).indexOf(',') < 0), listas.find(f => String(f.Para).indexOf(',') >= 0),
+    listas.find(f => String(f.Contacto) !== CONTACTO_DEFECTO)].filter((f, i, a) => f && a.indexOf(f) === i);
+  muestras.forEach(f => {
+    const c = correoDeFila_(f, ctx);
+    if (!c) return;
+    const aviso = `<div style="max-width:600px;margin:0 auto 12px;padding:10px 14px;border:1px dashed ${COLOR.muted};border-radius:10px;font-size:12px;line-height:1.5;color:${COLOR.tinta};background:#ffffff">`
+      + `<b>Correo de prueba.</b> En el envío real va a: ${escHtml_(c.para.replace(/,/g, ', '))}${c.cc ? ` · CC: ${escHtml_(c.cc.replace(/,/g, ', '))}` : ''}</div>`;
+    MailApp.sendEmail({ to: yo, subject: `[PRUEBA] ${c.asunto}`, body: `[Prueba · Para: ${c.para} · CC: ${c.cc || '—'}]\n\n${c.texto}`,
+      htmlBody: c.html.replace('<!--prueba-->', aviso), name: 'Fundación Trabün', replyTo: c.replyTo });
+  });
+  console.log(`${muestras.length} correos de prueba enviados.`); // counts only
+  return `${muestras.length} correos de prueba enviados a ${yo}.`;
+}
+
+// Sends every row with Enviar ticked and Enviado empty (Para + CC as in the row); stamps Enviado right after each send,
+// so a re-run never sends twice. Stops before the daily quota or ~5 min (Apps Script limit): run it again to continue.
+function enviarCorreosTest() {
+  const { sh, t, filas } = filasCorreos_();
+  const cEnviado = t.headers.indexOf('Enviado') + 1;
+  const ctx = contextoCorreos_();
+  const inicio = Date.now();
+  let enviados = 0, pendientes = 0, sinCorreo = 0;
+  for (const f of filas) {
+    if (!esVerdadero_(f.Enviar) || f.Enviado) continue;
+    const c = correoDeFila_(f, ctx);
+    if (!c) { sinCorreo++; continue; }
+    const n = c.para.split(',').length + (c.cc ? c.cc.split(',').length : 0);
+    if (Date.now() - inicio > 5 * 60 * 1000 || MailApp.getRemainingDailyQuota() < n) { pendientes++; continue; }
+    const correo = { to: c.para, subject: c.asunto, body: c.texto, htmlBody: c.html.replace('<!--prueba-->', ''), name: 'Fundación Trabün', replyTo: c.replyTo };
+    if (c.cc) correo.cc = c.cc;
+    MailApp.sendEmail(correo);
+    sh.getRange(f.fila, cEnviado).setValue(new Date());
+    enviados++;
+  }
+  const texto = `Enviados: ${enviados}.` + (pendientes ? ` Quedan ${pendientes}: vuelve a correr enviarCorreosTest() (o mañana, si se acabó la cuota diaria).` : ' No quedan pendientes.')
+    + (sinCorreo ? ` ${sinCorreo} filas marcadas no se pudieron armar (sin programas o sin correos): revisa Observaciones.` : '');
+  console.log(texto); // counts only, never emails or claves
+  return texto;
+}
+
 // ── Fake test data (staging only; cleared by hand at launch) ─
 
 const FAKE_NOMBRES = ['Agustín', 'Martina', 'Benjamín', 'Sofía', 'Vicente', 'Isidora', 'Matías', 'Florencia', 'Lucas',
