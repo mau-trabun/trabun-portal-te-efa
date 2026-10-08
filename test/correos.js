@@ -31,6 +31,8 @@ ctx.SpreadsheetApp.getActiveSpreadsheet = () => ({
 let enviados = [], cuota = 1500;
 ctx.MailApp = { sendEmail: o => enviados.push(o), getRemainingDailyQuota: () => cuota };
 ctx.Session = { getActiveUser: () => ({ getEmail: () => 'yo@ejemplo.invalid' }) };
+ctx.Utilities.newBlob = (bytes, type, name) => ({ bytes, type, name });
+ctx.Utilities.base64Decode = b => Buffer.from(b, 'base64');
 
 const FARO = 'Puerto Inventado - Escuela El Faro - 22222';
 sheets['Encargados'] = [['Nombre para formulario', 'ID RBD', 'Programa que participa', 'Account Name', 'First Name', 'Last Name', 'Email'],
@@ -50,8 +52,8 @@ const a = fila('11111'), f = fila('22222'), c = fila('33333'), x = fila('44444')
 check('one row per school with a clave, contract header', sheets['Correos Test'][0].join('|') === 'RBD|Colegio|Programas|Jefe/a de Proyecto|Para|CC|Nombres|Contacto|Asunto|Mensaje|Observaciones|Enviar|Enviado' && lastRow('Correos Test') === 5 && /4 colegios · 2 por enviar · 4 con observaciones/.test(informe));
 check('two programs, two encargados together (deduped, lower-case, blank email ignored)', a.Programas === 'ASE + REL' && a.Para === 'mj@ejemplo.invalid, pedro@ejemplo.invalid' && a.Nombres === 'María José, Pedro' && a.Enviar === true);
 check('CC: JDP and coordinator of the announced programs from correos_jdp (name match ignores case), missing ones flagged', a.CC === 'jdp.x@ejemplo.invalid' && f.CC === 'jdp.x@ejemplo.invalid' && a.Observaciones === 'Sin correo en correos_jdp para: Coordinadora Uno' && c.CC === '');
-check('plural text: names, both programs, real dates with weekday, RBD + clave, contacto general', /^Hola, María José y Pedro:/.test(a.Mensaje) && a.Mensaje.includes('Les escribimos') && a.Mensaje.includes('de los programas de Aprendizaje Socioemocional y Religión Católica estará disponible desde el jueves 1 de octubre hasta el viernes 20 de noviembre.') && a.Mensaje.includes('RBD: 11111\\nClave: aaa111') && a.Mensaje.includes('Entren en portal.fundaciontrabun.cl') && a.Mensaje.includes('por favor no lo respondan') && a.Mensaje.includes('escríbannos a evaluacion@fundaciontrabun.cl') && a.Asunto === 'Test de Estudiantes 2026 · Colegio Los Aromos');
-check('singular text, EDI contact and paper grades; RBD taken from the school name', f.Para === 'ana@ejemplo.invalid' && /^Hola, Ana O'Neill:/.test(f.Mensaje) && f.Mensaje.includes('Te escribimos') && f.Mensaje.includes('del programa de Aprendizaje Socioemocional estará') && f.Mensaje.includes('Entra en') && f.Mensaje.includes('En 5° básico a 8° básico el test es en papel y lo aplica la Agencia Focus.') && f.Contacto === 'consultas_edi@fundaciontrabun.cl' && f.Mensaje.includes('escríbenos a consultas_edi@fundaciontrabun.cl') && f.Enviar === true);
+check('plural text: names, both programs, real dates with weekday, RBD + clave, contacto general', /^Hola, María José y Pedro:/.test(a.Mensaje) && a.Mensaje.includes('Les escribimos') && a.Mensaje.includes('de los programas de Aprendizaje Socioemocional y Religión Católica estará disponible desde el jueves 1 de octubre hasta el viernes 20 de noviembre.') && a.Mensaje.includes('RBD: 11111\\nClave: aaa111') && a.Mensaje.includes('Entren al portal con estos datos:') && !a.Mensaje.includes('Evaluación') && a.Mensaje.includes('Les escribimos de Fundación Trabün') && a.Mensaje.includes('por favor no lo respondan') && a.Mensaje.includes('escríbannos a evaluacion@fundaciontrabun.cl') && a.Asunto === 'Test de Estudiantes 2026 · Colegio Los Aromos');
+check('singular text, EDI contact and paper grades; RBD taken from the school name', f.Para === 'ana@ejemplo.invalid' && /^Hola, Ana O'Neill:/.test(f.Mensaje) && f.Mensaje.includes('Te escribimos') && f.Mensaje.includes('del programa de Aprendizaje Socioemocional estará') && f.Mensaje.includes('Entra al portal con estos datos:') && f.Mensaje.includes('En 5° a 8° básico el test es en papel y lo aplica la Agencia Focus.') && f.Contacto === 'consultas_edi@fundaciontrabun.cl' && f.Mensaje.includes('escríbenos a consultas_edi@fundaciontrabun.cl') && f.Enviar === true);
 check('encargado program not in SF is flagged, but the row still goes', f.Observaciones === 'En Encargados figura REL, que no está en SF');
 check('Control left out; school not in SF / without encargado flagged, not ticked', c.Programas === '' && c.Enviar === false && /Control/.test(c.Observaciones) && x.Enviar === false && x.Observaciones === 'No está en SF · Sin encargado en la pestaña Encargados');
 check('rows needing attention first', sheets['Correos Test'][1][11] === false && sheets['Correos Test'][2][11] === false && sheets['Correos Test'][4][11] === true);
@@ -71,11 +73,39 @@ check('quota: stops before a row it cannot fully send, says how many are left', 
 cuota = 1500; enviados = [];
 r = ctx.enviarCorreosTest();
 const env = enviados[0];
-check('send: all encargados in one email, name Fundación Trabün, reply-to the school contact, html with clave and portal link', enviados.length === 1 && env.to === 'mj@ejemplo.invalid,pedro@ejemplo.invalid' && env.name === 'Fundación Trabün' && env.replyTo === 'evaluacion@fundaciontrabun.cl' && env.cc === 'jdp.x@ejemplo.invalid' && env.htmlBody.includes('>aaa111</td>') && env.htmlBody.includes('href="https://portal.fundaciontrabun.cl"') && env.htmlBody.includes('Entrar al portal') && env.htmlBody.includes('https://portal.fundaciontrabun.cl/correo/logo-trabun.png') && env.htmlBody.includes('Programas de Aprendizaje Socioemocional y Religión Católica · disponible hasta el viernes 20 de noviembre') && !env.htmlBody.includes('<!--prueba-->') && !env.htmlBody.includes('Correo de prueba'));
+check('send: all encargados in one email, name Fundación Trabün, reply-to the school contact, html with clave and portal link', enviados.length === 1 && env.to === 'mj@ejemplo.invalid,pedro@ejemplo.invalid' && env.name === 'Fundación Trabün' && env.replyTo === 'evaluacion@fundaciontrabun.cl' && env.cc === 'jdp.x@ejemplo.invalid' && env.htmlBody.includes('>aaa111</td>') && env.htmlBody.includes('href="https://portal.fundaciontrabun.cl"') && env.htmlBody.includes('Entrar al portal') && env.htmlBody.includes('src="cid:logo"') && env.inlineImages.logo.type === 'image/png' && env.inlineImages.logo.bytes.length > 1000 && env.htmlBody.indexOf('Los links del test') < env.htmlBody.indexOf('Entren al portal con estos datos') && env.htmlBody.includes('>Fundación Trabün</p>') && env.htmlBody.includes('Programas de Aprendizaje Socioemocional y Religión Católica · disponible hasta el viernes 20 de noviembre') && !env.htmlBody.includes('<!--prueba-->') && !env.htmlBody.includes('Correo de prueba'));
 check('Enviado stamped on both rows; re-run sends nothing', fila('11111').Enviado instanceof Date && fila('22222').Enviado instanceof Date && (() => { enviados = []; ctx.enviarCorreosTest(); return enviados.length === 0; })());
 
 sheets['Correos Test'].find(x => x[0] === '22222')[11] = false; // Mau unticks one
 ctx.prepararCorreosTest();
 check('rebuild keeps Enviado and Mau\\'s unticked box', fila('11111').Enviado instanceof Date && fila('22222').Enviar === false && fila('22222').Enviado instanceof Date);
 check('html escapes names; no emails or claves in logs', (() => { sheets['Encargados'][5][4] = '<b>x</b>'; ctx.prepararCorreosTest(); const t = ctx.correoTest_(ctx.panel_('22222', ctx.cargarDatos_(), ctx.reloj_()), ctx.panel_('22222', ctx.cargarDatos_(), ctx.reloj_()).programas, [{ email: 'a@b.cl', nombre: '<b>x</b>' }], 'k'); return !t.html.includes('<b>x</b>') && t.html.includes('&lt;b&gt;'); })() && !/@ejemplo\\.invalid|aaa111|bbb222/.test(logs.join('\\n')));
+
+check('"e" before an i sound, "y" otherwise', ctx.conY_(['Caroline', 'Jimena', 'Isabel']) === 'Caroline, Jimena e Isabel' && ctx.conY_(['Ana', 'Hilda']) === 'Ana e Hilda'
+  && ctx.conY_(['Ana', 'Hierro']) === 'Ana y Hierro' && ctx.conY_(['Ana', 'Ícaro']) === 'Ana e Ícaro' && ctx.conY_(['Ana', 'Pedro']) === 'Ana y Pedro' && ctx.conY_(['Ana']) === 'Ana');
+check('grade ranges written short', ctx.nivelesTexto_([6, 7, 8, 9]) === '5° a 8° básico' && ctx.nivelesTexto_([5, 6]) === '4° y 5° básico' && ctx.nivelesTexto_([9, 10]) === '8° básico y I° medio'
+  && ctx.nivelesTexto_([5, 10, 11, 12, 13]) === '4° básico e I° a IV° medio' && ctx.nivelesTexto_([5, 6, 7, 8]) === '4° a 7° básico');
+
+// Bien Público and SIP (SF columns "Proyecto" / "Sostenedor"; absent columns change nothing)
+delete sheets['Correos Test'];
+sheets['SF'][0].push('Proyecto', 'Sostenedor');
+const sfFila = (rbd, tipo) => sheets['SF'].find(r => r[0] === rbd && r[3] === tipo);
+sheets['SF'].slice(1).forEach(r => { if (r[0]) r.push('', ''); });
+sfFila(11111, 'Religión')[sheets['SF'][0].indexOf('Proyecto')] = 'Bien Público';
+sfFila(22222, 'ASE')[sheets['SF'][0].indexOf('Sostenedor')] = 'Sociedad De Instruccion Primaria De Santiago';
+ctx.prepararCorreosTest();
+let a2 = fila('11111'), f2 = fila('22222');
+check('Bien Público program not announced; the rest of the school still goes', a2.Programas === 'ASE' && a2.Enviar === true && a2.Mensaje.includes('del programa de Aprendizaje Socioemocional') && !a2.Mensaje.includes('Religión') && a2.Observaciones.includes('No se menciona REL (Bien Público)'));
+check('SIP school unticked by default, email ready if ticked', f2.Enviar === false && /^SIP: /.test(f2.Observaciones) && f2.Mensaje.includes('Te escribimos'));
+sfFila(11111, 'ASE')[sheets['SF'][0].indexOf('Proyecto')] = 'Bien Público';
+ctx.prepararCorreosTest();
+a2 = fila('11111');
+check('school with only Bien Público programs: unticked, both programs in the ready email', a2.Enviar === false && a2.Programas === 'ASE + REL' && /Bien Público: no se envía/.test(a2.Observaciones));
+sheets['Correos Test'].find(x => x[0] === '11111')[11] = true; sheets['Correos Test'].find(x => x[0] === '22222')[11] = true; // Mau decides to send
+ctx.prepararCorreosTest();
+check("Mau's tick on a Bien Público / SIP school survives a rebuild", fila('11111').Enviar === true && fila('22222').Enviar === true);
+sfFila(22222, 'ASE')[sheets['SF'][0].indexOf('Sostenedor')] = '';
+sheets['Correos Test'].find(x => x[0] === '22222')[11] = false;
+ctx.prepararCorreosTest();
+check('category change resets the default (no longer SIP → ticked again)', fila('22222').Enviar === true && !/SIP/.test(fila('22222').Observaciones));
 `);
