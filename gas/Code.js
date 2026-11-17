@@ -2342,7 +2342,10 @@ function correoFaltan_(x) {
   const encabezado = `Programa de Aprendizaje Socioemocional Trabün · ${colegio}`; // small line under the header (Mau 17-11-2026)
   const p1 = 'Le escribo porque aún no hemos recibido su respuesta a la Encuesta de Fin de Año del programa de Aprendizaje Socioemocional. '
     + 'Sabemos que son semanas de mucho trabajo, así que de verdad le agradecemos el tiempo.';
-  const p2 = `La encuesta está abierta hasta el ${cierre} y toma unos 20 minutos:`;
+  // Wording by days left, counted like the portal's band (Mau 17-11-2026): 0 = closes today, 1 = tomorrow
+  const p2 = v.diasRestantes === 0 ? 'La encuesta cierra hoy y toma unos 20 minutos:'
+    : v.diasRestantes === 1 ? `La encuesta cierra mañana, ${cierre}, y toma unos 20 minutos:`
+      : `La encuesta está abierta hasta el ${cierre} y toma unos 20 minutos:`;
   const p3 = `Su colegio forma parte del Estudio de Impacto del programa${hito ? ' y esta encuesta es ' + hito : ''}, por eso su opinión es tan valiosa para nosotros. `
     + 'Le pido, por favor, que la responda con calma y a conciencia.';
   const p4 = 'Si ya la respondió, ¡muchas gracias! Solo respóndame este correo y lo reviso.';

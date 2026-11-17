@@ -222,6 +222,15 @@ check('EFA: "the same we sent you" only if every recipient got the Test email (a
     && (() => { ctx.prepararCorreosFaltan(); return persona('Dora Villal').Enviado instanceof Date && !persona('Ana Pérez') && lastRow('Correos Faltan') === 6; })());
   check('faltan: no emails or names in logs; near-copy rule', !/@ejemplo\\.invalid|Dora|Montt/.test(logs.join('\\n'))
     && ctx.casiIgual_('a.b@x.cl', 'a.b@xc.l') && ctx.casiIgual_('dora.villaal@x.cl', 'dora.villal@x.cl') && !ctx.casiIgual_('ines@x.cl', 'berta@x.cl'));
+  check('faltan: closing sentence by days left (today / tomorrow / later), date from Config', (() => {
+    const hoy = ctx.reloj_().hoy, dd = iso => iso.split('-').reverse().join('-');
+    const man = new Date(Date.UTC(+hoy.slice(0, 4), +hoy.slice(5, 7) - 1, +hoy.slice(8, 10) + 1)).toISOString().slice(0, 10);
+    const texto = () => { const p = ctx.personasFaltan_(ctx.cargarDatos_(), ctx.reloj_()); return ctx.correoFaltan_(p[Object.keys(p)[0]]).texto; };
+    cfg('efa_cierra')[1] = dd(hoy); const t0 = texto();
+    cfg('efa_cierra')[1] = dd(man); const t1 = texto();
+    cfg('efa_cierra')[1] = '31-12-2099'; const t9 = texto();
+    return t0.includes('La encuesta cierra hoy y toma unos 20 minutos:') && t1.includes('La encuesta cierra mañana, ' + ctx.fechaLarga_(man) + ', y toma unos 20 minutos:')
+      && t9.includes('La encuesta está abierta hasta el jueves 31 de diciembre y toma unos 20 minutos:'); })());
   sheets['Respuestas EFA'].length = n0; delete sheets['Contactos EFA-EDI']; delete sheets['SDC']; delete sheets['Correos Faltan'];
   cfg('efa_abre')[1] = antes[0]; cfg('efa_cierra')[1] = antes[1];
 }
