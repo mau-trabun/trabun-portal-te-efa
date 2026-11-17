@@ -201,7 +201,7 @@ check('EFA: "the same we sent you" only if every recipient got the Test email (a
   check('faltan: no address → unticked, flagged', persona('Carla Núñez').Enviar === false && persona('Carla Núñez').Observaciones === 'Sin correo' && persona('Ana Pérez').Enviar === true);
   check('faltan: short, warm usted text: first name, deadline from Config, school link, study line by cohort, "si ya la respondió", signed Mauricio; subject «Aún nos falta su respuesta»', (() => {
     const m = persona('Dora Villal').Mensaje;
-    return /^Hola, Dora:\\n\\nLe escribo porque aún no hemos recibido su respuesta a la Encuesta de Fin de Año del programa de Aprendizaje Socioemocional en su colegio, Escuela El Faro\\. /.test(m)
+    return /^Programa de Aprendizaje Socioemocional Trabün · Escuela El Faro\\n\\nHola, Dora:\\n\\nLe escribo porque aún no hemos recibido su respuesta a la Encuesta de Fin de Año del programa de Aprendizaje Socioemocional\\. /.test(m)
       && /La encuesta está abierta hasta el .+ y toma unos 20 minutos:\\nhttps:/.test(m) && m.includes('?rbd=22222')
       && m.includes('Su colegio forma parte del Estudio de Impacto del programa y esta encuesta es el último hito del estudio, por eso su opinión es tan valiosa para nosotros.')
       && m.includes('Si ya la respondió, ¡muchas gracias! Solo respóndame este correo y lo reviso.') && !/\\b(tu|te|ti|respondiste|respóndeme)\\b/i.test(m)

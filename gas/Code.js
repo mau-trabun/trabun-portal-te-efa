@@ -2323,7 +2323,7 @@ const imagenesFaltan_ = () => ({
 });
 // Short form of ESTUDIO_EDI by cohort (Mau 17-11-2026): 2025 = second and last year of the study, 2026 = first
 const HITO_EDI = { 2025: 'el último hito del estudio', 2026: 'una pieza clave del estudio' };
-// usted, warm (Mau 17-11-2026), from Mau to one person; the school is named in the first paragraph. Closing date from Config (the
+// usted, warm (Mau 17-11-2026), from Mau to one person; program and school in a small line under the header. Closing date from Config (the
 // extension when there is one), never hardcoded. HTML in the portal's look: header and footer images (cid), one button.
 function correoFaltan_(x) {
   const { res, pr, per } = x;
@@ -2339,14 +2339,15 @@ function correoFaltan_(x) {
   const hito = HITO_EDI[pr.cohorte];
   const asunto = 'Aún nos falta su respuesta · Encuesta de Fin de Año 2026'; // Mau 17-11-2026
   const saludo = `Hola${nombre ? ', ' + nombre : ''}:`;
-  const p1 = `Le escribo porque aún no hemos recibido su respuesta a la Encuesta de Fin de Año del programa de Aprendizaje Socioemocional en su colegio, ${colegio}. `
+  const encabezado = `Programa de Aprendizaje Socioemocional Trabün · ${colegio}`; // small line under the header (Mau 17-11-2026)
+  const p1 = 'Le escribo porque aún no hemos recibido su respuesta a la Encuesta de Fin de Año del programa de Aprendizaje Socioemocional. '
     + 'Sabemos que son semanas de mucho trabajo, así que de verdad le agradecemos el tiempo.';
   const p2 = `La encuesta está abierta hasta el ${cierre} y toma unos 20 minutos:`;
   const p3 = `Su colegio forma parte del Estudio de Impacto del programa${hito ? ' y esta encuesta es ' + hito : ''}, por eso su opinión es tan valiosa para nosotros. `
     + 'Le pido, por favor, que la responda con calma y a conciencia.';
   const p4 = 'Si ya la respondió, ¡muchas gracias! Solo respóndame este correo y lo reviso.';
   const firma = ['Un abrazo,', 'Mauricio', 'Fundación Trabün'];
-  const texto = [saludo, p1, p2 + '\n' + link, p3, p4, firma.join('\n')].join('\n\n');
+  const texto = [encabezado, saludo, p1, p2 + '\n' + link, p3, p4, firma.join('\n')].join('\n\n');
 
   const e = escHtml_;
   const fuente = "font-family:Lato,'Helvetica Neue',Arial,sans-serif";
@@ -2356,6 +2357,7 @@ function correoFaltan_(x) {
 <table role="presentation" align="center" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border-collapse:separate">
 <tr><td style="line-height:0;font-size:0"><img src="cid:banner" width="560" alt="Fundación Trabün" style="display:block;width:100%;max-width:560px;height:auto;border:0;outline:none"></td></tr>
 <tr><td style="padding:6px 32px 4px">
+<p style="margin:0 0 8px;font-size:12.5px;line-height:1.4;color:${COLOR.muted}">${e(encabezado)}</p>
 <h1 style="margin:0 0 18px;font-size:23px;line-height:1.25;font-weight:800;color:${COLOR.tinta}">Aún está a tiempo</h1>
 ${parrafo(e(saludo))}${parrafo(e(p1))}${parrafo(e(p2))}
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:4px 0 24px"><tr><td style="border-radius:999px;background:${COLOR.rojo}"><a href="${e(link)}" style="display:inline-block;padding:14px 30px;font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none;border-radius:999px">Responder la encuesta</a></td></tr></table>
