@@ -199,13 +199,13 @@ check('EFA: "the same we sent you" only if every recipient got the Test email (a
     && persona('Dora Villal').Para === 'dora.villaal@ejemplo.invalid, dora.villal@ejemplo.invalid' && persona('Dora Villal').Rol === 'Mentor/a'
     && persona('Inés Montt').Para === 'ines@ejemplo.invalid' && persona('Inés Montt')['No se envía a'] === 'berta@ejemplo.invalid' && /unido solo por nombre/.test(persona('Inés Montt').Observaciones));
   check('faltan: no address → unticked, flagged', persona('Carla Núñez').Enviar === false && persona('Carla Núñez').Observaciones === 'Sin correo' && persona('Ana Pérez').Enviar === true);
-  check('faltan: short, warm usted text: first name, deadline from Config, school link, study line by cohort, "si ya la respondió", signed Mauricio; school in the subject', (() => {
+  check('faltan: short, warm usted text: first name, deadline from Config, school link, study line by cohort, "si ya la respondió", signed Mauricio; subject «Aún nos falta su respuesta»', (() => {
     const m = persona('Dora Villal').Mensaje;
-    return /^Hola, Dora:\\n\\nLe escribo porque aún no hemos recibido su respuesta a la Encuesta de Fin de Año del programa de Aprendizaje Socioemocional\\. /.test(m)
+    return /^Hola, Dora:\\n\\nLe escribo porque aún no hemos recibido su respuesta a la Encuesta de Fin de Año del programa de Aprendizaje Socioemocional en su colegio, Escuela El Faro\\. /.test(m)
       && /La encuesta está abierta hasta el .+ y toma unos 20 minutos:\\nhttps:/.test(m) && m.includes('?rbd=22222')
       && m.includes('Su colegio forma parte del Estudio de Impacto del programa y esta encuesta es el último hito del estudio, por eso su opinión es tan valiosa para nosotros.')
       && m.includes('Si ya la respondió, ¡muchas gracias! Solo respóndame este correo y lo reviso.') && !/\\b(tu|te|ti|respondiste|respóndeme)\\b/i.test(m)
-      && /Un abrazo,\\nMauricio\\nFundación Trabün$/.test(m) && persona('Dora Villal').Asunto === 'Encuesta de Fin de Año 2026 · Escuela El Faro'; })());
+      && /Un abrazo,\\nMauricio\\nFundación Trabün$/.test(m) && persona('Dora Villal').Asunto === 'Aún nos falta su respuesta · Encuesta de Fin de Año 2026'; })());
   ctx.enviarCorreoPruebaFaltan();
   check('faltan prueba: only to whoever runs it, as «Mauricio de Trabün», [PRUEBA], a leader, a teacher and a two-address sample', enviados.length === 3
     && enviados.every(e => e.to === 'yo@ejemplo.invalid' && e.name === 'Mauricio de Trabün' && /^\\[PRUEBA\\] /.test(e.subject) && !e.replyTo && !e.cc)

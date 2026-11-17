@@ -2323,7 +2323,7 @@ const imagenesFaltan_ = () => ({
 });
 // Short form of ESTUDIO_EDI by cohort (Mau 17-11-2026): 2025 = second and last year of the study, 2026 = first
 const HITO_EDI = { 2025: 'el último hito del estudio', 2026: 'una pieza clave del estudio' };
-// usted, warm (Mau 17-11-2026), from Mau to one person; the school goes in the subject. Closing date from Config (the
+// usted, warm (Mau 17-11-2026), from Mau to one person; the school is named in the first paragraph. Closing date from Config (the
 // extension when there is one), never hardcoded. HTML in the portal's look: header and footer images (cid), one button.
 function correoFaltan_(x) {
   const { res, pr, per } = x;
@@ -2337,9 +2337,9 @@ function correoFaltan_(x) {
   const corto = link && l0.form ? `${PORTAL_URL}/e/?${res.colegio.rbd}-${encodeURIComponent(String(l0.form).replace(/[_\s]+/g, '-'))}` : link;
   const nombre = nombrePropio_(per.nombres);
   const hito = HITO_EDI[pr.cohorte];
-  const asunto = `Encuesta de Fin de Año 2026 · ${colegio}`;
+  const asunto = 'Aún nos falta su respuesta · Encuesta de Fin de Año 2026'; // Mau 17-11-2026
   const saludo = `Hola${nombre ? ', ' + nombre : ''}:`;
-  const p1 = 'Le escribo porque aún no hemos recibido su respuesta a la Encuesta de Fin de Año del programa de Aprendizaje Socioemocional. '
+  const p1 = `Le escribo porque aún no hemos recibido su respuesta a la Encuesta de Fin de Año del programa de Aprendizaje Socioemocional en su colegio, ${colegio}. `
     + 'Sabemos que son semanas de mucho trabajo, así que de verdad le agradecemos el tiempo.';
   const p2 = `La encuesta está abierta hasta el ${cierre} y toma unos 20 minutos:`;
   const p3 = `Su colegio forma parte del Estudio de Impacto del programa${hito ? ' y esta encuesta es ' + hito : ''}, por eso su opinión es tan valiosa para nosotros. `
