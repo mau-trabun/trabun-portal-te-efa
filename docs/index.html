@@ -2886,9 +2886,13 @@ window.qrcode=qrcode;
     // ── Fases y textos por encuesta ─────────────────────────
     // Band line: where the survey stands, each date once. The tab already names the survey.
     // HTML: dates and days left in bold (all values are dates/numbers built here, escaped anyway)
+    // EFA-EDI may run on its own dates (payload efa.ventana, Config efa_edi_extension; Mau 20-11-2026)
+    const ventanaDe = (prog, clave) => (prog && prog[clave] && prog[clave].ventana) || estado.datos.encuestas[clave];
+
     function etiquetaFase(ve) {
       if (!ve || !ve.fase) return "";
       const b = t => `<b>${esc(t)}</b>`;
+      if (ve.fase === "extra" && ve.sinCierre) return `${b("Plazo extendido")} · sigue abierta`;
       if (ve.fase === "pre") return `Abre el ${b(fechaCorta(ve.abre))} · disponible hasta el ${b(fechaCorta(ve.cierra))}`;
       if (ve.fase === "closed") return `Cerrada el ${b(fechaCorta(ve.extension || ve.cierra))}`;
       const d = ve.diasRestantes;
@@ -2903,7 +2907,7 @@ window.qrcode=qrcode;
     // small caption underneath, as in EFS. Test with an estimate: "110 / ~191" (no %; Mau 05-10-2026),
     // same numbers as the summary line ("110 respuestas de ~191 estudiantes estimados").
     function cifra(prog, clave) {
-      const ve = estado.datos.encuestas[clave];
+      const ve = ventanaDe(prog, clave);
       const enc = prog[clave];
       if (ve && ve.fase === "pre") {
         const est = clave === "test" && enc && enc.ok && enc.resumen && enc.resumen.est;
@@ -3084,7 +3088,7 @@ window.qrcode=qrcode;
       const colegioSinTest = (estado.datos.programas || []).every(testVacio);
       const mostrarTest = !(mostrarEfa && colegioSinTest);
       const clave = !mostrarEfa ? "test" : !mostrarTest ? "efa" : estado.encuesta;
-      const ve = estado.datos.encuestas[clave] || {};
+      const ve = ventanaDe(prog, clave) || {};
       const linea = etiquetaFase(ve);
       return `<article class="programa" style="--prog:${meta.color}">
         <div class="pestanas" role="group" aria-label="Encuestas">${mostrarTest ? pestana(prog, "test", clave) : ""}${mostrarEfa ? pestana(prog, "efa", clave) : ""}</div>
@@ -3115,12 +3119,15 @@ window.qrcode=qrcode;
       return pills.length ? `<div class="banda-pills">${pills.join("")}</div>` : "";
     }
 
-    function notaFase(clave) {
-      const ve = estado.datos.encuestas[clave];
+    function notaFase(clave, prog) {
+      const ve = ventanaDe(prog, clave);
       if (!ve || !ve.fase) return "";
       const nombre = ENCUESTAS[clave].nombre;
       const texto = ve.fase === "pre" ? `${nombre} abre el ${fechaLarga(ve.abre)}. Ya puedes compartir el link: se activará ese día.`
         // Extra week: positive, in the team's words (Mau 12-11-2026)
+        : ve.fase === "extra" && ve.sinCierre ? (clave === "efa"
+          ? "¡Es muy importante para nosotros escuchar las voces de quienes viven nuestro programa en las escuelas! Por eso, extendimos el plazo de la encuesta. Los links siguen funcionando: puedes volver a compartirlos con quienes aún no responden."
+          : `Extendimos el plazo del ${nombre}. Los links siguen funcionando: puedes volver a compartirlos con los cursos que aún no responden.`)
         : ve.fase === "extra" ? (clave === "efa"
           ? `¡Es muy importante para nosotros escuchar las voces de quienes viven nuestro programa en las escuelas! Por eso, extendimos el plazo de la encuesta hasta el ${fechaConDia(ve.extension)}. Los links siguen funcionando: puedes volver a compartirlos con quienes aún no responden.`
           : `Extendimos el plazo del ${nombre} hasta el ${fechaConDia(ve.extension)}. Los links siguen funcionando: puedes volver a compartirlos con los cursos que aún no responden.`)
@@ -3210,7 +3217,7 @@ window.qrcode=qrcode;
     }
 
     function contenidoCompartir(prog, clave) {
-      const ve = estado.datos.encuestas[clave];
+      const ve = ventanaDe(prog, clave);
       if (ve && ve.fase === "closed") return ""; // closed: nothing left to share
       const links = linksVisibles(prog, clave);
       if (!links.length) return ""; // no link yet: the section simply doesn't render
@@ -3288,7 +3295,7 @@ window.qrcode=qrcode;
 
     // Written as if the encargado sends it (Mau 05-10-2026): "Estimado equipo," / "Estimado/a,", full program name
     function mensajeCompartir(prog, clave, links, incluirAvance) {
-      const ve = estado.datos.encuestas[clave] || {};
+      const ve = ventanaDe(prog, clave) || {};
       const programa = `programa de ${PROGRAMAS[prog.programa].titulo} de Fundación Trabün`;
       const entre = entreFechas(ve);
       const url = l => urlCorta(l, clave);
@@ -3311,7 +3318,9 @@ window.qrcode=qrcode;
       const estudio = ESTUDIO_EDI[prog.edi ? prog.cohorte : null];
       const duracion = estudio ? "Toma unos 20 minutos" : "Solo toma unos minutos";
       const parrafoEdi = estudio ? `\n\nNuestro colegio forma parte del Estudio de Impacto del programa. ${estudio}, por eso tu opinión es tan valiosa. Te pido, por favor, que la respondas con calma y a conciencia.` : "";
-      const apertura = ve.fase === "extra"
+      const apertura = ve.fase === "extra" && ve.sinCierre
+        ? `La Encuesta de Fin de Año del ${programa} sigue disponible. Si aún no la has respondido, este es el momento.`
+        : ve.fase === "extra"
         ? `La Encuesta de Fin de Año del ${programa} tiene una semana extra: estará disponible hasta el ${fechaConDia(ve.extension)}. Si aún no la has respondido, este es el momento.`
         : `${entre ? `Entre ${entre} estará disponible` : "Estará disponible"} la Encuesta de Fin de Año del ${programa}.`;
       return `Estimado/a,\n\n${apertura} ${duracion} y tu participación es muy importante para nuestra comunidad.${parrafoEdi}${parrafoEdi ? "\n\n" : " "}Puedes responderla ${links.length === 1 ? "aquí" : "en el link que te corresponde"}:\n${lista}${verifica}\n\n¡Muchas gracias!`;
@@ -3391,7 +3400,7 @@ window.qrcode=qrcode;
     function bloqueTest(prog) {
       const t = prog.test;
       const pre = estado.datos.encuestas.test && estado.datos.encuestas.test.fase === "pre";
-      if (!t.ok) return notaFase("test") + errorCarga();
+      if (!t.ok) return notaFase("test", prog) + errorCarga();
       // No summary lines (Mau 05-10-2026): the band pill shows responses / estimate and the rows show the grades
       const sinNiveles = !(t.niveles || []).length && !(t.nivelesPapel || []).length
         ? `<div class="resumen"><div class="resumen-alcance">No hay niveles con Test de Estudiantes en este programa.</div></div>` : "";
@@ -3402,7 +3411,7 @@ window.qrcode=qrcode;
           <input type="search" data-buscar="${prog.programa}" value="${esc(u.q)}" placeholder="${porNumero ? "Buscar por número de lista" : "Buscar estudiante"}" ${porNumero ? 'inputmode="numeric"' : ""} aria-label="${porNumero ? "Buscar por número de lista" : "Buscar estudiante"}" />
           ${u.q ? `<button type="button" class="buscar-limpiar" data-limpiar="${prog.programa}" aria-label="Borrar búsqueda">×</button>` : ""}
         </label>`;
-      return notaFase("test")
+      return notaFase("test", prog)
         + sinNiveles
         + buscar
         + `<div id="est-${prog.programa}">${contenidoTest(prog)}</div>`
@@ -3594,10 +3603,10 @@ window.qrcode=qrcode;
 
     function bloqueEfa(prog) {
       const e = prog.efa;
-      const pre = estado.datos.encuestas.efa && estado.datos.encuestas.efa.fase === "pre";
-      if (!e.ok) return notaFase("efa") + errorCarga();
+      const pre = (ventanaDe(prog, "efa") || {}).fase === "pre";
+      if (!e.ok) return notaFase("efa", prog) + errorCarga();
       // No summary lines (Mau 05-10-2026): the band pill shows the count and the sections show the grades
-      return notaFase("efa")
+      return notaFase("efa", prog)
         + (pre ? "" : `<div id="efa-${prog.programa}">${contenidoEfa(prog)}</div>`) // before opening there is no one to list
         + seccionCompartir(prog, "efa");
     }
@@ -3625,7 +3634,7 @@ window.qrcode=qrcode;
         </div>`;
       }).join("");
       const respondieron = `<div class="secciones">${cols}</div>`;
-      const fase = (estado.datos.encuestas.efa || {}).fase;
+      const fase = (ventanaDe(prog, "efa") || {}).fase;
       const pend = prog.efa.pendientes;
       if (!pend || (fase !== "open" && fase !== "extra")) return respondieron;
       return `<div class="efa-bloque faltan">${bloqueFaltan(pend)}</div>
@@ -3811,7 +3820,7 @@ window.qrcode=qrcode;
       if (msgBtn) {
         const [programa, clave] = msgBtn.dataset.copiarMensaje.split("|");
         const prog = (estado.datos.programas || []).find(p => p.programa === programa);
-        const ve = estado.datos.encuestas[clave];
+        const ve = ventanaDe(prog, clave);
         const texto = mensajeCompartir(prog, clave, linksVisibles(prog, clave), clave === "test" && abierta(ve) && shDe(programa, clave).incluir);
         return copiarTexto(texto, msgBtn, "Mensaje copiado");
       }

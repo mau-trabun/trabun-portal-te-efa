@@ -394,6 +394,10 @@ function panel_(rbd, d, reloj) {
     test: ventana_(cfg.test_abre, cfg.test_cierra, reloj.hoy, cfg.test_extension),
     efa: ventana_(cfg.efa_abre, cfg.efa_cierra, reloj.hoy, cfg.efa_extension),
   };
+  // EFA-EDI (Mau 20-11-2026): treated ASE EDI programs keep the EFA open after the general close while Config
+  // `efa_edi_extension` says so (a date, or «abierta» = no end date). Blank = they follow efa_extension like everyone.
+  const efaEdi = String(cfg.efa_edi_extension == null ? '' : cfg.efa_edi_extension).trim()
+    ? ventana_(cfg.efa_abre, cfg.efa_cierra, reloj.hoy, cfg.efa_edi_extension) : null;
   return {
     ok: true,
     v: API_VERSION,
@@ -404,11 +408,14 @@ function panel_(rbd, d, reloj) {
     studentId,
     encuestas,
     programas: ['ase', 'rel'].filter(p => col.programas[p])
-      .map(p => panelPrograma_(rbd, col.programas[p], d, studentId, encuestas.efa.fase)),
+      .map(p => panelPrograma_(rbd, col.programas[p], d, studentId, encuestas, efaEdi)),
   };
 }
 
-function panelPrograma_(rbd, p, d, studentId, faseEfa) {
+function panelPrograma_(rbd, p, d, studentId, encuestas, efaEdi) {
+  // Control programs never get EFA (Mau 30-10-2026): a response sent by mistake is not shown either, so the tab never appears
+  const control = normTexto_(p.modelo) === 'control';
+  const ventanaEfa = efaEdi && !control && p.edi && p.programa === 'ase' ? efaEdi : encuestas.efa;
   const formsTest = formulariosDe_(d.formularios, 'test', p);
   const testIdx = [];
   formsTest.forEach(f => rango_(f).forEach(i => { if (testIdx.indexOf(i) < 0) testIdx.push(i); }));
@@ -424,13 +431,12 @@ function panelPrograma_(rbd, p, d, studentId, faseEfa) {
       d.test.filter(x => x.rbd === rbd && x.programa === p.programa), studentId, i => letrasDe_(d, rbd, p.programa, i)));
   }
   const efa = { ok: !!d.efa, links: links_(formulariosDe_(d.formularios, 'efa', p), rbd, d.sf[rbd]) };
+  if (ventanaEfa !== encuestas.efa) efa.ventana = ventanaEfa; // EFA-EDI: this program's own phase and dates
   if (d.efa) {
-    // Control programs never get EFA (Mau 30-10-2026): a response sent by mistake is not shown either, so the tab never appears
-    const control = normTexto_(p.modelo) === 'control';
     const resps = control ? [] : d.efa.filter(x => x.rbd === rbd && x.programa === p.programa);
     Object.assign(efa, bloqueEfa_(p, resps));
     // EDI «Faltan por responder» (Mau 17-11-2026): treated EDI programs, only while the EFA is open or in its extra week
-    if (!control && p.edi && p.programa === 'ase' && (faseEfa === 'open' || faseEfa === 'extra')) {
+    if (!control && p.edi && p.programa === 'ase' && (ventanaEfa.fase === 'open' || ventanaEfa.fase === 'extra')) {
       const pend = pendientesEdi_(rbd, p, d, resps);
       if (pend) efa.pendientes = pend;
     }
@@ -847,11 +853,14 @@ function ventana_(abreRaw, cierraRaw, hoy, extensionRaw) {
   const abre = fechaIso_(abreRaw);
   const cierra = fechaIso_(cierraRaw);
   if (!abre || !cierra) return { abre, cierra, fase: null, diasRestantes: null };
-  const ext = fechaIso_(extensionRaw);
+  // «abierta» instead of a date (Mau 20-11-2026, EFA-EDI «until further notice»): extra phase with no end date
+  const sinCierre = normTexto_(extensionRaw) === 'abierta';
+  const ext = sinCierre ? null : fechaIso_(extensionRaw);
   const extension = ext && ext > cierra ? ext : null;
-  const fase = hoy < abre ? 'pre' : hoy <= cierra ? 'open' : extension && hoy <= extension ? 'extra' : 'closed';
-  const v = { abre, cierra, fase, diasRestantes: fase === 'open' ? diasEntre_(hoy, cierra) : fase === 'extra' ? diasEntre_(hoy, extension) : null };
+  const fase = hoy < abre ? 'pre' : hoy <= cierra ? 'open' : sinCierre || (extension && hoy <= extension) ? 'extra' : 'closed';
+  const v = { abre, cierra, fase, diasRestantes: fase === 'open' ? diasEntre_(hoy, cierra) : fase === 'extra' && extension ? diasEntre_(hoy, extension) : null };
   if (extension) v.extension = extension;
+  if (sinCierre) v.sinCierre = true;
   return v;
 }
 
@@ -2327,7 +2336,7 @@ const HITO_EDI = { 2025: 'el último hito del estudio', 2026: 'una pieza clave d
 // extension when there is one), never hardcoded. HTML in the portal's look: header and footer images (cid), one button.
 function correoFaltan_(x) {
   const { res, pr, per } = x;
-  const v = res.encuestas.efa;
+  const v = pr.efa.ventana || res.encuestas.efa; // EFA-EDI may run on its own dates (efa_edi_extension)
   const cierre = fechaLarga_(v.extension || v.cierra);
   const colegio = res.colegio.nombre || `RBD ${res.colegio.rbd}`;
   const l0 = (pr.efa.links || [])[0] || {};
@@ -2343,7 +2352,8 @@ function correoFaltan_(x) {
   const p1 = 'Le escribo porque aún no hemos recibido su respuesta a la Encuesta de Fin de Año del programa de Aprendizaje Socioemocional. '
     + 'Sabemos que son semanas de mucho trabajo, así que de verdad le agradecemos el tiempo.';
   // Wording by days left, counted like the portal's band (Mau 17-11-2026): 0 = closes today, 1 = tomorrow
-  const p2 = v.diasRestantes === 0 ? 'La encuesta cierra hoy y toma unos 20 minutos:'
+  const p2 = v.sinCierre ? 'La encuesta sigue abierta y toma unos 20 minutos:'
+    : v.diasRestantes === 0 ? 'La encuesta cierra hoy y toma unos 20 minutos:'
     : v.diasRestantes === 1 ? `La encuesta cierra mañana, ${cierre}, y toma unos 20 minutos:`
       : `La encuesta está abierta hasta el ${cierre} y toma unos 20 minutos:`;
   const p3 = `Su colegio forma parte del Estudio de Impacto del programa${hito ? ' y esta encuesta es ' + hito : ''}, por eso su opinión es tan valiosa para nosotros. `
@@ -2774,6 +2784,7 @@ function seedRows_() {
       ['efa_abre', new Date(2026, 10, 2), 'Apertura de la EFA'],
       ['efa_cierra', new Date(2026, 10, 13), 'Cierre de la EFA (abierta todo ese día; probable extensión al 20-11)'],
       ['efa_extension', '', 'Semana extra de la EFA (fecha; vacío = sin extensión): el portal sigue mostrando efa_cierra'],
+      ['efa_edi_extension', '', 'EFA de los programas EDI tratados: fecha, o «abierta» = sin fecha de cierre; vacío = igual que el resto'],
       ['student_id', '', 'nombre | numero (pendiente)'],
       ['contacto_general', 'evaluacion@fundaciontrabun.cl', 'Contacto en el pie de página'],
       ['contacto_edi', 'consultas_edi@fundaciontrabun.cl', 'Contacto para colegios EDI'],

@@ -36,6 +36,7 @@ Grade suffixes: `NT1, NT2, 1º, 2º, 3º, 4º, 5º, 6º, 7º, 8º, I, II, III, I
 | `test_abre`, `test_cierra` | date cells |
 | `efa_abre`, `efa_cierra` | date cells |
 | `efa_extension`, `test_extension` | optional date cell, after `<encuesta>_cierra` (Mau 12-11-2026): an **extra week**. The portal keeps `cierra` as the date the survey was due and shows the extra days as such (phase `extra`); blank, missing or not after `cierra` = no extension |
+| `efa_edi_extension` | optional (Mau 20-11-2026): the EFA window of **treated ASE EDI programs only** (EFA-EDI). A date = their extra phase runs to that date; the word `abierta` = extra phase with no end date («until further notice»: band «Plazo extendido · sigue abierta»); blank or missing = they follow `efa_extension` like everyone. Sent per program as `efa.ventana` (§4) |
 | `student_id` | `nombre` \| `numero` |
 | `contacto_general` | `evaluacion@fundaciontrabun.cl` |
 | `contacto_edi` | `consultas_edi@fundaciontrabun.cl` |
@@ -295,6 +296,7 @@ Counts only, never names. Rows 1–2: last check time + recipients, how it works
 ```
 
 Notes:
+- **`efa.ventana`** (EFA-EDI, Config `efa_edi_extension`): same shape as `encuestas.efa`, plus `"sinCierre": true` when open with no end date (`diasRestantes: null`, no `extension`). The page uses it instead of `encuestas.efa` for that program's band, notes, share section and message, and the «Faltan por responder» block.
 - **Course in `numero` mode:**
   `{ "letra": "A", "registrado": true, "r": 26, "est": 38, "tope": 38, "numeros": [1, 2, 4, 14, 14, 35], "sinNumero": 1 }`
 - **Course `est`** (both modes, 07-10-2026): `round(SF Alumnos ÷ CxN)` for the grade, an average per class; only for letters registered in SF and when both values are > 0, else `null` (unregistered letters, the no-letter bucket, grades missing Alumnos or CxN). Shown in the class card as "r / ~est".
@@ -311,6 +313,7 @@ Every rule that treats some schools, programs or roles differently from the gene
 ### Who sees what in the portal
 | Exception | Where | Effect | Decided |
 |---|---|---|---|
+| EFA-EDI stays open after the general close | `panel_()` / `panelPrograma_()` (`efa.ventana`), Config `efa_edi_extension` | Treated ASE EDI programs get their own EFA window (open, «Faltan por responder» kept) while every other program's EFA and every Test close as usual (closed phase as designed: final data, names still shown). EDI controls never (no EFA). | Mau 20-11-2026 |
 | Control programs: no EFA | `formulariosDe_()`, `panelPrograma_()` | No EFA links and no EFA responses shown, EDI controls included (a response sent by mistake is ignored, so the tab never appears). | Mau 29-10 / 30-10-2026 |
 | EDI grades on paper | `PAPEL_EDI` | ASE EDI cohort 2025 → 5°–8° básico, 2026 → 4°–7° básico (∩ implemented, minus grades with an online form): fixed rows «Test en papel · a cargo de la Agencia Focus», never data. | Mau 05-10-2026 |
 | No online Test grade → no Test links | `panelPrograma_()`, `Sin Test` tab (`Habilitar`) | A school-program whose grades have no online form sees no Test links, unless ticked in `Sin Test`. | Mau 07-10-2026 |

@@ -364,6 +364,22 @@ delete cacheStore['intentos_11111_interno'];
     const aromos = ctx.panel_('11111', d, reloj).programas;
     const sinTab = ctx.panel_('22222', Object.assign({}, d, { contactosEdi: null }), reloj).programas[0].efa;
     return !('pendientes' in cerrado) && extra.pendientes.total === 4 && aromos.every(x => !('pendientes' in x.efa)) && !('pendientes' in sinTab); })());
+  check('efa_edi_extension «abierta»: treated EDI gets its own EFA window (extra, no end) with pendientes; everyone else as before', (() => {
+    const cfg = Object.assign({}, d.cfg, { efa_edi_extension: 'Abierta ' });
+    const r22 = ctx.panel_('22222', Object.assign({}, d, { cfg }), { hoy: '2026-11-25', generado: 'x' });
+    const r11 = ctx.panel_('11111', Object.assign({}, d, { cfg }), { hoy: '2026-11-25', generado: 'x' });
+    const e = r22.programas[0].efa, v = e.ventana;
+    return r22.encuestas.efa.fase === 'closed' && v.fase === 'extra' && v.sinCierre === true && v.diasRestantes === null && !('extension' in v)
+      && e.pendientes.total === 4 && e.secciones.some(s => (s.personas || []).length) && r22.encuestas.test.fase === 'closed'
+      && r11.programas.every(x => !('ventana' in x.efa) && !('pendientes' in x.efa)); })());
+  check('efa_edi_extension as a date: EDI extra until then, then closed; blank = like everyone; before cierra it is just open', (() => {
+    const cfg = Object.assign({}, d.cfg, { efa_edi_extension: '30-11-2026' });
+    const en = ctx.panel_('22222', Object.assign({}, d, { cfg }), { hoy: '2026-11-25', generado: 'x' }).programas[0].efa.ventana;
+    const tras = ctx.panel_('22222', Object.assign({}, d, { cfg }), { hoy: '2026-12-01', generado: 'x' }).programas[0].efa;
+    const vacio = ctx.panel_('22222', Object.assign({}, d, { cfg: Object.assign({}, d.cfg, { efa_edi_extension: '  ' }) }), reloj).programas[0].efa;
+    const antes = ctx.ventana_('02-11-2026', '13-11-2026', '2026-11-05', 'abierta');
+    return en.fase === 'extra' && en.extension === '2026-11-30' && en.diasRestantes === 5 && tras.ventana.fase === 'closed'
+      && !('pendientes' in tras) && !('ventana' in vacio) && antes.fase === 'open' && antes.diasRestantes === 8; })());
   check('EDI pendientes: everyone answered → total 0 (the portal thanks them)', (() => {
     const todos = ctx.pendientesEdi_('22222', { programa: 'ase' }, { contactosEdi: d.contactosEdi.filter(x => x.roles.indexOf('director') >= 0), sdc: [] },
       d.efa.filter(x => x.rbd === '22222'));
