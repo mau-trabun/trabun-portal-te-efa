@@ -3009,7 +3009,11 @@ window.qrcode=qrcode;
       const aviso = $("aviso-sin-programas");
       aviso.hidden = progs.length > 0;
       aviso.innerHTML = `Tu acceso es válido, pero no encontramos programas asociados a este RBD. Escríbenos a <a href="mailto:${esc(contacto)}">${esc(contacto)}</a> para revisarlo.`;
-      if (!mantenerVista) estado.ui = {}; // new login: fresh accordion and search state
+      if (!mantenerVista) {
+        estado.ui = {}; // new login: fresh accordion and search state
+        // EFA-EDI open on its own dates (Mau 23-11-2026): those schools land on the EFA tab; everyone else on the Test
+        estado.encuesta = progs.some(p => p.efa && p.efa.ventana && abierta(p.efa.ventana) && tieneEfa(p)) ? "efa" : "test";
+      }
       renderProgramas();
       if (mantenerVista) return; // refresh: keep scroll position, active tab, open rows and search
       $("view-login").hidden = true;
